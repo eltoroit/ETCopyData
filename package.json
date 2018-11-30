@@ -1,0 +1,65 @@
+{
+  "name": "ETCopyData",
+  "description": "SFDX Plugin to copy data between Orgs.",
+  "version": "0.1.0",
+  "author": "Andres Perez @ElToroIT",
+  "bugs": "https://github.com/ELTOROIT/ETCopyData/issues",
+  "dependencies": {
+    "@oclif/command": "1",
+    "@oclif/config": "1",
+    "@oclif/errors": "1",
+    "@salesforce/command": "0.1.6",
+    "tslib": "1"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "1",
+    "@oclif/plugin-help": "1",
+    "@oclif/test": "^1",
+    "@salesforce/dev-config": "1.1.0",
+    "@types/chai": "4",
+    "@types/jsforce": "1.8.13",
+    "@types/mocha": "5",
+    "@types/node": "10",
+    "chai": "^4",
+    "globby": "8",
+    "mocha": "^5",
+    "nyc": "^12",
+    "sinon": "5",
+    "ts-node": "6",
+    "typescript": "2.9"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/lib",
+    "/messages",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/ELTOROIT/ETCopyData",
+  "keywords": [
+    "sfdx-plugin"
+  ],
+  "license": "MIT",
+  "oclif": {
+    "commands": "./lib/commands",
+    "topics": {
+      "hello": {
+        "description": "Commands to say hello."
+      }
+    },
+    "devPlugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "repository": "ELTOROIT/ETCopyData",
+  "scripts": {
+    "postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
+    "posttest": "tsc -p test --noEmit && tslint -p test -t stylish",
+    "prepack": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
+    "prepare": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
+    "test": "nyc mocha --forbid-only \"test/**/*.test.ts\"",
+    "version": "oclif-dev readme && git add README.md"
+  }
+}

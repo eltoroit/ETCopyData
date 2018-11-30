@@ -1,0 +1,6 @@
+{
+  "commandDescription": "Prints a greeting and your org id(s)!",
+  "nameFlagDescription": "name to print",
+  "forceFlagDescription": "example boolean flag",
+  "errorNoOrgResults": "No results found for the organization '%s'."
+}
