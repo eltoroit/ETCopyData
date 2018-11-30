@@ -1,4 +1,10 @@
 {
-    "extends": "@salesforce/dev-config/tslint"
+	"extends": [
+		"@salesforce/dev-config/tslint",  "tslint:recommended"
+	],
+	"rules": {
+		"indent": [true, "tabs", 4],
+		"no-unused-variable": true
+	}
   }
   
