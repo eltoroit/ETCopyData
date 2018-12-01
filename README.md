@@ -3,17 +3,13 @@ ETCopyData
 
 SFDX Plugin to populate your scratch org and/or developer sandbox with data extracted from multiple sObjects.
 
-[![Version](https://img.shields.io/npm/v/ETCopyData.svg)](https://npmjs.org/package/etcopydata)
-[![License](https://img.shields.io/npm/l/ETCopyData.svg)](https://github.com/ELTOROIT/ETCopyData/blob/master/package.json)
+[![Version](https://img.shields.io/npm/v/etcopydata.svg)](https://npmjs.org/package/etcopydata)
+[![License](https://img.shields.io/npm/l/etcopydata.svg)](https://github.com/ELTOROIT/ETCopyData/blob/master/package.json)
 
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- toc -->
 * [Install](#install)
 * [Documentation](#documentation)
-* [ETCopyData.json](#et-copy-data-json)
-* [sObjectsData](#s-objects-data)
-* [sObjectsMetadata](#s-objects-metadata)
-* [Notes:](#notes)
 * [Commands](#commands)
 <!-- tocstop -->
 <!-- ET-AUTO-STOP: This section is auto-updated... -->
@@ -36,9 +32,9 @@ You'll be prompted that this, like any plugin, is not officially code-signed by 
 # Documentation
 This plugin is highly configurable with a JSON file named `ETCopyData.json` located on the current folder you are using when running this plugin. If the file does not exist, the plugin creates the file before erroring out, this allows you to get the bare bones of the file and modify it.
 
-# ETCopyData.json
+## ETCopyData.json
 
-## Sample
+### Sample
 
 ```
 {
@@ -71,7 +67,7 @@ This plugin is highly configurable with a JSON file named `ETCopyData.json` loca
 }
 ```
 
-## Fields
+### Fields
 
 | Field                             | Data Type          | Description                                                                                                                                          |
 | --------------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -88,9 +84,9 @@ This plugin is highly configurable with a JSON file named `ETCopyData.json` loca
 | **deleteDestination<sup>6</sup>** | Boolean            | True if you want to delete the existing records in the destination org before you load the new records.                                              |
 | **pollingTimeout<sup>7<sup>**     | Integer            | Timeout in milliseconds that Bulk API operations will timeout.                                                                                       |
 
-# sObjectsData
+## sObjectsData
 
-## Sample: Minimum fields required
+### Sample: Minimum fields required
 
 You must provide the name of the sObject
 
@@ -100,7 +96,7 @@ You must provide the name of the sObject
 }
 ````
 
-## Sample: All fields complete 
+### Sample: All fields complete 
 
 ````
 {
@@ -112,7 +108,7 @@ You must provide the name of the sObject
 }
 ````
 
-## Fields
+### Fields
 
 This is the structure for each sObject
 
@@ -124,9 +120,9 @@ This is the structure for each sObject
 | orderBy      | null    | String    | For exports, determines the order for the records that are exported.                                            |
 | where        | null    | String    | Restrict which records are be exported.                                                                         |
 
-# sObjectsMetadata
+## sObjectsMetadata
 
-## Sample: Minimum fields required
+### Sample: Minimum fields required
 
 ````
 {
@@ -136,7 +132,7 @@ This is the structure for each sObject
 }
 ````
 
-## Sample: All fields complete 
+### Sample: All fields complete 
 
 ````
 {
@@ -148,7 +144,7 @@ This is the structure for each sObject
 }
 ````
 
-## Fields
+### Fields
 
 This is the structure for each metadata sObject
 
@@ -160,7 +156,7 @@ This is the structure for each metadata sObject
 | orderBy             | null    | String    | For exports, determines the order for the metadata records that are exported.   |
 | where               | null    | String    | Restrict which records are be exported.                                         |
 
-# Notes:
+## Notes:
 1. Because the data in the org gets modified, you are **not** allowed to use a production org. You can only use a scratch org or a sandbox!
 2. You must explicitly specify which standard sObjects you want to process because there are way too many standard sObjects and not a good way to determine which ones are useful. But for custom sObjects, you can specify that you want all of them.
 3. These records will not be imported but will need to exist in the destination org, so their record ids can be used when loading the data.
@@ -173,26 +169,26 @@ This is the structure for each metadata sObject
 # Commands
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- commands -->
-* [`sfdx ETCopyData:Compare`](#sfdx-et-copy-data-compare)
+* [`sfdx ETCopyData:compare`](#sfdx-et-copy-datacompare)
 * [`sfdx ETCopyData:delete`](#sfdx-et-copy-datadelete)
 * [`sfdx ETCopyData:export`](#sfdx-et-copy-dataexport)
 * [`sfdx ETCopyData:full`](#sfdx-et-copy-datafull)
 * [`sfdx ETCopyData:import`](#sfdx-et-copy-dataimport)
 
-## `sfdx ETCopyData:Compare`
+## `sfdx ETCopyData:compare`
 
 Checks the source and destination org for any differences in the sObject's metadata, this helps determine what data can be properly exported/imported.
 
 ```
 USAGE
-  $ sfdx ETCopyData:Compare
+  $ sfdx ETCopyData:compare
 
 OPTIONS
   --json                                          format output as json
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/Compare.ts](https://github.com/eltoroit/ETCopyData/blob/v0.3.0/src/commands/ETCopyData/Compare.ts)_
+_See code: [src/commands/ETCopyData/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v0.3.2/src/commands/ETCopyData/compare.ts)_
 
 ## `sfdx ETCopyData:delete`
 
@@ -207,7 +203,7 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v0.3.0/src/commands/ETCopyData/delete.ts)_
+_See code: [src/commands/ETCopyData/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v0.3.2/src/commands/ETCopyData/delete.ts)_
 
 ## `sfdx ETCopyData:export`
 
@@ -222,7 +218,7 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/export.ts](https://github.com/eltoroit/ETCopyData/blob/v0.3.0/src/commands/ETCopyData/export.ts)_
+_See code: [src/commands/ETCopyData/export.ts](https://github.com/eltoroit/ETCopyData/blob/v0.3.2/src/commands/ETCopyData/export.ts)_
 
 ## `sfdx ETCopyData:full`
 
@@ -237,7 +233,7 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/full.ts](https://github.com/eltoroit/ETCopyData/blob/v0.3.0/src/commands/ETCopyData/full.ts)_
+_See code: [src/commands/ETCopyData/full.ts](https://github.com/eltoroit/ETCopyData/blob/v0.3.2/src/commands/ETCopyData/full.ts)_
 
 ## `sfdx ETCopyData:import`
 
@@ -252,6 +248,6 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v0.3.0/src/commands/ETCopyData/import.ts)_
+_See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v0.3.2/src/commands/ETCopyData/import.ts)_
 <!-- commandsstop -->
 <!-- ET-AUTO-STOP: This section is auto-updated... -->
