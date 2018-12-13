@@ -1,5 +1,5 @@
 import { core, UX } from "@salesforce/command";
-import { Result } from "@salesforce/command/dist/lib/sfdxCommand";
+import { Result } from "@salesforce/command/lib/sfdxCommand";
 import { Logger } from "@salesforce/core";
 import { OrgManager } from "./OrgManager";
 // import { asAnyJson } from "@salesforce/ts-types";

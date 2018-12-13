@@ -1,4 +1,4 @@
-import { ConfigFile, ConfigValue, fs } from "@salesforce/core";
+import { ConfigContents, ConfigFile, fs } from "@salesforce/core";
 import { WhichOrg } from "./OrgManager";
 import { LogLevel, Util } from "./Util";
 
@@ -69,7 +69,7 @@ export class Settings implements ISettingsValues {
 	public rootFolderFull: string;
 
 	// Local private variables
-	private configFile: ConfigFile = null;
+	private configFile: ConfigFile<ConfigFile.Options> = null;
 	private blankSObjectData: ISettingsSObjectData = null;
 	private sObjectNames: Map<boolean, string[]> = new Map<boolean, string[]>();
 
@@ -195,7 +195,7 @@ export class Settings implements ISettingsValues {
 			// This has to be done in serial mode, so chain the requests...
 			// LEARNING: [PROMISES]: Promises running in serial mode. the next block can't start before the previous finishes.
 			this.openConfigFile()
-				.then((resfile: ConfigFile) => {
+				.then((resfile: ConfigFile<ConfigFile.Options>) => {
 					this.configFile = resfile;
 					// LEARNING: [PROMISES]: Remember to return the method that throws a promise.
 					return resfile.exists();
@@ -243,7 +243,7 @@ export class Settings implements ISettingsValues {
 		return new Promise((resolve, reject) => {
 			this.isValid = true;
 			this.configFile.read()
-				.then((resValues: Map<string, ConfigValue>) => {
+				.then((resValues: ConfigContents) => {
 					// This can be done in parallel mode, so use an array of promises and wait for all of them to complete at the end
 					const promises = [];
 
@@ -446,7 +446,7 @@ export class Settings implements ISettingsValues {
 		this.sObjectsMetadataRaw.set(sObjName, newValue);
 	}
 
-	private openConfigFile(): Promise<ConfigFile> {
+	private openConfigFile(): Promise<ConfigFile<ConfigFile.Options>> {
 		return ConfigFile.create({
 			filename: "ETCopyData.json",
 			isGlobal: false,
@@ -466,24 +466,24 @@ export class Settings implements ISettingsValues {
 	}
 
 	// TODO: UPDATE SETTINGS HERE: WRITE!
-	private valuesToWrite(): Map<string, ConfigValue> {
-		const output: Map<string, ConfigValue> = new Map<string, ConfigValue>();
+	private valuesToWrite(): ConfigContents {
+		const output: ConfigContents = {};
 
 		// VERBOSE: Print debug time in output file so files do get changed, and we know we are looking at the right file.
-		output.set("now", new Date());
+		output.now = JSON.stringify(new Date());
 
 		// Output regular data
-		output.set(WhichOrg.SOURCE, this.orgAliases.get(WhichOrg.SOURCE));
-		output.set(WhichOrg.DESTINATION, this.orgAliases.get(WhichOrg.DESTINATION));
-		output.set("sObjectsData", this.valuesToWriteForSobjectMap(false));
-		output.set("sObjectsMetadata", this.valuesToWriteForSobjectMap(true));
-		output.set("rootFolder", this.rootFolderRaw);
-		output.set("includeAllCustom", this.includeAllCustom);
-		output.set("stopOnErrors", this.stopOnErrors);
-		output.set("ignoreFields", this.ignoreFieldsRaw);
-		output.set("maxRecordsEach", this.maxRecordsEachRaw);
-		output.set("deleteDestination", this.deleteDestination);
-		output.set("pollingTimeout", this.pollingTimeout);
+		output[WhichOrg.SOURCE] = this.orgAliases.get(WhichOrg.SOURCE);
+		output[WhichOrg.DESTINATION] = this.orgAliases.get(WhichOrg.DESTINATION);
+		output.sObjectsData = this.valuesToWriteForSobjectMap(false);
+		output.sObjectsMetadata = this.valuesToWriteForSobjectMap(true);
+		output.rootFolder = this.rootFolderRaw;
+		output.includeAllCustom = this.includeAllCustom;
+		output.stopOnErrors = this.stopOnErrors;
+		output.ignoreFields = this.ignoreFieldsRaw;
+		output.maxRecordsEach = this.maxRecordsEachRaw;
+		output.deleteDestination = this.deleteDestination;
+		output.pollingTimeout = this.pollingTimeout;
 
 		return output;
 	}
