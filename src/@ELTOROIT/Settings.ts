@@ -1,4 +1,5 @@
 import { ConfigContents, ConfigFile, fs } from "@salesforce/core";
+import { AnyJson, Dictionary } from "@salesforce/ts-types";
 import { WhichOrg } from "./OrgManager";
 import { LogLevel, Util } from "./Util";
 
@@ -243,7 +244,7 @@ export class Settings implements ISettingsValues {
 		return new Promise((resolve, reject) => {
 			this.isValid = true;
 			this.configFile.read()
-				.then((resValues: ConfigContents) => {
+				.then((resValues: Dictionary<AnyJson>) => {
 					// This can be done in parallel mode, so use an array of promises and wait for all of them to complete at the end
 					const promises = [];
 
@@ -353,10 +354,9 @@ export class Settings implements ISettingsValues {
 	private processStringValues(resValues, entryName: string, isRequired: boolean): Promise<string> {
 		return new Promise((resolve, reject) => {
 			let valueStr = "";
-			let value: string;
+			const value = resValues[entryName];
 
-			if (resValues.has(entryName)) {
-				value = resValues.get(entryName);
+			if (value) {
 				if (value == null) {
 					valueStr = null;
 				} else {
@@ -377,10 +377,9 @@ export class Settings implements ISettingsValues {
 
 	private processsObjectsValues(resValues, entryName: string, isRequired: boolean): Promise<void> {
 		return new Promise((resolve, reject) => {
-			let sObjects: any[];
+			const sObjects = resValues[entryName];
 
-			if (resValues.has(entryName)) {
-				sObjects = resValues.get(entryName);
+			if (sObjects) {
 				if (sObjects == null) {
 					if (isRequired) {
 						this.isValid = false;
