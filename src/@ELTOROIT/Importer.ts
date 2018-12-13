@@ -194,7 +194,9 @@ export class Importer {
 						orgDestination.discovery.getSObjects().get(sObjName).parents.forEach(
 							(parent: ISchemaDataParent) => {
 								const sourceParentId = record[parent.parentId];
-								const destinationParentId = this.matchingIds.get(parent.sObj).get(sourceParentId);
+								// Issue #003: Null pointer if there was no data, so split and check for null
+								const destinationParentMap = this.matchingIds.get(parent.sObj);
+								const destinationParentId = destinationParentMap ? destinationParentMap.get(sourceParentId) : null;
 								record[parent.parentId] = destinationParentId;
 
 								if (destinationParentId === null) {

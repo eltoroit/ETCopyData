@@ -295,7 +295,7 @@ export class ETCopyData {
 		});
 	}
 
-	private makeSureThisOrgIsSafe(org: any): Promise<void> {
+	private makeSureThisOrgIsSafe(org: any): void {
 		const productionLoginUrl: string = "login.salesforce.com";
 		const orgLoginUrl: string = org.conn.getAuthInfoFields().loginUrl;
 		const orgDomain: string = orgLoginUrl.split("/")[2];
