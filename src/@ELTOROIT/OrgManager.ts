@@ -26,7 +26,7 @@ export class OrgManager {
 		return new Promise((resolve, reject) => {
 			try {
 				this.alias = alias;
-				Org.create(alias)
+				Org.create({ aliasOrUsername: alias })
 					.then((resOrg: Org) => {
 						this.conn = resOrg.getConnection();
 						// LEARNING: How to generate the URL that sfdx force:org:open generates?

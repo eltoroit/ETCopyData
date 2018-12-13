@@ -1,5 +1,5 @@
 import { SfdxCommand } from "@salesforce/command";
-import { Result } from "@salesforce/command/dist/lib/sfdxCommand";
+import { Result } from "@salesforce/command/lib/sfdxCommand";
 import { ETCopyData } from "../../@ELTOROIT/ETCopyData";
 import { LogLevel, ResultOperation, Util } from "../../@ELTOROIT/Util";
 
