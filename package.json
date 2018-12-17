@@ -1,14 +1,14 @@
 {
 	"name": "etcopydata",
 	"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
-	"version": "0.3.3",
+	"version": "0.4.0",
 	"author": "Andres Perez @ElToroIT",
 	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
 	"dependencies": {
 		"@oclif/command": "1.5.6",
 		"@oclif/config": "1.9.0",
 		"@oclif/errors": "1.2.2",
-		"@salesforce/command": "1.0.2",
+		"@salesforce/command": "1.1.1",
 		"tslib": "1.9.3"
 	},
 	"devDependencies": {
@@ -19,7 +19,7 @@
 		"@types/chai": "4.1.7",
 		"@types/jsforce": "1.9.2",
 		"@types/mocha": "5.2.5",
-		"@types/node": "10.12.14",
+		"@types/node": "10.12.15",
 		"chai": "4.2.0",
 		"globby": "8.0.1",
 		"mocha": "5.2.0",
