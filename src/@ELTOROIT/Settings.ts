@@ -230,7 +230,7 @@ export class Settings implements ISettingsValues {
 		});
 	}
 
-	private getDataFolder(readFolder: string, overrideSettings: Settings): Promise<object> {
+	private getDataFolder(readFolder: string, overrideSettings: Settings): Promise<string> {
 		return new Promise((resolve, reject) => {
 			// Make folder
 			const overrideFolder = overrideSettings.configfolder;
@@ -344,8 +344,7 @@ export class Settings implements ISettingsValues {
 								return this.getDataFolder(value, overrideSettings);
 							})
 							.then(() => {
-								// this.rootFolderRaw = value;
-
+								//
 							})
 							.catch((err) => { Util.throwError(err); }),
 					);
