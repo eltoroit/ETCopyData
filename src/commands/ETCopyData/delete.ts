@@ -1,7 +1,8 @@
 import { SfdxCommand } from "@salesforce/command";
 import { Result } from "@salesforce/command/lib/sfdxCommand";
 import { ETCopyData } from "../../@ELTOROIT/ETCopyData";
-import { LogLevel, ResultOperation, Util } from "../../@ELTOROIT/Util";
+import { Settings } from "../../@ELTOROIT/Settings";
+import { ResultOperation, Util } from "../../@ELTOROIT/Util";
 
 // TODO: Read the settings, and then override them with any parameters.
 export default class Delete extends SfdxCommand {
@@ -11,23 +12,16 @@ export default class Delete extends SfdxCommand {
 		"Note: Deleting optionally happens before loading, " +
 		"but if there are some errors this operation can be retired by itself. ";
 
-	public async run() {
-		// Set log level based on parameters
-		if (!this.flags.loglevel) {
-			this.flags.loglevel = "TRACE";
-		}
-		Util.setLogLevel(this.flags.loglevel);
-		Util.writeLog("Log level: " + this.flags.loglevel, LogLevel.TRACE);
+	protected static flagsConfig = ETCopyData.flagsConfig;
 
-		if (Util.doesLogOutputsEachStep()) {
-			Util.writeLog("ETCopyData:Delete Process Started", LogLevel.INFO);
-			Delete.result = null;
-		} else {
-			this.ux.startSpinner("ETCopyData:Delete");
-		}
+	public async run() {
+		Delete.result = null;
+
+		ETCopyData.setLogs(this.flags, this.ux, "ETCopyData:Delete");
+		const s: Settings = ETCopyData.readParameters(this.flags);
 
 		const ETCD = new ETCopyData();
-		await ETCD.deleteData();
+		await ETCD.deleteData(s, null);
 
 		return Util.getMyResults()[ResultOperation[ResultOperation.DELETE]];
 	}

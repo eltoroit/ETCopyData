@@ -1,7 +1,8 @@
 import { SfdxCommand } from "@salesforce/command";
 import { Result } from "@salesforce/command/lib/sfdxCommand";
 import { ETCopyData } from "../../@ELTOROIT/ETCopyData";
-import { LogLevel, ResultOperation, Util } from "../../@ELTOROIT/Util";
+import { Settings } from "../../@ELTOROIT/Settings";
+import { ResultOperation, Util } from "../../@ELTOROIT/Util";
 
 // TODO: Read the settings, and then override them with any parameters.
 export default class Import extends SfdxCommand {
@@ -11,23 +12,16 @@ export default class Import extends SfdxCommand {
 		"The data load happens in a specific order (children first, parents last) which has been determined by " +
 		"checking the schema in the destination org. ";
 
-	public async run() {
-		// Set log level based on parameters
-		if (!this.flags.loglevel) {
-			this.flags.loglevel = "TRACE";
-		}
-		Util.setLogLevel(this.flags.loglevel);
-		Util.writeLog("Log level: " + this.flags.loglevel, LogLevel.TRACE);
+	protected static flagsConfig = ETCopyData.flagsConfig;
 
-		if (Util.doesLogOutputsEachStep()) {
-			Util.writeLog("ETCopyData:Import Process Started", LogLevel.INFO);
-			Import.result = null;
-		} else {
-			this.ux.startSpinner("ETCopyData:Import");
-		}
+	public async run() {
+		Import.result = null;
+
+		ETCopyData.setLogs(this.flags, this.ux, "ETCopyData:Import");
+		const s: Settings = ETCopyData.readParameters(this.flags);
 
 		const ETCD = new ETCopyData();
-		await ETCD.importData();
+		await ETCD.importData(s, null);
 
 		return Util.getMyResults()[ResultOperation[ResultOperation.IMPORT]];
 	}

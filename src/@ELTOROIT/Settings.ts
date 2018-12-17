@@ -1,5 +1,5 @@
 import { ConfigContents, ConfigFile, fs } from "@salesforce/core";
-import { AnyJson, Dictionary } from "@salesforce/ts-types";
+import { AnyJson, Dictionary, toAnyJson } from "@salesforce/ts-types";
 import { WhichOrg } from "./OrgManager";
 import { LogLevel, Util } from "./Util";
 
@@ -47,12 +47,21 @@ export interface ISettingsValues {
 }
 
 export class Settings implements ISettingsValues {
-	public static read(): Promise<Settings> {
-		this.readCounter++;
-		Util.assertEquals(1, this.readCounter, "Reading settings more than once!");
-		const s: Settings = new Settings();
-		s.resetValues();
-		return s.readAll();
+	public static read(overrideSettings: Settings): Promise<Settings> {
+		return new Promise((resolve, reject) => {
+			this.readCounter++;
+			Util.assertEquals(1, this.readCounter, "Reading settings more than once!");
+			const s: Settings = new Settings();
+			s.resetValues();
+			s.readAll(overrideSettings)
+				.then((value: Settings) => {
+					return s.write();
+				})
+				.then((value) => {
+					resolve(s);
+				})
+				.catch((err) => { Util.throwError(err); });
+		});
 	}
 	private static readCounter: number = 0;
 
@@ -68,6 +77,7 @@ export class Settings implements ISettingsValues {
 	public pollingTimeout: number;
 	public rootFolderRaw: string;
 	public rootFolderFull: string;
+	public configfolder: string;
 
 	// Local private variables
 	private configFile: ConfigFile<ConfigFile.Options> = null;
@@ -189,13 +199,13 @@ export class Settings implements ISettingsValues {
 		});
 	}
 
-	private readAll(): Promise<Settings> {
+	private readAll(overrideSettings: Settings): Promise<Settings> {
 		let path: string;
 
 		return new Promise((resolve, reject) => {
 			// This has to be done in serial mode, so chain the requests...
 			// LEARNING: [PROMISES]: Promises running in serial mode. the next block can't start before the previous finishes.
-			this.openConfigFile()
+			this.openConfigFile(overrideSettings.configfolder)
 				.then((resfile: ConfigFile<ConfigFile.Options>) => {
 					this.configFile = resfile;
 					// LEARNING: [PROMISES]: Remember to return the method that throws a promise.
@@ -203,7 +213,7 @@ export class Settings implements ISettingsValues {
 				})
 				.then((fileExists) => {
 					if (fileExists) {
-						return this.processFile();
+						return this.processFile(overrideSettings);
 					} else {
 						this.isValid = false;
 						path = this.configFile.getPath();
@@ -220,12 +230,26 @@ export class Settings implements ISettingsValues {
 		});
 	}
 
-	private getDataFolder(): Promise<object> {
+	private getDataFolder(readFolder: string, overrideSettings: Settings): Promise<object> {
 		return new Promise((resolve, reject) => {
-			fs.mkdirp(this.rootFolderRaw)
+			// Make folder
+			const overrideFolder = overrideSettings.configfolder;
+			if (!readFolder) {
+				readFolder = "ETCopyData";
+			}
+			this.rootFolderRaw = readFolder;
+			this.rootFolderFull = this.rootFolderRaw;
+
+			if (overrideFolder) {
+				if (readFolder.indexOf(overrideFolder) !== 0) {
+					this.rootFolderFull = overrideFolder + "/" + readFolder;
+				}
+			}
+
+			fs.mkdirp(this.rootFolderFull)
 				.then(() => {
 					let path: string = "";
-					path = this.rootFolderRaw;
+					path = this.rootFolderFull;
 
 					// VERBOSE: Create sub-folders based on time so files do not override
 					// path += `/${Util.getWallTime(true)}`;
@@ -233,41 +257,57 @@ export class Settings implements ISettingsValues {
 					fs.mkdirp(path)
 						.then(() => {
 							this.rootFolderFull = path;
-							resolve(this);
+							resolve(this.rootFolderFull);
 						});
 				});
 		});
 	}
 
 	// TODO: UPDATE SETTINGS HERE: READ!
-	private processFile(): Promise<Settings> {
+	private processFile(overrideSettings: Settings): Promise<Settings> {
 		return new Promise((resolve, reject) => {
 			this.isValid = true;
 			this.configFile.read()
 				.then((resValues: Dictionary<AnyJson>) => {
 					// This can be done in parallel mode, so use an array of promises and wait for all of them to complete at the end
+					let msg: string = "";
+					let overridenValue: string = "";
+
 					const promises = [];
 
 					// Source Org
-					promises.push(
-						this.processStringValues(resValues, WhichOrg.SOURCE, true)
-							.then((value: string) => { this.orgAliases.set(WhichOrg.SOURCE, value); })
-							.catch((err) => { Util.throwError(err); }),
-					);
+					overridenValue = overrideSettings.orgAliases.get(WhichOrg.SOURCE);
+					if (overridenValue) {
+						msg = `Configuration value for [${WhichOrg.SOURCE}] read from command line: ${overridenValue}`;
+						this.orgAliases.set(WhichOrg.SOURCE, overridenValue);
+						Util.writeLog(msg, LogLevel.INFO);
+					} else {
+						promises.push(
+							this.processStringValues(resValues, WhichOrg.SOURCE, true)
+								.then((value: string) => { this.orgAliases.set(WhichOrg.SOURCE, value); })
+								.catch((err) => { Util.throwError(err); }),
+						);
+					}
 
 					// Destination Org
-					promises.push(
-						this.processStringValues(resValues, WhichOrg.DESTINATION, true)
-							.then((value: string) => { this.orgAliases.set(WhichOrg.DESTINATION, value); })
-							.catch((err) => { Util.throwError(err); }),
-					);
+					overridenValue = overrideSettings.orgAliases.get(WhichOrg.DESTINATION);
+					if (overridenValue) {
+						msg = `Configuration value for [${WhichOrg.DESTINATION}] read from command line: ${overridenValue}`;
+						this.orgAliases.set(WhichOrg.DESTINATION, overridenValue);
+						Util.writeLog(msg, LogLevel.INFO);
+					} else {
+						promises.push(
+							this.processStringValues(resValues, WhichOrg.DESTINATION, true)
+								.then((value: string) => { this.orgAliases.set(WhichOrg.DESTINATION, value); })
+								.catch((err) => { Util.throwError(err); }),
+						);
+					}
 
 					// sObjectsData
 					promises.push(
 						this.processsObjectsValues(resValues, "sObjectsData", true)
 							.then(() => {
-								let msg = "";
-								msg += "Configuration value for [sObjectsData]: " + this.sObjectsDataRaw.size + " sObjects found.";
+								msg = `Configuration value for [sObjectsData]: ${this.sObjectsDataRaw.size} sObjects found.`;
 								Util.writeLog(msg, LogLevel.INFO);
 							})
 							.catch((err) => { Util.throwError(err); }),
@@ -277,8 +317,7 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processsObjectsValues(resValues, "sObjectsMetadata", true)
 							.then(() => {
-								let msg = "";
-								msg += "Configuration value for [sObjectsMetadata]: " + this.sObjectsMetadataRaw.size + " sObjects found.";
+								msg = `Configuration value for [sObjectsMetadata]: ${this.sObjectsMetadataRaw.size} sObjects found.`;
 								Util.writeLog(msg, LogLevel.INFO);
 							})
 							.catch((err) => { Util.throwError(err); }),
@@ -302,10 +341,11 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "rootFolder", false)
 							.then((value: string) => {
-								this.rootFolderRaw = value;
+								return this.getDataFolder(value, overrideSettings);
 							})
-							.then((fileExists) => {
-								return this.getDataFolder();
+							.then(() => {
+								// this.rootFolderRaw = value;
+
 							})
 							.catch((err) => { Util.throwError(err); }),
 					);
@@ -341,9 +381,7 @@ export class Settings implements ISettingsValues {
 
 					Promise.all(promises)
 						.then(() => {
-							this.write()
-								.then((res) => { resolve(this); })
-								.catch((err) => { Util.throwError(err); });
+							resolve(this);
 						})
 						.catch((err) => { Util.throwError(err); });
 				})
@@ -445,12 +483,16 @@ export class Settings implements ISettingsValues {
 		this.sObjectsMetadataRaw.set(sObjName, newValue);
 	}
 
-	private openConfigFile(): Promise<ConfigFile<ConfigFile.Options>> {
+	private openConfigFile(configfolder: string): Promise<ConfigFile<ConfigFile.Options>> {
+		this.configfolder = configfolder;
+		if (!this.configfolder) {
+			this.configfolder = ".";
+		}
 		return ConfigFile.create({
 			filename: "ETCopyData.json",
 			isGlobal: false,
 			isState: false,
-			rootFolder: ".",
+			rootFolder: this.configfolder,
 		});
 	}
 
@@ -469,7 +511,7 @@ export class Settings implements ISettingsValues {
 		const output: ConfigContents = {};
 
 		// VERBOSE: Print debug time in output file so files do get changed, and we know we are looking at the right file.
-		output.now = JSON.stringify(new Date());
+		output.now = toAnyJson((new Date()).toJSON());
 
 		// Output regular data
 		output[WhichOrg.SOURCE] = this.orgAliases.get(WhichOrg.SOURCE);
