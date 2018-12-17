@@ -184,6 +184,9 @@ USAGE
   $ sfdx ETCopyData:compare
 
 OPTIONS
+  -c, --configfolder=PATH                         Root folder to find the configuration file
+  -d, --orgdestination=(alias|username)           SFDX alias or username for the DESTINATION org
+  -s, --orgsource=(alias|username)                SFDX alias or username for the SOURCE org
   --json                                          format output as json
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
@@ -199,6 +202,9 @@ USAGE
   $ sfdx ETCopyData:delete
 
 OPTIONS
+  -c, --configfolder=PATH                         Root folder to find the configuration file
+  -d, --orgdestination=(alias|username)           SFDX alias or username for the DESTINATION org
+  -s, --orgsource=(alias|username)                SFDX alias or username for the SOURCE org
   --json                                          format output as json
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
@@ -214,6 +220,9 @@ USAGE
   $ sfdx ETCopyData:export
 
 OPTIONS
+  -c, --configfolder=PATH                         Root folder to find the configuration file
+  -d, --orgdestination=(alias|username)           SFDX alias or username for the DESTINATION org
+  -s, --orgsource=(alias|username)                SFDX alias or username for the SOURCE org
   --json                                          format output as json
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
@@ -229,6 +238,9 @@ USAGE
   $ sfdx ETCopyData:full
 
 OPTIONS
+  -c, --configfolder=PATH                         Root folder to find the configuration file
+  -d, --orgdestination=(alias|username)           SFDX alias or username for the DESTINATION org
+  -s, --orgsource=(alias|username)                SFDX alias or username for the SOURCE org
   --json                                          format output as json
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
@@ -244,6 +256,9 @@ USAGE
   $ sfdx ETCopyData:import
 
 OPTIONS
+  -c, --configfolder=PATH                         Root folder to find the configuration file
+  -d, --orgdestination=(alias|username)           SFDX alias or username for the DESTINATION org
+  -s, --orgsource=(alias|username)                SFDX alias or username for the SOURCE org
   --json                                          format output as json
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```

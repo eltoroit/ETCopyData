@@ -1,4 +1,5 @@
-import { UX } from "@salesforce/command";
+import { OutputFlags } from "@oclif/parser";
+import { flags, UX } from "@salesforce/command";
 import { CoreMetadataSObjects } from "./CoreMetadataSObjects";
 import { Exporter } from "./Exporter";
 import { Importer } from "./Importer";
@@ -14,7 +15,59 @@ interface IETCopyData {
 }
 
 export class ETCopyData {
-	public compareSchemas(data: IETCopyData = null): Promise<void> {
+	public static flagsConfig = {
+		configfolder: flags.string({
+			char: "c",
+			description: "Root folder to find the configuration file",
+			helpValue: "PATH",
+		}),
+		orgdestination: flags.string({
+			char: "d",
+			description: "SFDX alias or username for the DESTINATION org",
+			helpValue: "(alias|username)",
+		}),
+		orgsource: flags.string({
+			char: "s",
+			description: "SFDX alias or username for the SOURCE org",
+			helpValue: "(alias|username)",
+		}),
+	};
+
+	public static setLogs(params: OutputFlags<any>, ux: UX, processName: string) {
+		// Set log level based on parameters
+		if (!params.loglevel) {
+			params.loglevel = "TRACE";
+		}
+		Util.setLogLevel(params.loglevel);
+		Util.writeLog("Log level: " + params.loglevel, LogLevel.TRACE);
+		if (Util.doesLogOutputsEachStep()) {
+			Util.writeLog(`${processName} Process Started`, LogLevel.INFO);
+
+		} else {
+			ux.startSpinner(`${processName}`);
+		}
+	}
+
+	public static readParameters(params: OutputFlags<any>): Settings {
+		const s: Settings = new Settings();
+		s.orgAliases = new Map<WhichOrg, string>();
+
+		if (params.configfolder) {
+			Util.writeLog(`Parameter: rootSettings [${params.configfolder}]`, LogLevel.TRACE);
+			s.configfolder = params.configfolder;
+		}
+		if (params.orgsource) {
+			Util.writeLog(`Parameter: source [${params.orgsource}]`, LogLevel.TRACE);
+			s.orgAliases.set(WhichOrg.SOURCE, params.orgsource);
+		}
+		if (params.orgdestination) {
+			Util.writeLog(`Parameter: destination [${params.orgdestination}]`, LogLevel.TRACE);
+			s.orgAliases.set(WhichOrg.DESTINATION, params.orgdestination);
+		}
+		return s;
+	}
+
+	public compareSchemas(overrideSettings: Settings, data: IETCopyData): Promise<void> {
 		if (!Util.doesLogOutputsEachStep()) {
 			UX.create()
 				.then((ux) => {
@@ -23,7 +76,7 @@ export class ETCopyData {
 				.catch((err) => { Util.throwError(err); });
 		}
 		return new Promise((resolve, reject) => {
-			this.initializeETCopy(data)
+			this.initializeETCopy(overrideSettings, data)
 				.then((value: IETCopyData) => {
 					data = value;
 				})
@@ -34,7 +87,7 @@ export class ETCopyData {
 		});
 	}
 
-	public deleteData(data: IETCopyData = null): Promise<void> {
+	public deleteData(overrideSettings: Settings, data: IETCopyData): Promise<void> {
 		if (!Util.doesLogOutputsEachStep()) {
 			UX.create()
 				.then((ux) => {
@@ -43,7 +96,7 @@ export class ETCopyData {
 				.catch((err) => { Util.throwError(err); });
 		}
 		return new Promise((resolve, reject) => {
-			this.initializeETCopy(data)
+			this.initializeETCopy(overrideSettings, data)
 				.then((value: IETCopyData) => {
 					data = value;
 				})
@@ -60,7 +113,7 @@ export class ETCopyData {
 		});
 	}
 
-	public exportData(data: IETCopyData = null): Promise<void> {
+	public exportData(overrideSettings: Settings, data: IETCopyData): Promise<void> {
 		if (!Util.doesLogOutputsEachStep()) {
 			UX.create()
 				.then((ux) => {
@@ -69,7 +122,7 @@ export class ETCopyData {
 				.catch((err) => { Util.throwError(err); });
 		}
 		return new Promise((resolve, reject) => {
-			this.initializeETCopy(data)
+			this.initializeETCopy(overrideSettings, data)
 				.then((value: IETCopyData) => {
 					data = value;
 				})
@@ -95,7 +148,7 @@ export class ETCopyData {
 		});
 	}
 
-	public importData(data: IETCopyData = null): Promise<void> {
+	public importData(overrideSettings: Settings, data: IETCopyData): Promise<void> {
 		if (!Util.doesLogOutputsEachStep()) {
 			UX.create()
 				.then((ux) => {
@@ -104,7 +157,7 @@ export class ETCopyData {
 				.catch((err) => { Util.throwError(err); });
 		}
 		return new Promise((resolve, reject) => {
-			this.initializeETCopy(data)
+			this.initializeETCopy(overrideSettings, data)
 				.then((value: IETCopyData) => {
 					data = value;
 				})
@@ -122,22 +175,22 @@ export class ETCopyData {
 		});
 	}
 
-	public processAll(): Promise<void> {
+	public processAll(overrideSettings: Settings): Promise<void> {
 		let data: IETCopyData = null;
 
 		return new Promise((resolve, reject) => {
-			this.initializeETCopy(data)
+			this.initializeETCopy(overrideSettings, data)
 				.then((value: IETCopyData) => {
 					data = value;
 				})
 				.then(() => {
-					return this.compareSchemas(data);
+					return this.compareSchemas(overrideSettings, data);
 				})
 				.then(() => {
-					return this.exportData(data);
+					return this.exportData(overrideSettings, data);
 				})
 				.then(() => {
-					return this.importData(data);
+					return this.importData(overrideSettings, data);
 				})
 				.then(() => {
 					resolve();
@@ -202,7 +255,7 @@ export class ETCopyData {
 
 				// VERBOSE: Explain differences in schema (sObject)
 				if (!hasDisplayed) {
-					Util.writeLog("There are some field differences between the orgs. ", LogLevel.WARN);
+					Util.writeLog("There are some *sObject* differences between the orgs. ", LogLevel.WARN);
 					msg = "";
 					msg += "If the following sObjects do exist in the org, then check security (CRUD) because they could be hidden, ";
 					msg += "but for now those sObjects will be ignored. ";
@@ -233,7 +286,7 @@ export class ETCopyData {
 
 				// VERBOSE: Explain differences in schema (Field)
 				if (!hasDisplayed) {
-					Util.writeLog("There are some field differences between the orgs. ", LogLevel.WARN);
+					Util.writeLog("There are some *field* differences between the orgs. ", LogLevel.WARN);
 					msg = "";
 					msg += "If the following fields do exist in the org, then check security (FLS) because they could be hidden, ";
 					msg += "but for now those fields will be ignored. ";
@@ -247,7 +300,7 @@ export class ETCopyData {
 		});
 	}
 
-	private initializeETCopy(data: IETCopyData = null): Promise<IETCopyData> {
+	private initializeETCopy(overrideSettings: Settings, data: IETCopyData): Promise<IETCopyData> {
 		return new Promise((resolve, reject) => {
 			if (data) {
 				resolve(data);
@@ -258,7 +311,7 @@ export class ETCopyData {
 					settings: null,
 				};
 
-				Settings.read()
+				Settings.read(overrideSettings)
 					.then((value: Settings) => {
 						// Initialize data with the new settings
 						data.settings = value;
