@@ -131,7 +131,7 @@ export class ETCopyData {
 					const promises = [];
 
 					promises.push(Exporter.all(data.orgs.get(WhichOrg.SOURCE), ""));
-					promises.push(Exporter.exportMetadata(data.orgs.get(WhichOrg.DESTINATION), ""));
+					// promises.push(Exporter.exportMetadata(data.orgs.get(WhichOrg.DESTINATION), ""));
 
 					return Promise.all(promises);
 				})
@@ -331,6 +331,9 @@ export class ETCopyData {
 					})
 					.then(() => {
 						this.compareSchemaForOrgs(data.orgs.get(WhichOrg.SOURCE), data.orgs.get(WhichOrg.DESTINATION));
+					})
+					.then(() => {
+						return Exporter.exportMetadata(data.orgs.get(WhichOrg.DESTINATION), "");
 					})
 					.then(() => {
 						// VERBOSE: Print out the discovery information

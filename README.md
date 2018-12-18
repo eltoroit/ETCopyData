@@ -191,7 +191,7 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.0/src/commands/ETCopyData/compare.ts)_
+_See code: [src/commands/ETCopyData/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/compare.ts)_
 
 ## `sfdx ETCopyData:delete`
 
@@ -209,7 +209,7 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.0/src/commands/ETCopyData/delete.ts)_
+_See code: [src/commands/ETCopyData/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/delete.ts)_
 
 ## `sfdx ETCopyData:export`
 
@@ -227,7 +227,7 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/export.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.0/src/commands/ETCopyData/export.ts)_
+_See code: [src/commands/ETCopyData/export.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/export.ts)_
 
 ## `sfdx ETCopyData:full`
 
@@ -245,7 +245,7 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/full.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.0/src/commands/ETCopyData/full.ts)_
+_See code: [src/commands/ETCopyData/full.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/full.ts)_
 
 ## `sfdx ETCopyData:import`
 
@@ -263,6 +263,6 @@ OPTIONS
   --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.0/src/commands/ETCopyData/import.ts)_
+_See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/import.ts)_
 <!-- commandsstop -->
 <!-- ET-AUTO-STOP: This section is auto-updated... -->
