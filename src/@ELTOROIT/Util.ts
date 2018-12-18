@@ -1,6 +1,7 @@
 import { core, UX } from "@salesforce/command";
 import { Result } from "@salesforce/command/lib/sfdxCommand";
 import { Logger } from "@salesforce/core";
+import { AnyFunction } from "@salesforce/ts-types";
 import { OrgManager } from "./OrgManager";
 // import { asAnyJson } from "@salesforce/ts-types";
 
@@ -186,6 +187,25 @@ export class Util {
 
 	public static getMyResults() {
 		return this.myResults;
+	}
+
+	public static serialize(thisCaller: any, data: any[], callback: AnyFunction, index: number = 0): Promise<void> {
+		return new Promise((resolve, reject) => {
+			if (index < data.length) {
+				callback.apply(thisCaller, [index])
+					.then(() => {
+						// Util.writeLog(`**** ASCENDING: ${index}`, LogLevel.DEBUG);
+						return this.serialize(thisCaller, data, callback, index + 1);
+					})
+					.then(() => {
+						// Util.writeLog(`**** DESCENDING: ${index}`, LogLevel.DEBUG);
+						resolve();
+					})
+					.catch((err) => { Util.throwError(err); });
+			} else {
+				resolve();
+			}
+		});
 	}
 
 	private static counter: number = 0;

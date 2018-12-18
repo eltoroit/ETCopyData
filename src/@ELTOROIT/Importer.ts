@@ -1,4 +1,4 @@
-import { BulkOptions, Date } from "jsforce";
+import { BulkOptions, Date, RecordResult } from "jsforce";
 import { ISchemaDataParent } from "./Interfaces";
 import { OrgManager } from "./OrgManager";
 import { LogLevel, ResultOperation, Util } from "./Util";
@@ -15,20 +15,22 @@ export class Importer {
 			if (orgDestination.settings.deleteDestination) {
 				const sObjectsToLoad: string[] = orgDestination.order.findImportOrder();
 				const sObjectsToLoadReversed: string[] = sObjectsToLoad.slice(0).reverse();
-				const promises = [];
-				sObjectsToLoadReversed.forEach((sObjName: string) => {
-					promises.push(
-						this.deleteOneBeforeLoading(orgDestination, sObjName)
-							.then((value: number) => {
-								countErrorsRecords += value;
-								if (value > 0) {
-									countErrorsSObjects++;
-								}
-							})
-							.catch((err) => { Util.throwError(err); }),
-					);
-				});
-				Promise.all(promises)
+
+				Util.serialize(
+					this, sObjectsToLoadReversed, (index): Promise<void> => {
+						return new Promise((resolveEach, rejectEach) => {
+							const sObjName = sObjectsToLoadReversed[index];
+							this.deleteOneBeforeLoading(orgDestination, sObjName)
+								.then((value: number) => {
+									countErrorsRecords += value;
+									if (value > 0) {
+										countErrorsSObjects++;
+									}
+									resolveEach();
+								})
+								.catch((err) => { Util.throwError(err); });
+						});
+					})
 					.then(() => {
 						let msg = "";
 						if (countErrorsRecords > 0) {
@@ -280,20 +282,17 @@ export class Importer {
 			// LEARNING: Deleting sObject records in bulk
 			org.conn.sobject(sObjName)
 				.find({ CreatedDate: { $lte: Date.TOMORROW } })
-				.destroy(sObjName, (error, resultsIn: any) => {
+				.destroy(sObjName)
+				.then((results: RecordResult[]) => {
 					let totalSuccess: number = 0;
 					let totalFailures: number = 0;
-					const results: any[] = resultsIn;
-
-					if (error) {
-						Util.throwError(error);
-					}
-
-					results.forEach((result) => {
+					results.forEach((result: any) => {
 						if (result.success) {
 							totalSuccess++;
 						} else {
-							if ((result.errors.length === 1) && (result.errors[0] !== "ENTITY_IS_DELETED:entity is deleted:--")) {
+							if ((result.errors.length === 1) && (result.errors[0] === "ENTITY_IS_DELETED:entity is deleted:--")) {
+								// Ignore error
+							} else {
 								totalFailures++;
 								msg = `*** [${org.alias}] Error deleting [${sObjName}] records. ${result.errors.join(", ")}`;
 								Util.writeLog(msg, LogLevel.ERROR);
