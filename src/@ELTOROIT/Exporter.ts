@@ -95,7 +95,7 @@ export class Exporter {
 								if (data.total >= 0) {
 									org.settings.writeToFile(org.alias + folderCode, sObjName + ".json", data)
 										.then(() => {
-											// NOTE: Clean memory, and avoid hep dumps.
+											// NOTE: Clean memory, and avoid heap dumps.
 											data.records = [];
 											// Now, resolve it.
 											resolve();
