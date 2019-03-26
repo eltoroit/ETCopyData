@@ -1,5 +1,6 @@
 import { ISchemaData, ISchemaDataParent } from "./Interfaces";
 import { OrgManager } from "./OrgManager";
+import { Util } from "./Util";
 
 export class SchemaOrder {
 	private orgManager: OrgManager;
@@ -17,6 +18,11 @@ export class SchemaOrder {
 
 			while (allSObjNames.length > 0) {
 				const sObjectsFound: string[] = this.findSObjectsWithoutParents(allSObjNames);
+				if (sObjectsFound.length === 0) {
+					Util.throwError('Deadlock determining import order, '
+									+ 'most likely caused by circular or self reference, '
+									+ 'configure those fields as twoPassReferenceFields');
+				}
 
 				// Add the newly found sObjects to the master list
 				this.importOrder = this.importOrder.concat(sObjectsFound);

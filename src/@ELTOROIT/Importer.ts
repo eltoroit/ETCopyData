@@ -3,8 +3,18 @@ import { ISchemaDataParent } from "./Interfaces";
 import { OrgManager } from "./OrgManager";
 import { LogLevel, ResultOperation, Util } from "./Util";
 
+class ReferenceFieldMapping {
+	public fieldName: string;
+	public sourceId: string;
+	constructor(fieldName: string, sourceId: string) {
+		this.fieldName = fieldName;
+		this.sourceId = sourceId;
+	}
+}
+
 export class Importer {
 	private matchingIds: Map<string, Map<string, string>>; // SobjectName => Old => New
+	private twoPassReferenceFieldData: Map<string, Map<string, Array<ReferenceFieldMapping>>>; // SObjectName => Id (old) => references (old)
 	private countImportErrorsRecords: number = 0;
 	private countImportErrorsSObjects: number = 0;
 
@@ -61,6 +71,9 @@ export class Importer {
 			//  	Import data into destination
 			//  	Update newIdMap with the new Ids.
 			// End Loop
+			// Set references for twoPassReferenceFields
+
+			this.twoPassReferenceFieldData = new Map<string, Map<string, Array<ReferenceFieldMapping>>>();
 
 			this.deleteAll(orgDestination)
 				.then((numberErrors: number) => {
@@ -72,6 +85,9 @@ export class Importer {
 					const sObjectsToLoad: string[] = orgDestination.order.findImportOrder();
 					Util.writeLog("sObjects should be processed in this order: " + sObjectsToLoad, LogLevel.TRACE);
 					return this.loadAllSObjectData(orgSource, orgDestination, sObjectsToLoad, 0);
+				})
+				.then(() => {
+					return this.setTwoPassReferences(orgSource, orgDestination);
 				})
 				.then(() => {
 					let msg = "";
@@ -219,6 +235,25 @@ export class Importer {
 									Util.writeLog(msg, LogLevel.INFO);
 								}
 							});
+						
+						// Clear reference fields that will be set in second pass
+						const asArray = (param: string | string[]) => { return (typeof param === 'string') ? [param] : param; };
+						asArray(orgDestination.settings.getSObjectData(sObjName).twoPassReferenceFields).forEach((fieldName: string) => {
+							if (record[fieldName] !== null && record[fieldName] !== undefined) {
+								let sObjectData = this.twoPassReferenceFieldData.get(sObjName);
+								if (sObjectData === undefined) {
+									sObjectData = new Map<string, Array<ReferenceFieldMapping>>();
+									this.twoPassReferenceFieldData.set(sObjName, sObjectData);
+								}
+								let mappings = sObjectData.get(record.Id);
+								if (mappings === undefined) {
+									mappings = new Array<ReferenceFieldMapping>();
+									sObjectData.set(record.Id, mappings);
+								}
+								mappings.push(new ReferenceFieldMapping(fieldName, record[fieldName]));
+								delete record[fieldName];
+							}
+						});
 					});
 
 					if (records.length > 0) {
@@ -269,6 +304,86 @@ export class Importer {
 					}
 				})
 				.catch((err) => { Util.throwError(err); });
+		});
+	}
+
+	private setTwoPassReferences(orgSource: OrgManager, orgDestination: OrgManager): Promise<void> {
+		return new Promise((resolve, reject) => {
+			// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
+			// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
+			const bulkOptions: BulkOptions = { concurrencyMode: "Parallel", extIdField: null };
+			const keys: Array<string> = Array.from(this.twoPassReferenceFieldData.keys());
+
+			Util.serialize(
+				this, keys, (index): Promise<void> => {
+					return new Promise((resolveEach, rejectEach) => {
+						const sObjectName = keys[index];
+						Util.writeLog(`[${orgDestination.alias}] Updating references for [${sObjectName}] (${index + 1} of ${keys.length})`, LogLevel.TRACE);
+
+						const schemaData = orgDestination.discovery.getSObjects().get(sObjectName);
+						let records = [];
+
+						let baseRecord = {};
+						schemaData.twoPassParents.forEach((parent) => { baseRecord[parent.parentId] = null; });
+						
+						let availableMatchingIds = new Map<string, Map<string, string>>(); // field name => id mapping data (old => new)
+						schemaData.twoPassParents.forEach((parent) => {
+							if (this.matchingIds.has(parent.sObj)) {
+								availableMatchingIds.set(parent.parentId, this.matchingIds.get(parent.sObj));
+								Util.writeLog(`[${orgDestination.alias}] mapping field [${parent.parentId}] to SObject [${parent.sObj}]`, LogLevel.TRACE);
+							} else {
+								Util.writeLog(`[${orgDestination.alias}] data not available for mapping field [${parent.parentId}] to SObject [${parent.sObj}]`, LogLevel.WARN);
+							}
+						});
+
+						// Create an object for each record that has one or more fields that need to be updated
+						this.twoPassReferenceFieldData.get(sObjectName).forEach((mappings: Array<ReferenceFieldMapping>, id: string) => {
+							let record = Object.assign({'Id': this.matchingIds.get(sObjectName).get(id)}, baseRecord);
+							mappings.forEach((mapping: ReferenceFieldMapping) => {
+								const destinationId = availableMatchingIds.get(mapping.fieldName).get(mapping.sourceId);
+								if (destinationId !== undefined) {
+									record[mapping.fieldName] = destinationId;
+									Util.writeLog(`[${orgDestination.alias}] mapping field [${mapping.fieldName}] for [${id}]:[ ${mapping.sourceId}] => [${destinationId}]`, LogLevel.TRACE);
+								} else {
+									Util.writeLog(`[${orgDestination.alias}] mapping data for [${mapping.fieldName}] did not include mapping for [${mapping.sourceId}]`, LogLevel.INFO);
+								}
+							});
+							records.push(record);
+						});
+
+						// Update the records using the bulk api
+						orgDestination.conn.bulk.load(sObjectName, "update", bulkOptions, records, (error, results: any[]) => {
+							let badCount: number = 0;
+							let goodCount: number = 0;
+
+							if (error) {
+								Util.throwError(error);
+							}
+
+							for (let i = 0; i < results.length; i++) {
+								if (results[i].success) {
+									goodCount++;
+									Util.writeLog(`[${orgDestination.alias}] Successfully updated references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]`,
+												  LogLevel.TRACE);
+								} else {
+									badCount++;
+									Util.writeLog(`[${orgDestination.alias}] Error updating references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]`
+													+ results[i].errors.join(", "),
+												  LogLevel.TRACE);
+								}
+							}
+
+							Util.writeLog(`[${orgDestination.alias}] Updated references for [${sObjectName}]. Record count: [Good = ${goodCount}, Bad = ${badCount}]`, LogLevel.INFO);
+							Util.logResultsAdd(orgDestination, ResultOperation.IMPORT, sObjectName, goodCount, badCount);
+
+							resolveEach();
+						});
+					});
+				})
+				.then(() => {
+					resolve();
+				})
+				.catch((err) => { reject(err); });
 		});
 	}
 

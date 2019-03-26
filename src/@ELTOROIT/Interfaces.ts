@@ -28,6 +28,7 @@ export interface ISchemaDataChild extends ISchemaDataParent {
 export interface ISchemaData extends ISchemaBase2 {
 	children: ISchemaDataChild[];
 	parents: ISchemaDataParent[];
+	twoPassParents: ISchemaDataParent[];
 	parentsRequired: string[];
 }
 

@@ -1,0 +1,16 @@
+List<One__c> deleteOnes = [SELECT Id FROM One__c];
+delete deleteOnes;
+List<Two__c> deletetwos = [SELECT Id FROM Two__c];
+delete deletetwos;
+List<One__c> insertOnes = new List<One__c>();
+insertOnes.add(new One__c(Description__c = 'selfref'));
+insertOnes.add(new One__c(Description__c = 'tworef'));
+insert insertOnes;
+Two__c insertTwo = new Two__c(Description__c = 'oneref');
+insert insertTwo;
+List<One__c> upsertOnes = new List<One__c>();
+upsertOnes.add(new One__c(Id = insertOnes.get(0).Id, OneReference__c = insertOnes.get(1).Id));
+upsertOnes.add(new One__c(Id = insertOnes.get(1).Id, TwoReference__c = insertTwo.Id));
+upsert upsertOnes;
+Two__c upsertTwo = new Two__c(Id = insertTwo.Id, OneReference__c = insertOnes.get(1).Id);
+upsert upsertTwo;
