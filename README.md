@@ -164,7 +164,8 @@ This is the structure for each metadata sObject
 5. Not exporting all the records could have negative implications, especially if those records are required later. For example, not exporting master records (on a master/detail relationship) for detail records that you do actually export.
 6. Not deleting the existing records could end up with tons of records if the operation is run multiple times while testing, or have duplicate records in the destination sObject.
 7.  If you are getting timeout errors while records are being deleted, or imported, you could increase the polling timeout.
-8.  The metadata records in the source org and the destination org will have different IDs, but they should have similar charsteristic that can be used for mapping. For example, for users, you can use the email, for profiles use their names, for record types use their developer name, etc.
+8.  If you are getting out-of-memory errors, you can increase the amount of memory used by NodeJS (the engine used to run SFDX plugins) by setting the environment variable `NODE_OPTIONS` to `--max-old-space-size=8192` to reserve 8GB memory.
+9.  The metadata records in the source org and the destination org will have different IDs, but they should have similar charsteristic that can be used for mapping. For example, for users, you can use the email, for profiles use their names, for record types use their developer name, etc.
 
 # Commands
 <!-- ET-AUTO-START: This section is auto-updated... -->
