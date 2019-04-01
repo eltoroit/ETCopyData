@@ -195,7 +195,7 @@ _See code: [src/commands/ETCopyData/compare.ts](https://github.com/eltoroit/ETCo
 
 ## `sfdx ETCopyData:delete`
 
-Deletes data from destination org, preparing for the new data that will be uploaded. Note: Deleting optionally happens before loading, but if there are some errors this operation can be retired by itself.
+Deletes data from destination org, preparing for the new data that will be uploaded. Note: Deleting optionally happens before loading, but if there are some errors this operation can be retried by itself.
 
 ```
 USAGE
