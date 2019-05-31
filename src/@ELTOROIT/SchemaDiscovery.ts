@@ -87,11 +87,11 @@ export class SchemaDiscovery {
               resolve(this.privSObjects);
             })
             .catch(err => {
-              Util.throwError(err);
+              reject(err);
             });
         })
         .catch(err => {
-          Util.throwError(err);
+          reject(err);
         });
     });
   }
@@ -194,7 +194,7 @@ export class SchemaDiscovery {
           resolve(res);
         })
         .catch(err => {
-          Util.throwError(err);
+          reject(err);
         });
     });
   }

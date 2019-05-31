@@ -39,7 +39,6 @@ export class OrgManager {
 			} catch (ex) {
 				this.resetValues(this.alias);
 				const msg = "Alias [" + this.alias + "] does not reference a valid org";
-				Util.throwError(msg);
 				reject(msg);
 			}
 		});

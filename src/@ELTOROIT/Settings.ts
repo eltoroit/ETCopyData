@@ -62,7 +62,7 @@ export class Settings implements ISettingsValues {
 				.then((value) => {
 					resolve(s);
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 	private static readCounter: number = 0;
@@ -185,7 +185,7 @@ export class Settings implements ISettingsValues {
 
 					fs.writeFile(fullPath + `/${fileName}`, strData)
 						.then(() => { resolve(); })
-						.catch((err) => { Util.throwError(err); });
+						.catch((err) => { reject(err); });
 				});
 		});
 	}
@@ -197,9 +197,9 @@ export class Settings implements ISettingsValues {
 				.then(() => {
 					fs.readFile(fullPath + `/${fileName}`)
 						.then((value: Buffer) => { resolve(JSON.parse(value.toString())); })
-						.catch((err) => { Util.throwError(err); });
+						.catch((err) => { reject(err); });
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -226,11 +226,11 @@ export class Settings implements ISettingsValues {
 								Util.throwError(`Configuration file [${path}] did not exist and was created with default values. " +
 									"Please fix it and run again`);
 							})
-							.catch((err) => { Util.throwError(err); });
+							.catch((err) => { reject(err); });
 					}
 				})
 				.then(() => { resolve(this); })
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -393,9 +393,9 @@ export class Settings implements ISettingsValues {
 						.then(() => {
 							resolve(this);
 						})
-						.catch((err) => { Util.throwError(err); });
+						.catch((err) => { reject(err); });
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -508,13 +508,7 @@ export class Settings implements ISettingsValues {
 	}
 
 	private write(): Promise<object> {
-		return new Promise((resolve, reject) => {
-			this.configFile.write(this.valuesToWrite())
-				.then(() => {
-					resolve();
-				})
-				.catch((err) => { Util.throwError(err); });
-		});
+		return this.configFile.write(this.valuesToWrite());
 	}
 
 	// TODO: UPDATE SETTINGS HERE: WRITE!
