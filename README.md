@@ -170,98 +170,143 @@ This is the structure for each metadata sObject
 # Commands
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- commands -->
-* [`sfdx ETCopyData:compare`](#sfdx-et-copy-datacompare)
-* [`sfdx ETCopyData:delete`](#sfdx-et-copy-datadelete)
-* [`sfdx ETCopyData:export`](#sfdx-et-copy-dataexport)
-* [`sfdx ETCopyData:full`](#sfdx-et-copy-datafull)
-* [`sfdx ETCopyData:import`](#sfdx-et-copy-dataimport)
+* [`sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatacompare--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatadelete--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataexport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatafull--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataimport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
-## `sfdx ETCopyData:compare`
+## `sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Checks the source and destination org for any differences in the sObject's metadata, this helps determine what data can be properly exported/imported.
 
 ```
 USAGE
-  $ sfdx ETCopyData:compare
+  $ sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -c, --configfolder=PATH                         Root folder to find the configuration file
-  -d, --orgdestination=(alias|username)           SFDX alias or username for the DESTINATION org
-  -s, --orgsource=(alias|username)                SFDX alias or username for the SOURCE org
-  --json                                          format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
+  -c, --configfolder=PATH                                                           Root folder to find the
+                                                                                    configuration file
+
+  -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
+                                                                                    DESTINATION org
+
+  -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
+                                                                                    SOURCE org
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
 ```
 
-_See code: [src/commands/ETCopyData/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/compare.ts)_
+_See code: [src/commands/ETCopyData/Compare.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/Compare.ts)_
 
-## `sfdx ETCopyData:delete`
+## `sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Deletes data from destination org, preparing for the new data that will be uploaded. Note: Deleting optionally happens before loading, but if there are some errors this operation can be retried by itself.
 
 ```
 USAGE
-  $ sfdx ETCopyData:delete
+  $ sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -c, --configfolder=PATH                         Root folder to find the configuration file
-  -d, --orgdestination=(alias|username)           SFDX alias or username for the DESTINATION org
-  -s, --orgsource=(alias|username)                SFDX alias or username for the SOURCE org
-  --json                                          format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
+  -c, --configfolder=PATH                                                           Root folder to find the
+                                                                                    configuration file
+
+  -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
+                                                                                    DESTINATION org
+
+  -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
+                                                                                    SOURCE org
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
 ```
 
 _See code: [src/commands/ETCopyData/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/delete.ts)_
 
-## `sfdx ETCopyData:export`
+## `sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Exports the data from the source org, and saves it in the destination folder so that it can be imported at a later time.
 
 ```
 USAGE
-  $ sfdx ETCopyData:export
+  $ sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -c, --configfolder=PATH                         Root folder to find the configuration file
-  -d, --orgdestination=(alias|username)           SFDX alias or username for the DESTINATION org
-  -s, --orgsource=(alias|username)                SFDX alias or username for the SOURCE org
-  --json                                          format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
+  -c, --configfolder=PATH                                                           Root folder to find the
+                                                                                    configuration file
+
+  -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
+                                                                                    DESTINATION org
+
+  -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
+                                                                                    SOURCE org
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
 ```
 
 _See code: [src/commands/ETCopyData/export.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/export.ts)_
 
-## `sfdx ETCopyData:full`
+## `sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Performs all the steps, including comparing schemas, exporting data from the source, optionally deleting data from the destination, and importing the data to the destination org. This may help you when setting up a new process
 
 ```
 USAGE
-  $ sfdx ETCopyData:full
+  $ sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -c, --configfolder=PATH                         Root folder to find the configuration file
-  -d, --orgdestination=(alias|username)           SFDX alias or username for the DESTINATION org
-  -s, --orgsource=(alias|username)                SFDX alias or username for the SOURCE org
-  --json                                          format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
+  -c, --configfolder=PATH                                                           Root folder to find the
+                                                                                    configuration file
+
+  -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
+                                                                                    DESTINATION org
+
+  -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
+                                                                                    SOURCE org
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
 ```
 
 _See code: [src/commands/ETCopyData/full.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/full.ts)_
 
-## `sfdx ETCopyData:import`
+## `sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Imports data into destination org, you can control if the data in the destination sObjects should be removed before loading a new data set. The data load happens in a specific order (children first, parents last) which has been determined by checking the schema in the destination org.
 
 ```
 USAGE
-  $ sfdx ETCopyData:import
+  $ sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -c, --configfolder=PATH                         Root folder to find the configuration file
-  -d, --orgdestination=(alias|username)           SFDX alias or username for the DESTINATION org
-  -s, --orgsource=(alias|username)                SFDX alias or username for the SOURCE org
-  --json                                          format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
+  -c, --configfolder=PATH                                                           Root folder to find the
+                                                                                    configuration file
+
+  -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
+                                                                                    DESTINATION org
+
+  -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
+                                                                                    SOURCE org
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
 ```
 
 _See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.3/src/commands/ETCopyData/import.ts)_
