@@ -10,7 +10,7 @@ export default class Delete extends SfdxCommand {
 	public static description = "Deletes data from destination org, " +
 		"preparing for the new data that will be uploaded. " +
 		"Note: Deleting optionally happens before loading, " +
-		"but if there are some errors this operation can be retired by itself. ";
+		"but if there are some errors this operation can be retried by itself. ";
 
 	protected static flagsConfig = ETCopyData.flagsConfig;
 
