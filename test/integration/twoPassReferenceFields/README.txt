@@ -19,7 +19,7 @@ cd ..
 ./createTestData.sh -u etcopydata-src
 
 # run ETCopyData
-sfdx ETCopyData:full -s etcopydata-src -d etcopydata-dest -c etcopydata.json
+sfdx ETCopyData:full -s etcopydata-src -d etcopydata-dest -c .
 
 # validate result
 ./validateTestData.sh -u etcopydata-dest
