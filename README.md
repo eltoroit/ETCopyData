@@ -112,13 +112,14 @@ You must provide the name of the sObject
 
 This is the structure for each sObject
 
-| Field        | Default | Data Type | Description                                                                                                     |
-| ------------ | ------- | --------- | --------------------------------------------------------------------------------------------------------------- |
-| name         | N/A     | String    | Required field. SObject API name rather than the label, which means that custom sObjects end with __c.          |
-| ignoreFields | null    | String[]  | List of fields to ignore for every sObject, these list will be combined with the global **ignoreFields** field. |
-| maxRecords   | -1      | Integer   | Overrides the global **maxRecordsEach** field.                                                                  |
-| orderBy      | null    | String    | For exports, determines the order for the records that are exported.                                            |
-| where        | null    | String    | Restrict which records are be exported.                                                                         |
+| Field                  | Default | Data Type | Description                                                                                                                |
+| ---------------------- | ------- | --------- | -------------------------------------------------------------------------------------------------------------------------- |
+| name                   | N/A     | String    | Required field. SObject API name rather than the label, which means that custom sObjects end with __c.                     |
+| ignoreFields           | null    | String[]  | List of fields to ignore for every sObject, these list will be combined with the global **ignoreFields** field.            |
+| maxRecords             | -1      | Integer   | Overrides the global **maxRecordsEach** field.                                                                             |
+| orderBy                | null    | String    | For exports, determines the order for the records that are exported.                                                       |
+| twoPassReferenceFields | null    | String[]  | For imports, lists the fields that need to be set using a separate update as they refer an SObject that is not loaded yet. |
+| where                  | null    | String    | Restrict which records are be exported.                                                                                    |
 
 ## sObjectsMetadata
 
@@ -140,6 +141,7 @@ This is the structure for each sObject
 	"fieldsToExport": "FirstName,LastName,Email,Id",
 	"matchBy": "Email",
 	"orderBy": "LastName",
+	"twoPassReferenceFields": "Foo__c,Bar__c",
 	"where": null
 }
 ````
@@ -156,6 +158,37 @@ This is the structure for each metadata sObject
 | orderBy             | null    | String    | For exports, determines the order for the metadata records that are exported.   |
 | where               | null    | String    | Restrict which records are be exported.                                         |
 
+## References
+ETCopyData fully supports importing references between SObjects, both Lookup and Parent/Child relationships.
+
+ETCopyData determines an import order, based on the Lookup and Parent/Child relationships that are exported and not flagged as twoPassReferenceFields. It sorts the list of SObjects using the following algorithm:
+
+1. the SObjects that have no relationships to any other SObjects
+2. the SObjects that only have relationships to group 1
+3. the SObjects that have relationships to group 1 and/or 2
+4. etc.
+
+ETCopyData imports the data for the SObjects in that order, keeping track of the mapping between Ids in the source set and their equivalent Ids the target system. When importing a reference field, it can immediately set the correct Id in the target system.
+
+If your data model is tree-like, no additional configuration is needed to automatically import all references. If your data model contains cyclic references or self references, additional configuration using the 'twoPassReferenceField' setting. An example cyclic reference is SObject A having a lookup field for SObject B and SObject B having a lookup field for SObject A. An example self reference is SObject A having a lookup field for SObject A.
+
+If your data model contains one of these types of references, you will get the following error during import:
+
+> Deadlock determining import order, most likely caused by circular or self reference, configure those fields as twoPassReferenceFields
+
+Configuring twoPassReferenceFields can be automated, but currently is a manual process. In general, if you have two SObjects that reference each other through a single Lookup relationship in each SObject, you only need to flag one of those fields as a twoPassReferenceField.
+
+As an example, assume you have the following SObject and fields:
+
+- SObject A__c: field RefB__c of type Lookup(B__c)
+- SObject B__c: field RefA__c of type Lookup(A__c)
+
+If your dataset contains 1000 A__c records and 10 B__c records, the optimal configuration is to configure B__c.RefA__c as twoPassReferenceField. On import, ETCopyData will execute the following steps:
+
+1. import all records for SObject B__c (keeping the RefA__c field null), keeping track of the mapping between Id in the source set and the Id in the target system
+2. import all records for SObject A__c, setting the RefB__c field correctly using the mapping, keeping track of the mapping the record Ids
+3. revisit all SObject B__c records that have a value for RefA__c, and set the RefA__c field to the mapped Id
+
 ## Notes:
 1. Because the data in the org gets modified, you are **not** allowed to use a production org. You can only use a scratch org or a sandbox!
 2. You must explicitly specify which standard sObjects you want to process because there are way too many standard sObjects and not a good way to determine which ones are useful. But for custom sObjects, you can specify that you want all of them.
@@ -165,7 +198,7 @@ This is the structure for each metadata sObject
 6. Not deleting the existing records could end up with tons of records if the operation is run multiple times while testing, or have duplicate records in the destination sObject.
 7.  If you are getting timeout errors while records are being deleted, or imported, you could increase the polling timeout.
 8.  If you are getting out-of-memory errors, you can increase the amount of memory used by NodeJS (the engine used to run SFDX plugins) by setting the environment variable `NODE_OPTIONS` to `--max-old-space-size=8192` to reserve 8GB memory.
-9.  The metadata records in the source org and the destination org will have different IDs, but they should have similar charsteristic that can be used for mapping. For example, for users, you can use the email, for profiles use their names, for record types use their developer name, etc.
+9.  The metadata records in the source org and the destination org will have different IDs, but they should have similar characteristic that can be used for mapping. For example, for users, you can use the email, for profiles use their names, for record types use their developer name, etc.
 
 # Commands
 <!-- ET-AUTO-START: This section is auto-updated... -->
