@@ -21,6 +21,7 @@ interface ISettingsSObjectBase {
 // NOTE: Data in the configuration file
 export interface ISettingsSObjectData extends ISettingsSObjectBase {
 	ignoreFields: string | string[];
+	twoPassReferenceFields: string | string[];
 	maxRecords: number;
 }
 
@@ -39,6 +40,7 @@ export interface ISettingsValues {
 	includeAllCustom: boolean;
 	stopOnErrors: boolean;
 	ignoreFieldsRaw: string;
+	twoPassReferenceFieldsRaw: string;
 	maxRecordsEachRaw: number;
 	deleteDestination: boolean;
 	// LEARNING: Salesforce default is 10,000
@@ -70,6 +72,7 @@ export class Settings implements ISettingsValues {
 	public sObjectsDataRaw: Map<string, ISettingsSObjectData>;
 	public sObjectsMetadataRaw: Map<string, ISettingsSObjectMetatada>;
 	public ignoreFieldsRaw: string;
+	public twoPassReferenceFieldsRaw: string;
 	public includeAllCustom: boolean;
 	public stopOnErrors: boolean;
 	public maxRecordsEachRaw: number;
@@ -130,6 +133,7 @@ export class Settings implements ISettingsValues {
 
 			// Fix fields
 			output.ignoreFields = Util.mergeAndCleanArrays(output.ignoreFields as string, this.ignoreFieldsRaw);
+			output.twoPassReferenceFields = Util.mergeAndCleanArrays(output.twoPassReferenceFields as string, this.twoPassReferenceFieldsRaw);
 			if ((this.maxRecordsEachRaw > 0) && (output.maxRecords === -1)) {
 				output.maxRecords = this.maxRecordsEachRaw;
 			}
@@ -356,6 +360,13 @@ export class Settings implements ISettingsValues {
 							.catch((err) => { Util.throwError(err); }),
 					);
 
+					// twoPassReferenceFields
+					promises.push(
+						this.processStringValues(resValues, "twoPassReferenceFields", false)
+							.then((value: string) => { this.twoPassReferenceFieldsRaw = value; })
+							.catch((err) => { Util.throwError(err); }),
+					);
+
 					// maxRecordsEach
 					promises.push(
 						this.processStringValues(resValues, "maxRecordsEach", false)
@@ -454,6 +465,7 @@ export class Settings implements ISettingsValues {
 
 		const newValue: ISettingsSObjectData = {
 			ignoreFields: null,
+			twoPassReferenceFields: null,
 			maxRecords: -1,
 			name: sObjName,
 			orderBy: null,
@@ -521,6 +533,7 @@ export class Settings implements ISettingsValues {
 		output.includeAllCustom = this.includeAllCustom;
 		output.stopOnErrors = this.stopOnErrors;
 		output.ignoreFields = this.ignoreFieldsRaw;
+		output.twoPassReferenceFields = this.twoPassReferenceFieldsRaw;
 		output.maxRecordsEach = this.maxRecordsEachRaw;
 		output.deleteDestination = this.deleteDestination;
 		output.pollingTimeout = this.pollingTimeout;
@@ -557,7 +570,7 @@ export class Settings implements ISettingsValues {
 				let value = sObj[fieldName];
 
 				if (isVerbose) {
-					if (["ignoreFields", "fieldsToExport"].includes(fieldName)) {
+					if (["ignoreFields", "twoPassReferenceFields", "fieldsToExport"].includes(fieldName)) {
 						value = value.toString();
 					}
 				} else {
@@ -590,6 +603,7 @@ export class Settings implements ISettingsValues {
 		this.includeAllCustom = false;
 		this.stopOnErrors = true;
 		this.ignoreFieldsRaw = null;
+		this.twoPassReferenceFieldsRaw = null;
 		this.maxRecordsEachRaw = -1;
 		this.deleteDestination = false;
 		this.pollingTimeout = 100000;
@@ -601,6 +615,7 @@ export class Settings implements ISettingsValues {
 		if (output === null) {
 			output = {
 				ignoreFields: Util.mergeAndCleanArrays(this.ignoreFieldsRaw, ""),
+				twoPassReferenceFields: Util.mergeAndCleanArrays(this.twoPassReferenceFieldsRaw, ""),
 				maxRecords: this.maxRecordsEachRaw,
 				name: null,
 				orderBy: null,

@@ -257,6 +257,7 @@ export class SchemaDiscovery {
 					name: sObj.name,
 					orderBy: null,
 					parents: [],
+					twoPassParents: [],
 					parentsRequired: [],
 				});
 				Util.writeLog(`[${this.orgManager.alias}] Found sObject [${sObj.name}].`, LogLevel.TRACE);
@@ -268,6 +269,7 @@ export class SchemaDiscovery {
 
 	private addField(sObj: ISchemaData, sObjName, field): void {
 		const localRejects: string[] = [];
+		const sObjectData = this.orgManager.settings.getSObjectData(sObjName);
 
 		// Can't be
 		if (field.autoNumber) {
@@ -279,7 +281,7 @@ export class SchemaDiscovery {
 		if (field.deprecatedAndHidden) {
 			localRejects.push("Can't be deprecatedAndHidden");
 		}
-		if (this.orgManager.settings.getSObjectData(sObjName).ignoreFields.includes(field.name)) {
+		if (sObjectData.ignoreFields.includes(field.name)) {
 			localRejects.push("User asked for this field to be excluded");
 		}
 
@@ -298,8 +300,8 @@ export class SchemaDiscovery {
 				} else {
 					localRejects.push("Parent sObject [" + field.referenceTo[0] + "] is not processed");
 				}
-				if (sObjName === field.referenceTo[0]) {
-					localRejects.push("Current version does not allow recursive parenting");
+				if (sObjName === field.referenceTo[0] && !sObjectData.twoPassReferenceFields.includes(field.name)) {
+					localRejects.push("Recursive parenting for field references is supported, but requires the field to be configured as twoPassReferenceField");
 				}
 			} else {
 				let msg: string = "Reference, but it points to 0 or more than 1 sObject: | ";
@@ -308,14 +310,25 @@ export class SchemaDiscovery {
 				});
 				localRejects.push(msg);
 			}
+		} else {
+			if (sObjectData.twoPassReferenceFields.includes(field.name)) {
+				localRejects.push("Field [" + field.referenceTo[0] + "] is configured as twoPassReferenceField but is not a reference");
+			}
 		}
 
 		if ((this.overrideIncludeField(field.name)) || (localRejects.length === 0)) {
 			if (field.type === "reference") {
-				sObj.parents.push({
-					parentId: field.name,
-					sObj: field.referenceTo[0],
-				});
+				if (sObjectData.twoPassReferenceFields.includes(field.name)) {
+					sObj.twoPassParents.push({
+						parentId: field.name,
+						sObj: field.referenceTo[0],
+					});
+				} else {
+					sObj.parents.push({
+						parentId: field.name,
+						sObj: field.referenceTo[0],
+					});
+				}
 			}
 			sObj.fields.push(field.name);
 		} else {
@@ -331,7 +344,7 @@ export class SchemaDiscovery {
 			localRejects.push("Can't be deprecatedAndHidden");
 		}
 		if (sObjName === child.childSObject) {
-			localRejects.push("Current version does not allow recursive parenting");
+			localRejects.push("Current version does not allow recursive parenting for parent-child relations");
 		}
 
 		// Must be
