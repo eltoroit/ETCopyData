@@ -159,7 +159,13 @@ export class Importer {
 				.then((jsonSource: any) => {
 					const records: any[] = jsonSource.records;
 					records.forEach((record) => {
-						key = record[matchBy];
+						key = "";
+						matchBy.split(",").forEach(part => {
+							if (key !== "") {
+								key += "|";
+							}
+							key += record[part.trim()];
+						})
 						value = record.Id;
 						tempMD.get(sObjName).get(org.alias).set(key, value);
 					});

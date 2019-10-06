@@ -1,18 +1,17 @@
-ETCopyData
-==========
+# ETCopyData
 
 SFDX Plugin to populate your scratch org and/or developer sandbox with data extracted from multiple sObjects.
 
-[![Version](https://img.shields.io/npm/v/etcopydata.svg)](https://npmjs.org/package/etcopydata)
-[![License](https://img.shields.io/npm/l/etcopydata.svg)](https://github.com/ELTOROIT/ETCopyData/blob/master/package.json)
+[![Version](https://img.shields.io/npm/v/etcopydata.svg)](https://npmjs.org/package/etcopydata) [![License](https://img.shields.io/npm/l/etcopydata.svg)](https://github.com/ELTOROIT/ETCopyData/blob/master/package.json)
 
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- toc -->
-* [Install](#install)
-* [Documentation](#documentation)
-* [Commands](#commands)
-<!-- tocstop -->
-<!-- ET-AUTO-STOP: This section is auto-updated... -->
+
+- [Install](#install)
+- [Documentation](#documentation)
+- [Commands](#commands)
+  <!-- tocstop -->
+  <!-- ET-AUTO-STOP: This section is auto-updated... -->
 
 # Install
 
@@ -20,9 +19,10 @@ SFDX Plugin to populate your scratch org and/or developer sandbox with data extr
 
 `sfdx plugins:install etcopydata`
 
-You'll be prompted that this, like any plugin, is not officially code-signed by Salesforce.  If that's annoying, you can [whitelist it](https://developer.salesforce.com/blogs/2017/10/salesforce-dx-cli-plugin-update.html)
+You'll be prompted that this, like any plugin, is not officially code-signed by Salesforce. If that's annoying, you can [whitelist it](https://developer.salesforce.com/blogs/2017/10/salesforce-dx-cli-plugin-update.html)
 
 ## Install from source
+
 1. Install the SDFX CLI.
 2. Clone the repository: `git clone https://github.com/eltoroit/ETCopyData.git`
 3. Change directory `cd ETCopyData`
@@ -30,6 +30,7 @@ You'll be prompted that this, like any plugin, is not officially code-signed by 
 5. Link the plugin: `sfdx plugins:link .`
 
 # Documentation
+
 This plugin is highly configurable with a JSON file named `ETCopyData.json` located on the current folder you are using when running this plugin. If the file does not exist, the plugin creates the file before erroring out, this allows you to get the bare bones of the file and modify it.
 
 ## ETCopyData.json
@@ -69,20 +70,20 @@ This plugin is highly configurable with a JSON file named `ETCopyData.json` loca
 
 ### Fields
 
-| Field                             | Data Type          | Description                                                                                                                                          |
-| --------------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **now**                           | DateTime           | Timestamp that automatically updates every time the plugin is executed.                                                                              |
-| **orgSource**                     | String             | SFDX alias given to the org that has the data you want to export.                                                                                    |
-| **orgDestination<sup>1</sup>**    | String             | SFDX alias given to the org that receive the data that you import.                                                                                   |
-| **sObjectsData<sup>2</sup>**      | sObjectsData[]     | List of custom or standard sObjects where the data is going to be exported from, and where it will be imported to.                                   |
-| **sObjectsMetadata<sup>3</sup>**  | sObjectsMetadata[] | Metadata sObjects that will be used for importing your data.                                                                                         |
-| **rootFolder**                    | String             | Folder used to store the exported data and where the data will be imported from.                                                                     |
-| **includeAllCustom**              | Boolean            | True if you want all the customer sObjects, false if you only want the ones listed in the orgDestination section                                     |
-| **stopOnErrors**                  | Boolean            | True if you want to stop on errors deleting data or importing data, false and the errors will be reported back but they will not stop the execution. |
-| **ignoreFields<sup>4</sup>**      | String             | List of fields to ignore for every sObject, each field is separated with a comma. Example: "Field1__c, Field2__c, Field__3"                          |
-| **maxRecordsEach<sup>5</sup>**    | Integer            | What is the maximum number of records to export for each sObject                                                                                     |
-| **deleteDestination<sup>6</sup>** | Boolean            | True if you want to delete the existing records in the destination org before you load the new records.                                              |
-| **pollingTimeout<sup>7<sup>**     | Integer            | Timeout in milliseconds that Bulk API operations will timeout.                                                                                       |
+| Field | Data Type | Description |
+| --- | --- | --- |
+| **now** | DateTime | Timestamp that automatically updates every time the plugin is executed. |
+| **orgSource** | String | SFDX alias given to the org that has the data you want to export. |
+| **orgDestination<sup>1</sup>** | String | SFDX alias given to the org that receive the data that you import. |
+| **sObjectsData<sup>2</sup>** | sObjectsData[] | List of custom or standard sObjects where the data is going to be exported from, and where it will be imported to. |
+| **sObjectsMetadata<sup>3</sup>** | sObjectsMetadata[] | Metadata sObjects that will be used for importing your data. |
+| **rootFolder** | String | Folder used to store the exported data and where the data will be imported from. |
+| **includeAllCustom** | Boolean | True if you want all the customer sObjects, false if you only want the ones listed in the orgDestination section |
+| **stopOnErrors** | Boolean | True if you want to stop on errors deleting data or importing data, false and the errors will be reported back but they will not stop the execution. |
+| **ignoreFields<sup>4</sup>** | String | List of fields to ignore for every sObject, each field is separated with a comma. Example: "Field1**c, Field2**c, Field\_\_3" |
+| **maxRecordsEach<sup>5</sup>** | Integer | What is the maximum number of records to export for each sObject |
+| **deleteDestination<sup>6</sup>** | Boolean | True if you want to delete the existing records in the destination org before you load the new records. |
+| **pollingTimeout<sup>7<sup>** | Integer | Timeout in milliseconds that Bulk API operations will timeout. |
 
 ## sObjectsData
 
@@ -90,15 +91,15 @@ This plugin is highly configurable with a JSON file named `ETCopyData.json` loca
 
 You must provide the name of the sObject
 
-````
+```
 {
 	"name": "Account"
 }
-````
+```
 
-### Sample: All fields complete 
+### Sample: All fields complete
 
-````
+```
 {
 	"name": "Location__c",
 	"ignoreFields": "OwnerId, IgnoreField__c",
@@ -106,7 +107,7 @@ You must provide the name of the sObject
 	"orderBy": "City__c",
 	"where": "State__c = 'Texas'"
 }
-````
+```
 
 ### Fields
 
@@ -114,7 +115,7 @@ This is the structure for each sObject
 
 | Field                  | Default | Data Type | Description                                                                                                                |
 | ---------------------- | ------- | --------- | -------------------------------------------------------------------------------------------------------------------------- |
-| name                   | N/A     | String    | Required field. SObject API name rather than the label, which means that custom sObjects end with __c.                     |
+| name                   | N/A     | String    | Required field. SObject API name rather than the label, which means that custom sObjects end with \_\_c.                   |
 | ignoreFields           | null    | String[]  | List of fields to ignore for every sObject, these list will be combined with the global **ignoreFields** field.            |
 | maxRecords             | -1      | Integer   | Overrides the global **maxRecordsEach** field.                                                                             |
 | orderBy                | null    | String    | For exports, determines the order for the records that are exported.                                                       |
@@ -125,17 +126,17 @@ This is the structure for each sObject
 
 ### Sample: Minimum fields required
 
-````
+```
 {
 	"name": "User",
 	"fieldsToExport": "FirstName,LastName,Email,Id",
 	"matchBy": "Email"
 }
-````
+```
 
-### Sample: All fields complete 
+### Sample: All fields complete
 
-````
+```
 {
 	"name": "User",
 	"fieldsToExport": "FirstName,LastName,Email,Id",
@@ -144,7 +145,7 @@ This is the structure for each sObject
 	"twoPassReferenceFields": "Foo__c,Bar__c",
 	"where": null
 }
-````
+```
 
 ### Fields
 
@@ -154,11 +155,12 @@ This is the structure for each metadata sObject
 | ------------------- | ------- | --------- | ------------------------------------------------------------------------------- |
 | name                | N/A     | String    | Required field. SObject API name rather than the label.                         |
 | fieldsToExport      | N/A     | String[]  | Required field. List of fields that will be exported for each metadata sObject. |
-| matchBy<sup>8</sup> | N/A     | Integer   | Required field. What makes the two metadata sObjects the same?                  |
+| matchBy<sup>9</sup> | N/A     | STring    | Required field. What makes the two metadata sObjects the same?                  |
 | orderBy             | null    | String    | For exports, determines the order for the metadata records that are exported.   |
 | where               | null    | String    | Restrict which records are be exported.                                         |
 
 ## References
+
 ETCopyData fully supports importing references between SObjects, both Lookup and Parent/Child relationships.
 
 ETCopyData determines an import order, based on the Lookup and Parent/Child relationships that are exported and not flagged as twoPassReferenceFields. It sorts the list of SObjects using the following algorithm:
@@ -180,34 +182,37 @@ Configuring twoPassReferenceFields can be automated, but currently is a manual p
 
 As an example, assume you have the following SObject and fields:
 
-- SObject A__c: field RefB__c of type Lookup(B__c)
-- SObject B__c: field RefA__c of type Lookup(A__c)
+- SObject A**c: field RefB**c of type Lookup(B\_\_c)
+- SObject B**c: field RefA**c of type Lookup(A\_\_c)
 
-If your dataset contains 1000 A__c records and 10 B__c records, the optimal configuration is to configure B__c.RefA__c as twoPassReferenceField. On import, ETCopyData will execute the following steps:
+If your dataset contains 1000 A**c records and 10 B**c records, the optimal configuration is to configure B**c.RefA**c as twoPassReferenceField. On import, ETCopyData will execute the following steps:
 
-1. import all records for SObject B__c (keeping the RefA__c field null), keeping track of the mapping between Id in the source set and the Id in the target system
-2. import all records for SObject A__c, setting the RefB__c field correctly using the mapping, keeping track of the mapping the record Ids
-3. revisit all SObject B__c records that have a value for RefA__c, and set the RefA__c field to the mapped Id
+1. import all records for SObject B**c (keeping the RefA**c field null), keeping track of the mapping between Id in the source set and the Id in the target system
+2. import all records for SObject A**c, setting the RefB**c field correctly using the mapping, keeping track of the mapping the record Ids
+3. revisit all SObject B**c records that have a value for RefA**c, and set the RefA\_\_c field to the mapped Id
 
 ## Notes:
+
 1. Because the data in the org gets modified, you are **not** allowed to use a production org. You can only use a scratch org or a sandbox!
 2. You must explicitly specify which standard sObjects you want to process because there are way too many standard sObjects and not a good way to determine which ones are useful. But for custom sObjects, you can specify that you want all of them.
 3. These records will not be imported but will need to exist in the destination org, so their record ids can be used when loading the data.
 4. These are some fields that are a good idea to ignore: OwnerId, CreatedBy, CreatedDate, CurrencyIsoCode.
 5. Not exporting all the records could have negative implications, especially if those records are required later. For example, not exporting master records (on a master/detail relationship) for detail records that you do actually export.
 6. Not deleting the existing records could end up with tons of records if the operation is run multiple times while testing, or have duplicate records in the destination sObject.
-7.  If you are getting timeout errors while records are being deleted, or imported, you could increase the polling timeout.
-8.  If you are getting out-of-memory errors, you can increase the amount of memory used by NodeJS (the engine used to run SFDX plugins) by setting the environment variable `NODE_OPTIONS` to `--max-old-space-size=8192` to reserve 8GB memory.
-9.  The metadata records in the source org and the destination org will have different IDs, but they should have similar characteristic that can be used for mapping. For example, for users, you can use the email, for profiles use their names, for record types use their developer name, etc.
+7. If you are getting timeout errors while records are being deleted, or imported, you could increase the polling timeout.
+8. If you are getting out-of-memory errors, you can increase the amount of memory used by NodeJS (the engine used to run SFDX plugins) by setting the environment variable `NODE_OPTIONS` to `--max-old-space-size=8192` to reserve 8GB memory.
+9. The metadata records in the source org and the destination org will have different IDs, but they should have similar characteristic that can be used for mapping. For example, for users, you can use the email, for profiles use their names, for record types use their developer name, etc. When dealing with Recordtypes that have same DeveloperName for different sObjects, the matchBy entry can be set as "SobjectType, DeveloperName".
 
 # Commands
+
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- commands -->
-* [`sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatacompare--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatadelete--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataexport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatafull--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataimport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+
+- [`sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatacompare--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+- [`sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatadelete--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+- [`sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataexport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+- [`sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatafull--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+- [`sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataimport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
 ## `sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -215,7 +220,7 @@ Checks the source and destination org for any differences in the sObject's metad
 
 ```
 USAGE
-  $ sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -242,7 +247,7 @@ Deletes data from destination org, preparing for the new data that will be uploa
 
 ```
 USAGE
-  $ sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -269,7 +274,7 @@ Exports the data from the source org, and saves it in the destination folder so 
 
 ```
 USAGE
-  $ sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -296,7 +301,7 @@ Performs all the steps, including comparing schemas, exporting data from the sou
 
 ```
 USAGE
-  $ sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -323,7 +328,7 @@ Imports data into destination org, you can control if the data in the destinatio
 
 ```
 USAGE
-  $ sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -343,5 +348,6 @@ OPTIONS
 ```
 
 _See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v0.4.4/src/commands/ETCopyData/import.ts)_
+
 <!-- commandsstop -->
 <!-- ET-AUTO-STOP: This section is auto-updated... -->
