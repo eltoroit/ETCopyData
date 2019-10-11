@@ -83,7 +83,7 @@ export class ETCopyData {
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -109,7 +109,7 @@ export class ETCopyData {
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -144,7 +144,7 @@ export class ETCopyData {
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -171,7 +171,7 @@ export class ETCopyData {
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -195,7 +195,7 @@ export class ETCopyData {
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -211,7 +211,7 @@ export class ETCopyData {
 					return org.discovery.findObjectsAsync();
 				})
 				.then(() => { resolve(); })
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -346,7 +346,7 @@ export class ETCopyData {
 					.then(() => {
 						resolve(data);
 					})
-					.catch((err) => { Util.throwError(err); });
+					.catch((err) => { reject(err); });
 			}
 		});
 	}

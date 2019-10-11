@@ -62,7 +62,7 @@ export class Settings implements ISettingsValues {
 				.then((value) => {
 					resolve(s);
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 	private static readCounter: number = 0;
@@ -185,7 +185,7 @@ export class Settings implements ISettingsValues {
 
 					fs.writeFile(fullPath + `/${fileName}`, strData)
 						.then(() => { resolve(); })
-						.catch((err) => { Util.throwError(err); });
+						.catch((err) => { reject(err); });
 				});
 		});
 	}
@@ -197,9 +197,9 @@ export class Settings implements ISettingsValues {
 				.then(() => {
 					fs.readFile(fullPath + `/${fileName}`)
 						.then((value: Buffer) => { resolve(JSON.parse(value.toString())); })
-						.catch((err) => { Util.throwError(err); });
+						.catch((err) => { reject(err); });
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -226,11 +226,11 @@ export class Settings implements ISettingsValues {
 								Util.throwError(`Configuration file [${path}] did not exist and was created with default values. " +
 									"Please fix it and run again`);
 							})
-							.catch((err) => { Util.throwError(err); });
+							.catch((err) => { reject(err); });
 					}
 				})
 				.then(() => { resolve(this); })
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -289,7 +289,6 @@ export class Settings implements ISettingsValues {
 						promises.push(
 							this.processStringValues(resValues, WhichOrg.SOURCE, true)
 								.then((value: string) => { this.orgAliases.set(WhichOrg.SOURCE, value); })
-								.catch((err) => { Util.throwError(err); }),
 						);
 					}
 
@@ -303,7 +302,6 @@ export class Settings implements ISettingsValues {
 						promises.push(
 							this.processStringValues(resValues, WhichOrg.DESTINATION, true)
 								.then((value: string) => { this.orgAliases.set(WhichOrg.DESTINATION, value); })
-								.catch((err) => { Util.throwError(err); }),
 						);
 					}
 
@@ -314,7 +312,6 @@ export class Settings implements ISettingsValues {
 								msg = `Configuration value for [sObjectsData]: ${this.sObjectsDataRaw.size} sObjects found.`;
 								Util.writeLog(msg, LogLevel.INFO);
 							})
-							.catch((err) => { Util.throwError(err); }),
 					);
 
 					// sObjectsMetadata
@@ -324,21 +321,18 @@ export class Settings implements ISettingsValues {
 								msg = `Configuration value for [sObjectsMetadata]: ${this.sObjectsMetadataRaw.size} sObjects found.`;
 								Util.writeLog(msg, LogLevel.INFO);
 							})
-							.catch((err) => { Util.throwError(err); }),
 					);
 
 					// includeAllCustom
 					promises.push(
 						this.processStringValues(resValues, "includeAllCustom", false)
 							.then((value: string) => { this.includeAllCustom = (value === "true"); })
-							.catch((err) => { Util.throwError(err); }),
 					);
 
 					// stopOnErrors
 					promises.push(
 						this.processStringValues(resValues, "stopOnErrors", false)
 							.then((value: string) => { this.stopOnErrors = (value === "true"); })
-							.catch((err) => { Util.throwError(err); }),
 					);
 
 					// rootFolder
@@ -350,21 +344,18 @@ export class Settings implements ISettingsValues {
 							.then(() => {
 								//
 							})
-							.catch((err) => { Util.throwError(err); }),
 					);
 
 					// ignoreFields
 					promises.push(
 						this.processStringValues(resValues, "ignoreFields", false)
 							.then((value: string) => { this.ignoreFieldsRaw = value; })
-							.catch((err) => { Util.throwError(err); }),
 					);
 
 					// twoPassReferenceFields
 					promises.push(
 						this.processStringValues(resValues, "twoPassReferenceFields", false)
 							.then((value: string) => { this.twoPassReferenceFieldsRaw = value; })
-							.catch((err) => { Util.throwError(err); }),
 					);
 
 					// maxRecordsEach
@@ -372,30 +363,27 @@ export class Settings implements ISettingsValues {
 						this.processStringValues(resValues, "maxRecordsEach", false)
 							// LEARNING: Parsing a string into a number, 10 is for the base (16 for hex)
 							.then((value: string) => { this.maxRecordsEachRaw = parseInt(value, 10); })
-							.catch((err) => { Util.throwError(err); }),
 					);
 
 					// deleteDestination
 					promises.push(
 						this.processStringValues(resValues, "deleteDestination", false)
 							.then((value: string) => { this.deleteDestination = (value === "true"); })
-							.catch((err) => { Util.throwError(err); }),
 					);
 
 					// pollingTimeout
 					promises.push(
 						this.processStringValues(resValues, "pollingTimeout", false)
 							.then((value: string) => { this.pollingTimeout = parseInt(value, 10); })
-							.catch((err) => { Util.throwError(err); }),
 					);
 
 					Promise.all(promises)
 						.then(() => {
 							resolve(this);
 						})
-						.catch((err) => { Util.throwError(err); });
+						.catch((err) => { reject(err); });
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => { reject(err); });
 		});
 	}
 
@@ -508,13 +496,7 @@ export class Settings implements ISettingsValues {
 	}
 
 	private write(): Promise<object> {
-		return new Promise((resolve, reject) => {
-			this.configFile.write(this.valuesToWrite())
-				.then(() => {
-					resolve();
-				})
-				.catch((err) => { Util.throwError(err); });
-		});
+		return this.configFile.write(this.valuesToWrite());
 	}
 
 	// TODO: UPDATE SETTINGS HERE: WRITE!

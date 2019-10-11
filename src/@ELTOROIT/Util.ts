@@ -201,7 +201,7 @@ export class Util {
 						// Util.writeLog(`**** DESCENDING: ${index}`, LogLevel.DEBUG);
 						resolve();
 					})
-					.catch((err) => { Util.throwError(err); });
+					.catch((err) => { reject(err); });
 			} else {
 				resolve();
 			}

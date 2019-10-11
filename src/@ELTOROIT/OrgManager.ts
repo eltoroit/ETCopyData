@@ -35,11 +35,11 @@ export class OrgManager {
 						this.order = new SchemaOrder(this);
 						this.discovery = new SchemaDiscovery(this);
 						resolve(this);
-					});
+					})
+					.catch((err) => { reject(err); });
 			} catch (ex) {
 				this.resetValues(this.alias);
 				const msg = "Alias [" + this.alias + "] does not reference a valid org";
-				Util.throwError(msg);
 				reject(msg);
 			}
 		});
