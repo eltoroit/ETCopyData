@@ -1,64 +1,64 @@
 {
-  "name": "etcopydata",
-  "description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
-  "version": "0.5.7",
-  "author": "Andres Perez @ElToroIT",
-  "bugs": "https://github.com/eltoroit/ETCopyData/issues",
-  "dependencies": {
-    "@salesforce/command": "3.0.0",
-    "@oclif/config": "1.14.0",
-    "@oclif/errors": "1.2.2",
-    "@oclif/plugin-help": "2.2.3",
-    "tslib": "1.11.0"
-  },
-  "devDependencies": {
-    "@oclif/dev-cli": "1.22.2",
-    "@oclif/test": "1.2.5",
-    "@salesforce/dev-config": "1.5.0",
-    "@types/chai": "4.2.9",
-    "@types/jsforce": "1.9.13",
-    "@types/mocha": "7.0.1",
-    "@types/node": "13.7.4",
-    "globby": "11.0.0",
-    "mocha": "^7.1.2",
-    "nyc": "15.0.0",
-    "sinon": "9.0.0",
-    "ts-node": "8.6.2",
-    "typescript": "3.8.2"
-  },
-  "engines": {
-    "node": ">=8.0.0"
-  },
-  "files": [
-    "/lib",
-    "/messages",
-    "/npm-shrinkwrap.json",
-    "/oclif.manifest.json"
-  ],
-  "homepage": "https://github.com/eltoroit/ETCopyData",
-  "keywords": [
-    "sfdx-plugin"
-  ],
-  "license": "MIT",
-  "oclif": {
-    "commands": "./lib/commands",
-    "topics": {
-      "ETCopyData": {
-        "description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.y data from an org to a scratch org."
-      }
-    },
-    "bin": "sfdx",
-    "devPlugins": [
-      "@oclif/plugin-help"
-    ]
-  },
-  "repository": "https://github.com/eltoroit/ETCopyData",
-  "scripts": {
-    "postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
-    "posttest": "tsc -p test --noEmit && tslint -p test -t stylish",
-    "prepack": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
-    "prepare": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
-    "test": "nyc mocha --forbid-only \"test/**/*.test.ts\"",
-    "version": "oclif-dev readme && git add README.md"
-  }
+	"name": "etcopydata",
+	"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
+	"version": "0.5.8",
+	"author": "Andres Perez @ElToroIT",
+	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
+	"dependencies": {
+		"@salesforce/command": "3.0.0",
+		"@oclif/config": "1.14.0",
+		"@oclif/errors": "1.2.2",
+		"@oclif/plugin-help": "2.2.3",
+		"tslib": "1.11.0"
+	},
+	"devDependencies": {
+		"@oclif/dev-cli": "1.22.2",
+		"@oclif/test": "1.2.5",
+		"@salesforce/dev-config": "1.5.0",
+		"@types/chai": "4.2.9",
+		"@types/jsforce": "1.9.13",
+		"@types/mocha": "7.0.1",
+		"@types/node": "13.7.4",
+		"globby": "11.0.0",
+		"mocha": "^7.1.2",
+		"nyc": "15.0.0",
+		"sinon": "9.0.0",
+		"ts-node": "8.6.2",
+		"typescript": "3.8.2"
+	},
+	"engines": {
+		"node": ">=8.0.0"
+	},
+	"files": [
+		"/lib",
+		"/messages",
+		"/npm-shrinkwrap.json",
+		"/oclif.manifest.json"
+	],
+	"homepage": "https://github.com/eltoroit/ETCopyData",
+	"keywords": [
+		"sfdx-plugin"
+	],
+	"license": "MIT",
+	"oclif": {
+		"commands": "./lib/commands",
+		"topics": {
+			"ETCopyData": {
+				"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.y data from an org to a scratch org."
+			}
+		},
+		"bin": "sfdx",
+		"devPlugins": [
+			"@oclif/plugin-help"
+		]
+	},
+	"repository": "https://github.com/eltoroit/ETCopyData",
+	"scripts": {
+		"postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
+		"posttest": "tsc -p test --noEmit && tslint -p test -t stylish",
+		"prepack": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
+		"prepare": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
+		"test": "nyc mocha --forbid-only \"test/**/*.test.ts\"",
+		"version": "oclif-dev readme && git add README.md"
+	}
 }
