@@ -1,0 +1,116 @@
+{
+	"fetched": 10,
+	"records": [
+		{
+			"attributes": {
+				"type": "User",
+				"url": "/services/data/v48.0/sobjects/User/005P0000004ZhntIAC"
+			},
+			"FirstName": "Automated",
+			"LastName": "Process",
+			"Alias": "autoproc",
+			"Email": "mramsey@00dp0000003pxadmae",
+			"Id": "005P0000004ZhntIAC"
+		},
+		{
+			"attributes": {
+				"type": "User",
+				"url": "/services/data/v48.0/sobjects/User/005P0000004Xk9rIAC"
+			},
+			"FirstName": "Bruce",
+			"LastName": "Banner",
+			"Alias": "b2ann",
+			"Email": "swerner@salesforce.com",
+			"Id": "005P0000004Xk9rIAC"
+		},
+		{
+			"attributes": {
+				"type": "User",
+				"url": "/services/data/v48.0/sobjects/User/005P0000004ZhnsIAC"
+			},
+			"FirstName": "Integration",
+			"LastName": "User",
+			"Alias": "integ",
+			"Email": "integration@example.com",
+			"Id": "005P0000004ZhnsIAC"
+		},
+		{
+			"attributes": {
+				"type": "User",
+				"url": "/services/data/v48.0/sobjects/User/005P0000004ZhnuIAC"
+			},
+			"FirstName": "Service",
+			"LastName": "Agent",
+			"Alias": "sagent",
+			"Email": "serviceagent2013@example.com",
+			"Id": "005P0000004ZhnuIAC"
+		},
+		{
+			"attributes": {
+				"type": "User",
+				"url": "/services/data/v48.0/sobjects/User/005P0000004Zho3IAC"
+			},
+			"FirstName": "Security",
+			"LastName": "User",
+			"Alias": "sec",
+			"Email": "insightssecurity@example.com",
+			"Id": "005P0000004Zho3IAC"
+		},
+		{
+			"attributes": {
+				"type": "User",
+				"url": "/services/data/v48.0/sobjects/User/005P0000004XjCgIAK"
+			},
+			"FirstName": "User",
+			"LastName": "User",
+			"Alias": "UUser",
+			"Email": "aperez@salesforce.com",
+			"Id": "005P0000004XjCgIAK"
+		},
+		{
+			"attributes": {
+				"type": "User",
+				"url": "/services/data/v48.0/sobjects/User/005P0000004ZhnwIAC"
+			},
+			"FirstName": "John",
+			"LastName": "Smith",
+			"Alias": "jsmit",
+			"Email": "john@example.com",
+			"Id": "005P0000004ZhnwIAC"
+		},
+		{
+			"attributes": {
+				"type": "User",
+				"url": "/services/data/v48.0/sobjects/User/005P0000004ZhnyIAC"
+			},
+			"FirstName": "Jon",
+			"LastName": "Amos",
+			"Alias": "jamos",
+			"Email": "info@example.com",
+			"Id": "005P0000004ZhnyIAC"
+		},
+		{
+			"attributes": {
+				"type": "User",
+				"url": "/services/data/v48.0/sobjects/User/005P0000004Xj6xIAC"
+			},
+			"FirstName": null,
+			"LastName": "Platform Integration User",
+			"Alias": "platint",
+			"Email": "noreply@salesforce.com",
+			"Id": "005P0000004Xj6xIAC"
+		},
+		{
+			"attributes": {
+				"type": "User",
+				"url": "/services/data/v48.0/sobjects/User/005P0000004ZhnzIAC"
+			},
+			"FirstName": null,
+			"LastName": "Chatter Expert",
+			"Alias": "Chatter",
+			"Email": "noreply@chatter.salesforce.com",
+			"Id": "005P0000004ZhnzIAC"
+		}
+	],
+	"total": 10
+}

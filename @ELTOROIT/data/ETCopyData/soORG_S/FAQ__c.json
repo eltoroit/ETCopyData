@@ -1,0 +1,58 @@
+{
+	"fetched": 4,
+	"records": [
+		{
+			"attributes": {
+				"type": "FAQ__c",
+				"url": "/services/data/v48.0/sobjects/FAQ__c/a051h000001ZRd3AAG"
+			},
+			"Active__c": true,
+			"Body__c": null,
+			"Id": "a051h000001ZRd3AAG",
+			"Link__c": null,
+			"Order__c": null,
+			"RecordTypeId": "0121h000000iA9AAAU",
+			"Title__c": null
+		},
+		{
+			"attributes": {
+				"type": "FAQ__c",
+				"url": "/services/data/v48.0/sobjects/FAQ__c/a051h000001ZRd4AAG"
+			},
+			"Active__c": true,
+			"Body__c": null,
+			"Id": "a051h000001ZRd4AAG",
+			"Link__c": null,
+			"Order__c": null,
+			"RecordTypeId": "0121h000000iA9AAAU",
+			"Title__c": null
+		},
+		{
+			"attributes": {
+				"type": "FAQ__c",
+				"url": "/services/data/v48.0/sobjects/FAQ__c/a051h000001ZRd5AAG"
+			},
+			"Active__c": true,
+			"Body__c": null,
+			"Id": "a051h000001ZRd5AAG",
+			"Link__c": null,
+			"Order__c": null,
+			"RecordTypeId": "0121h000000iA9AAAU",
+			"Title__c": null
+		},
+		{
+			"attributes": {
+				"type": "FAQ__c",
+				"url": "/services/data/v48.0/sobjects/FAQ__c/a051h000001ZRd6AAG"
+			},
+			"Active__c": true,
+			"Body__c": null,
+			"Id": "a051h000001ZRd6AAG",
+			"Link__c": null,
+			"Order__c": null,
+			"RecordTypeId": "0121h000000iA9AAAU",
+			"Title__c": null
+		}
+	],
+	"total": 4
+}

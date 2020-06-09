@@ -1,0 +1,84 @@
+{
+	"fetched": 6,
+	"records": [
+		{
+			"attributes": {
+				"type": "Bootcamp_Week__c",
+				"url": "/services/data/v48.0/sobjects/Bootcamp_Week__c/a011h000003jAiFAAU"
+			},
+			"Bootcamp__c": "a021h000002MorfAAC",
+			"Hours__c": 5,
+			"Id": "a011h000003jAiFAAU",
+			"Minutes__c": 45,
+			"Name": "Reporting",
+			"Title__c": "Reporting and Knowledge",
+			"Week_Number__c": 6
+		},
+		{
+			"attributes": {
+				"type": "Bootcamp_Week__c",
+				"url": "/services/data/v48.0/sobjects/Bootcamp_Week__c/a011h000003jAiGAAU"
+			},
+			"Bootcamp__c": "a021h000002MorfAAC",
+			"Hours__c": 8,
+			"Id": "a011h000003jAiGAAU",
+			"Minutes__c": 5,
+			"Name": "Applications",
+			"Title__c": "Pizza Applications",
+			"Week_Number__c": 3
+		},
+		{
+			"attributes": {
+				"type": "Bootcamp_Week__c",
+				"url": "/services/data/v48.0/sobjects/Bootcamp_Week__c/a011h000003jAiHAAU"
+			},
+			"Bootcamp__c": "a021h000002MorfAAC",
+			"Hours__c": 6,
+			"Id": "a011h000003jAiHAAU",
+			"Minutes__c": 5,
+			"Name": "Overview",
+			"Title__c": "Overview of Pizza Certification Bootcamp",
+			"Week_Number__c": 1
+		},
+		{
+			"attributes": {
+				"type": "Bootcamp_Week__c",
+				"url": "/services/data/v48.0/sobjects/Bootcamp_Week__c/a011h000003jAvdAAE"
+			},
+			"Bootcamp__c": "a021h000002MorfAAC",
+			"Hours__c": 6,
+			"Id": "a011h000003jAvdAAE",
+			"Minutes__c": 35,
+			"Name": "Data Management",
+			"Title__c": "Data Management and Automation",
+			"Week_Number__c": 5
+		},
+		{
+			"attributes": {
+				"type": "Bootcamp_Week__c",
+				"url": "/services/data/v48.0/sobjects/Bootcamp_Week__c/a011h000003jAveAAE"
+			},
+			"Bootcamp__c": "a021h000002MorfAAC",
+			"Hours__c": 6,
+			"Id": "a011h000003jAveAAE",
+			"Minutes__c": 45,
+			"Name": "Data Security",
+			"Title__c": "Pizza Data Security",
+			"Week_Number__c": 2
+		},
+		{
+			"attributes": {
+				"type": "Bootcamp_Week__c",
+				"url": "/services/data/v48.0/sobjects/Bootcamp_Week__c/a011h000003jAvfAAE"
+			},
+			"Bootcamp__c": "a021h000002MorfAAC",
+			"Hours__c": 6,
+			"Id": "a011h000003jAvfAAE",
+			"Minutes__c": 0,
+			"Name": "Salesforce Clouds",
+			"Title__c": "Salesforce Clouds",
+			"Week_Number__c": 4
+		}
+	],
+	"total": 6
+}

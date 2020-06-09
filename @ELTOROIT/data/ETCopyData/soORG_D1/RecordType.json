@@ -1,0 +1,33 @@
+{
+	"fetched": 3,
+	"records": [
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/012P00000016CvFIAU"
+			},
+			"Id": "012P00000016CvFIAU",
+			"SobjectType": "FAQ__c",
+			"DeveloperName": "Article"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/012P00000016CvGIAU"
+			},
+			"Id": "012P00000016CvGIAU",
+			"SobjectType": "FAQ__c",
+			"DeveloperName": "Link"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/012P00000016CvHIAU"
+			},
+			"Id": "012P00000016CvHIAU",
+			"SobjectType": "FAQ__c",
+			"DeveloperName": "Recording"
+		}
+	],
+	"total": 3
+}

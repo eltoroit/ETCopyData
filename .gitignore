@@ -7,4 +7,5 @@
 /package-lock.json
 /tmp
 /node_modules
-@ELTOROIT/data
+#@ELTOROIT/data
+sfdx-project.json

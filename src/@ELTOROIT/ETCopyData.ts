@@ -19,18 +19,18 @@ export class ETCopyData {
 		configfolder: flags.string({
 			char: "c",
 			description: "Root folder to find the configuration file",
-			helpValue: "PATH",
+			helpValue: "PATH"
 		}),
 		orgdestination: flags.string({
 			char: "d",
 			description: "SFDX alias or username for the DESTINATION org",
-			helpValue: "(alias|username)",
+			helpValue: "(alias|username)"
 		}),
 		orgsource: flags.string({
 			char: "s",
 			description: "SFDX alias or username for the SOURCE org",
-			helpValue: "(alias|username)",
-		}),
+			helpValue: "(alias|username)"
+		})
 	};
 
 	public static setLogs(params: OutputFlags<any>, ux: UX, processName: string) {
@@ -42,7 +42,6 @@ export class ETCopyData {
 		Util.writeLog("Log level: " + params.loglevel, LogLevel.TRACE);
 		if (Util.doesLogOutputsEachStep()) {
 			Util.writeLog(`${processName} Process Started`, LogLevel.INFO);
-
 		} else {
 			ux.startSpinner(`${processName}`);
 		}
@@ -73,7 +72,9 @@ export class ETCopyData {
 				.then((ux) => {
 					ux.startSpinner("ETCopyData:Compare");
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => {
+					Util.throwError(err);
+				});
 		}
 		return new Promise((resolve, reject) => {
 			this.initializeETCopy(overrideSettings, data)
@@ -83,7 +84,9 @@ export class ETCopyData {
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -93,7 +96,9 @@ export class ETCopyData {
 				.then((ux) => {
 					ux.startSpinner("ETCopyData:Delete");
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => {
+					Util.throwError(err);
+				});
 		}
 		return new Promise((resolve, reject) => {
 			this.initializeETCopy(overrideSettings, data)
@@ -109,7 +114,9 @@ export class ETCopyData {
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -119,7 +126,9 @@ export class ETCopyData {
 				.then((ux) => {
 					ux.startSpinner("ETCopyData:Export");
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => {
+					Util.throwError(err);
+				});
 		}
 		return new Promise((resolve, reject) => {
 			this.initializeETCopy(overrideSettings, data)
@@ -144,7 +153,9 @@ export class ETCopyData {
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -154,7 +165,9 @@ export class ETCopyData {
 				.then((ux) => {
 					ux.startSpinner("ETCopyData:Import");
 				})
-				.catch((err) => { Util.throwError(err); });
+				.catch((err) => {
+					Util.throwError(err);
+				});
 		}
 		return new Promise((resolve, reject) => {
 			this.initializeETCopy(overrideSettings, data)
@@ -171,7 +184,9 @@ export class ETCopyData {
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -195,7 +210,9 @@ export class ETCopyData {
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -210,14 +227,17 @@ export class ETCopyData {
 					data.orgs.set(wo, org);
 					return org.discovery.findObjectsAsync();
 				})
-				.then(() => { resolve(); })
-				.catch((err) => { reject(err); });
+				.then(() => {
+					resolve();
+				})
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
 	// Schemas needs to be compared to know which sObjects/fields can be exported and imported
 	private compareSchemaForOrgs(orgSource: OrgManager, orgDestination: OrgManager): void {
-
 		const removeSObjs: string[] = [];
 		const removeSObjFields: Map<string, string[]> = new Map<string, string[]>();
 
@@ -308,7 +328,7 @@ export class ETCopyData {
 				data = {
 					coreMD: null,
 					orgs: new Map<WhichOrg, OrgManager>(),
-					settings: null,
+					settings: null
 				};
 
 				Settings.read(overrideSettings)
@@ -346,7 +366,9 @@ export class ETCopyData {
 					.then(() => {
 						resolve(data);
 					})
-					.catch((err) => { reject(err); });
+					.catch((err) => {
+						reject(err);
+					});
 			}
 		});
 	}

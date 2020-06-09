@@ -1,0 +1,14 @@
+{
+	"fetched": 1,
+	"records": [
+		{
+			"attributes": {
+				"type": "Bootcamp__c",
+				"url": "/services/data/v48.0/sobjects/Bootcamp__c/a021h000002MorfAAC"
+			},
+			"Id": "a021h000002MorfAAC",
+			"Name": "Admin Bootcamp"
+		}
+	],
+	"total": 1
+}

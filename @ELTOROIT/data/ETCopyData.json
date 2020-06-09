@@ -1,0 +1,30 @@
+{
+    "now": "2020-05-07T19:57:27.877Z",
+    "orgSource": "soORG_S",
+    "orgDestination": "soORG_D1",
+    "sObjectsData": [],
+    "sObjectsMetadata": [
+        {
+            "name": "User",
+            "fieldsToExport": "FirstName,LastName,Alias,Email,Id",
+            "matchBy": "Alias",
+            "orderBy": null,
+            "where": null
+        },
+        {
+            "name": "RecordType",
+            "fieldsToExport": "Id,SobjectType,DeveloperName",
+            "matchBy": "SobjectType, DeveloperName",
+            "orderBy": null,
+            "where": null
+        }
+    ],
+    "rootFolder": "ETCopyData",
+    "includeAllCustom": true,
+    "stopOnErrors": true,
+    "ignoreFields": null,
+    "twoPassReferenceFields": null,
+    "maxRecordsEach": -1,
+    "deleteDestination": true,
+    "pollingTimeout": 100000
+}
