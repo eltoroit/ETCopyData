@@ -353,7 +353,10 @@ export class ETCopyData {
 						this.compareSchemaForOrgs(data.orgs.get(WhichOrg.SOURCE), data.orgs.get(WhichOrg.DESTINATION));
 					})
 					.then(() => {
-						return Exporter.exportMetadata(data.orgs.get(WhichOrg.DESTINATION), "");
+						return Exporter.exportMetadata(
+							data.orgs.get(WhichOrg.DESTINATION),
+							data.orgs.get(WhichOrg.SOURCE).alias === data.orgs.get(WhichOrg.DESTINATION).alias ? "_SAME" : data.orgs.get(WhichOrg.DESTINATION).alias
+						);
 					})
 					.then(() => {
 						// VERBOSE: Print out the discovery information
