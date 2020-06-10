@@ -1,7 +1,7 @@
 {
-    "now": "2020-05-07T19:57:27.877Z",
-    "orgSource": "soORG_S",
-    "orgDestination": "soORG_D1",
+    "now": "2020-06-10T01:53:53.308Z",
+    "orgSource": "TVB_SB_Knowledge",
+    "orgDestination": "TVB_SB_Knowledge",
     "sObjectsData": [],
     "sObjectsMetadata": [
         {
@@ -23,8 +23,9 @@
     "includeAllCustom": true,
     "stopOnErrors": true,
     "ignoreFields": null,
+    "copyToProduction": true,
     "twoPassReferenceFields": null,
     "maxRecordsEach": -1,
-    "deleteDestination": true,
+    "deleteDestination": false,
     "pollingTimeout": 100000
 }

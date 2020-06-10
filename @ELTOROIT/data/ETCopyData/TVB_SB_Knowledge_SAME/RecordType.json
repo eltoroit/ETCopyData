@@ -1,0 +1,204 @@
+{
+	"fetched": 22,
+	"records": [
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N0000019BopQAE"
+			},
+			"Id": "0121N0000019BopQAE",
+			"SobjectType": "Case",
+			"DeveloperName": "SPP402_Case"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N0000019EF5QAM"
+			},
+			"Id": "0121N0000019EF5QAM",
+			"SobjectType": "Case",
+			"DeveloperName": "SPP201_Case_without_Assignment"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3GQAS"
+			},
+			"Id": "0121N000001De3GQAS",
+			"SobjectType": "Lead",
+			"DeveloperName": "Tradeshow_Lead"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3HQAS"
+			},
+			"Id": "0121N000001De3HQAS",
+			"SobjectType": "Lead",
+			"DeveloperName": "Telemarketing_Lead"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3IQAS"
+			},
+			"Id": "0121N000001De3IQAS",
+			"SobjectType": "Opportunity",
+			"DeveloperName": "B2B_Sales"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3JQAS"
+			},
+			"Id": "0121N000001De3JQAS",
+			"SobjectType": "Opportunity",
+			"DeveloperName": "B2C_Sales"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3KQAS"
+			},
+			"Id": "0121N000001De3KQAS",
+			"SobjectType": "Account",
+			"DeveloperName": "Customer_Account"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3OQAS"
+			},
+			"Id": "0121N000001De3OQAS",
+			"SobjectType": "Account",
+			"DeveloperName": "Partner_Account"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3PQAS"
+			},
+			"Id": "0121N000001De3PQAS",
+			"SobjectType": "Campaign",
+			"DeveloperName": "Campaign_Initiative"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3QQAS"
+			},
+			"Id": "0121N000001De3QQAS",
+			"SobjectType": "Campaign",
+			"DeveloperName": "Email_Campaign"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3RQAS"
+			},
+			"Id": "0121N000001De3RQAS",
+			"SobjectType": "Campaign",
+			"DeveloperName": "Telemarketing_Campaign"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3SQAS"
+			},
+			"Id": "0121N000001De3SQAS",
+			"SobjectType": "Campaign",
+			"DeveloperName": "Conference_Campaign"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3TQAS"
+			},
+			"Id": "0121N000001De3TQAS",
+			"SobjectType": "CampaignMember",
+			"DeveloperName": "Webinar"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3UQAS"
+			},
+			"Id": "0121N000001De3UQAS",
+			"SobjectType": "CampaignMember",
+			"DeveloperName": "Email"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3VQAS"
+			},
+			"Id": "0121N000001De3VQAS",
+			"SobjectType": "CampaignMember",
+			"DeveloperName": "Telemarketing"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3WQAS"
+			},
+			"Id": "0121N000001De3WQAS",
+			"SobjectType": "CampaignMember",
+			"DeveloperName": "Conference"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3XQAS"
+			},
+			"Id": "0121N000001De3XQAS",
+			"SobjectType": "Lead",
+			"DeveloperName": "Web_to_Lead"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3YQAS"
+			},
+			"Id": "0121N000001De3YQAS",
+			"SobjectType": "Case",
+			"DeveloperName": "SPP_Issue"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0121N000001De3ZQAS"
+			},
+			"Id": "0121N000001De3ZQAS",
+			"SobjectType": "Opportunity",
+			"DeveloperName": "X2_B2B_Qualification"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0123l000001AukKAAS"
+			},
+			"Id": "0123l000001AukKAAS",
+			"SobjectType": "FAQ__c",
+			"DeveloperName": "Article"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0123l000001AukUAAS"
+			},
+			"Id": "0123l000001AukUAAS",
+			"SobjectType": "FAQ__c",
+			"DeveloperName": "Link"
+		},
+		{
+			"attributes": {
+				"type": "RecordType",
+				"url": "/services/data/v48.0/sobjects/RecordType/0123l000001AukZAAS"
+			},
+			"Id": "0123l000001AukZAAS",
+			"SobjectType": "FAQ__c",
+			"DeveloperName": "Recording"
+		}
+	],
+	"total": 22
+}

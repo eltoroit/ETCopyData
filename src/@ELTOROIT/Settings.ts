@@ -9,6 +9,7 @@ How to add a new entry in the config file?
 - Implement the field in this class.
 - Read the value in processFile() (Search for // TODO: UPDATE SETTINGS HERE: READ!)
 - Write the field in valuesToWrite(); (Search for // TODO: UPDATE SETTINGS HERE: WRITE!)
+- Values get initialized here: resetValues()
 */
 
 // NOTE: Private, used for extending below (not for used in other code)
@@ -39,6 +40,7 @@ export interface ISettingsValues {
 	sObjectsMetadataRaw: Map<string, ISettingsSObjectMetatada>;
 	includeAllCustom: boolean;
 	stopOnErrors: boolean;
+	copyToProduction: boolean;
 	ignoreFieldsRaw: string;
 	twoPassReferenceFieldsRaw: string;
 	maxRecordsEachRaw: number;
@@ -62,7 +64,9 @@ export class Settings implements ISettingsValues {
 				.then((value) => {
 					resolve(s);
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 	private static readCounter: number = 0;
@@ -75,6 +79,7 @@ export class Settings implements ISettingsValues {
 	public twoPassReferenceFieldsRaw: string;
 	public includeAllCustom: boolean;
 	public stopOnErrors: boolean;
+	public copyToProduction: boolean;
 	public maxRecordsEachRaw: number;
 	public deleteDestination: boolean;
 	public pollingTimeout: number;
@@ -134,7 +139,7 @@ export class Settings implements ISettingsValues {
 			// Fix fields
 			output.ignoreFields = Util.mergeAndCleanArrays(output.ignoreFields as string, this.ignoreFieldsRaw);
 			output.twoPassReferenceFields = Util.mergeAndCleanArrays(output.twoPassReferenceFields as string, this.twoPassReferenceFieldsRaw);
-			if ((this.maxRecordsEachRaw > 0) && (output.maxRecords === -1)) {
+			if (this.maxRecordsEachRaw > 0 && output.maxRecords === -1) {
 				output.maxRecords = this.maxRecordsEachRaw;
 			}
 		} else {
@@ -165,7 +170,9 @@ export class Settings implements ISettingsValues {
 		return output;
 	}
 
-	public getOrgAlias(wo: WhichOrg): string { return this.orgAliases.get(wo); }
+	public getOrgAlias(wo: WhichOrg): string {
+		return this.orgAliases.get(wo);
+	}
 
 	public writeToFile(path: string, fileName: string, data: object): Promise<void> {
 		// VERBOSE: make files human readable
@@ -173,20 +180,23 @@ export class Settings implements ISettingsValues {
 
 		return new Promise((resolve, reject) => {
 			const fullPath = this.rootFolderFull + `/${path}`;
-			fs.mkdirp(fullPath)
-				.then(() => {
-					let strData = "";
-					if (isVerbose) {
-						// LEARNING: [JSON]: Prettyfy JSON.
-						strData = JSON.stringify(data, null, "	");
-					} else {
-						strData = JSON.stringify(data);
-					}
+			fs.mkdirp(fullPath).then(() => {
+				let strData = "";
+				if (isVerbose) {
+					// LEARNING: [JSON]: Prettyfy JSON.
+					strData = JSON.stringify(data, null, "	");
+				} else {
+					strData = JSON.stringify(data);
+				}
 
-					fs.writeFile(fullPath + `/${fileName}`, strData)
-						.then(() => { resolve(); })
-						.catch((err) => { reject(err); });
-				});
+				fs.writeFile(fullPath + `/${fileName}`, strData)
+					.then(() => {
+						resolve();
+					})
+					.catch((err) => {
+						reject(err);
+					});
+			});
 		});
 	}
 
@@ -196,10 +206,16 @@ export class Settings implements ISettingsValues {
 			fs.mkdirp(fullPath)
 				.then(() => {
 					fs.readFile(fullPath + `/${fileName}`)
-						.then((value: Buffer) => { resolve(JSON.parse(value.toString())); })
-						.catch((err) => { reject(err); });
+						.then((value: Buffer) => {
+							resolve(JSON.parse(value.toString()));
+						})
+						.catch((err) => {
+							reject(err);
+						});
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -226,11 +242,17 @@ export class Settings implements ISettingsValues {
 								Util.throwError(`Configuration file [${path}] did not exist and was created with default values. " +
 									"Please fix it and run again`);
 							})
-							.catch((err) => { reject(err); });
+							.catch((err) => {
+								reject(err);
+							});
 					}
 				})
-				.then(() => { resolve(this); })
-				.catch((err) => { reject(err); });
+				.then(() => {
+					resolve(this);
+				})
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -250,20 +272,18 @@ export class Settings implements ISettingsValues {
 				}
 			}
 
-			fs.mkdirp(this.rootFolderFull)
-				.then(() => {
-					let path: string = "";
-					path = this.rootFolderFull;
+			fs.mkdirp(this.rootFolderFull).then(() => {
+				let path: string = "";
+				path = this.rootFolderFull;
 
-					// VERBOSE: Create sub-folders based on time so files do not override
-					// path += `/${Util.getWallTime(true)}`;
+				// VERBOSE: Create sub-folders based on time so files do not override
+				// path += `/${Util.getWallTime(true)}`;
 
-					fs.mkdirp(path)
-						.then(() => {
-							this.rootFolderFull = path;
-							resolve(this.rootFolderFull);
-						});
+				fs.mkdirp(path).then(() => {
+					this.rootFolderFull = path;
+					resolve(this.rootFolderFull);
 				});
+			});
 		});
 	}
 
@@ -271,7 +291,8 @@ export class Settings implements ISettingsValues {
 	private processFile(overrideSettings: Settings): Promise<Settings> {
 		return new Promise((resolve, reject) => {
 			this.isValid = true;
-			this.configFile.read()
+			this.configFile
+				.read()
 				.then((resValues: Dictionary<AnyJson>) => {
 					// This can be done in parallel mode, so use an array of promises and wait for all of them to complete at the end
 					let msg: string = "";
@@ -287,8 +308,9 @@ export class Settings implements ISettingsValues {
 						Util.writeLog(msg, LogLevel.INFO);
 					} else {
 						promises.push(
-							this.processStringValues(resValues, WhichOrg.SOURCE, true)
-								.then((value: string) => { this.orgAliases.set(WhichOrg.SOURCE, value); })
+							this.processStringValues(resValues, WhichOrg.SOURCE, true).then((value: string) => {
+								this.orgAliases.set(WhichOrg.SOURCE, value);
+							})
 						);
 					}
 
@@ -300,39 +322,47 @@ export class Settings implements ISettingsValues {
 						Util.writeLog(msg, LogLevel.INFO);
 					} else {
 						promises.push(
-							this.processStringValues(resValues, WhichOrg.DESTINATION, true)
-								.then((value: string) => { this.orgAliases.set(WhichOrg.DESTINATION, value); })
+							this.processStringValues(resValues, WhichOrg.DESTINATION, true).then((value: string) => {
+								this.orgAliases.set(WhichOrg.DESTINATION, value);
+							})
 						);
 					}
 
 					// sObjectsData
 					promises.push(
-						this.processsObjectsValues(resValues, "sObjectsData", true)
-							.then(() => {
-								msg = `Configuration value for [sObjectsData]: ${this.sObjectsDataRaw.size} sObjects found.`;
-								Util.writeLog(msg, LogLevel.INFO);
-							})
+						this.processsObjectsValues(resValues, "sObjectsData", true).then(() => {
+							msg = `Configuration value for [sObjectsData]: ${this.sObjectsDataRaw.size} sObjects found.`;
+							Util.writeLog(msg, LogLevel.INFO);
+						})
 					);
 
 					// sObjectsMetadata
 					promises.push(
-						this.processsObjectsValues(resValues, "sObjectsMetadata", true)
-							.then(() => {
-								msg = `Configuration value for [sObjectsMetadata]: ${this.sObjectsMetadataRaw.size} sObjects found.`;
-								Util.writeLog(msg, LogLevel.INFO);
-							})
+						this.processsObjectsValues(resValues, "sObjectsMetadata", true).then(() => {
+							msg = `Configuration value for [sObjectsMetadata]: ${this.sObjectsMetadataRaw.size} sObjects found.`;
+							Util.writeLog(msg, LogLevel.INFO);
+						})
 					);
 
 					// includeAllCustom
 					promises.push(
-						this.processStringValues(resValues, "includeAllCustom", false)
-							.then((value: string) => { this.includeAllCustom = (value === "true"); })
+						this.processStringValues(resValues, "includeAllCustom", false).then((value: string) => {
+							this.includeAllCustom = value === "true";
+						})
 					);
 
 					// stopOnErrors
 					promises.push(
-						this.processStringValues(resValues, "stopOnErrors", false)
-							.then((value: string) => { this.stopOnErrors = (value === "true"); })
+						this.processStringValues(resValues, "stopOnErrors", false).then((value: string) => {
+							this.stopOnErrors = value === "true";
+						})
+					);
+
+					// copyToProduction
+					promises.push(
+						this.processStringValues(resValues, "copyToProduction", false).then((value: string) => {
+							this.copyToProduction = value === "true";
+						})
 					);
 
 					// rootFolder
@@ -348,42 +378,52 @@ export class Settings implements ISettingsValues {
 
 					// ignoreFields
 					promises.push(
-						this.processStringValues(resValues, "ignoreFields", false)
-							.then((value: string) => { this.ignoreFieldsRaw = value; })
+						this.processStringValues(resValues, "ignoreFields", false).then((value: string) => {
+							this.ignoreFieldsRaw = value;
+						})
 					);
 
 					// twoPassReferenceFields
 					promises.push(
-						this.processStringValues(resValues, "twoPassReferenceFields", false)
-							.then((value: string) => { this.twoPassReferenceFieldsRaw = value; })
+						this.processStringValues(resValues, "twoPassReferenceFields", false).then((value: string) => {
+							this.twoPassReferenceFieldsRaw = value;
+						})
 					);
 
 					// maxRecordsEach
 					promises.push(
 						this.processStringValues(resValues, "maxRecordsEach", false)
 							// LEARNING: Parsing a string into a number, 10 is for the base (16 for hex)
-							.then((value: string) => { this.maxRecordsEachRaw = parseInt(value, 10); })
+							.then((value: string) => {
+								this.maxRecordsEachRaw = parseInt(value, 10);
+							})
 					);
 
 					// deleteDestination
 					promises.push(
-						this.processStringValues(resValues, "deleteDestination", false)
-							.then((value: string) => { this.deleteDestination = (value === "true"); })
+						this.processStringValues(resValues, "deleteDestination", false).then((value: string) => {
+							this.deleteDestination = value === "true";
+						})
 					);
 
 					// pollingTimeout
 					promises.push(
-						this.processStringValues(resValues, "pollingTimeout", false)
-							.then((value: string) => { this.pollingTimeout = parseInt(value, 10); })
+						this.processStringValues(resValues, "pollingTimeout", false).then((value: string) => {
+							this.pollingTimeout = parseInt(value, 10);
+						})
 					);
 
 					Promise.all(promises)
 						.then(() => {
 							resolve(this);
 						})
-						.catch((err) => { reject(err); });
+						.catch((err) => {
+							reject(err);
+						});
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -457,7 +497,7 @@ export class Settings implements ISettingsValues {
 			maxRecords: -1,
 			name: sObjName,
 			orderBy: null,
-			where: null,
+			where: null
 		};
 		// LEARNING: [OBJECT]: How to loop through the values of an JSON object, which is not a Typescript Map.
 		Object.keys(sObject).forEach((key) => {
@@ -474,7 +514,7 @@ export class Settings implements ISettingsValues {
 			matchBy: null,
 			name: sObjName,
 			orderBy: null,
-			where: null,
+			where: null
 		};
 		Object.keys(sObject).forEach((key) => {
 			newValue[key] = sObject[key];
@@ -491,7 +531,7 @@ export class Settings implements ISettingsValues {
 			filename: "ETCopyData.json",
 			isGlobal: false,
 			isState: false,
-			rootFolder: this.configfolder,
+			rootFolder: this.configfolder
 		});
 	}
 
@@ -504,7 +544,7 @@ export class Settings implements ISettingsValues {
 		const output: ConfigContents = {};
 
 		// VERBOSE: Print debug time in output file so files do get changed, and we know we are looking at the right file.
-		output.now = toAnyJson((new Date()).toJSON());
+		output.now = toAnyJson(new Date().toJSON());
 
 		// Output regular data
 		output[WhichOrg.SOURCE] = this.orgAliases.get(WhichOrg.SOURCE);
@@ -515,6 +555,7 @@ export class Settings implements ISettingsValues {
 		output.includeAllCustom = this.includeAllCustom;
 		output.stopOnErrors = this.stopOnErrors;
 		output.ignoreFields = this.ignoreFieldsRaw;
+		output.copyToProduction = this.copyToProduction;
 		output.twoPassReferenceFields = this.twoPassReferenceFieldsRaw;
 		output.maxRecordsEach = this.maxRecordsEachRaw;
 		output.deleteDestination = this.deleteDestination;
@@ -547,24 +588,26 @@ export class Settings implements ISettingsValues {
 			}
 
 			outputOneSObject.name = sObjName;
-			Object.keys(sObj).sort().forEach((fieldName) => {
-				let isSkip = false;
-				let value = sObj[fieldName];
+			Object.keys(sObj)
+				.sort()
+				.forEach((fieldName) => {
+					let isSkip = false;
+					let value = sObj[fieldName];
 
-				if (isVerbose) {
-					if (["ignoreFields", "twoPassReferenceFields", "fieldsToExport"].includes(fieldName)) {
-						value = value.toString();
+					if (isVerbose) {
+						if (["ignoreFields", "twoPassReferenceFields", "fieldsToExport"].includes(fieldName)) {
+							value = value.toString();
+						}
+					} else {
+						// Only perform these checks if it's not verbose mode
+						isSkip = isSkip || value === null;
+						isSkip = isSkip || (fieldName === "maxRecords" ? value === -1 : false);
 					}
-				} else {
-					// Only perform these checks if it's not verbose mode
-					isSkip = isSkip || (value === null);
-					isSkip = isSkip || (fieldName === "maxRecords" ? value === -1 : false);
-				}
 
-				if (!isSkip) {
-					outputOneSObject[fieldName] = value;
-				}
-			});
+					if (!isSkip) {
+						outputOneSObject[fieldName] = value;
+					}
+				});
 
 			outputAllSObjects.push(outputOneSObject);
 		});
@@ -584,6 +627,7 @@ export class Settings implements ISettingsValues {
 		this.rootFolderRaw = null;
 		this.includeAllCustom = false;
 		this.stopOnErrors = true;
+		this.copyToProduction = false;
 		this.ignoreFieldsRaw = null;
 		this.twoPassReferenceFieldsRaw = null;
 		this.maxRecordsEachRaw = -1;
@@ -601,7 +645,7 @@ export class Settings implements ISettingsValues {
 				maxRecords: this.maxRecordsEachRaw,
 				name: null,
 				orderBy: null,
-				where: null,
+				where: null
 			};
 			this.blankSObjectData = output;
 		}

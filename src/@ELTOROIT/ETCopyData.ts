@@ -347,7 +347,7 @@ export class ETCopyData {
 						return this.setupOrg(data, WhichOrg.DESTINATION);
 					})
 					.then(() => {
-						this.makeSureThisOrgIsSafe(data.orgs.get(WhichOrg.DESTINATION));
+						return this.makeSureThisOrgIsSafe(data, data.orgs.get(WhichOrg.DESTINATION));
 					})
 					.then(() => {
 						this.compareSchemaForOrgs(data.orgs.get(WhichOrg.SOURCE), data.orgs.get(WhichOrg.DESTINATION));
@@ -376,16 +376,68 @@ export class ETCopyData {
 		});
 	}
 
-	private makeSureThisOrgIsSafe(org: any): void {
-		const productionLoginUrl: string = "login.salesforce.com";
-		const orgLoginUrl: string = org.conn.getAuthInfoFields().loginUrl;
-		const orgDomain: string = orgLoginUrl.split("/")[2];
-		const isValidOrg: boolean = orgDomain.toUpperCase() !== productionLoginUrl.toUpperCase();
+	private makeSureThisOrgIsSafe(data: IETCopyData, org: any): Promise<void> {
+		return new Promise((resolve, reject) => {
+			const productionLoginUrl: string = "login.salesforce.com";
+			const orgLoginUrl: string = org.conn.getAuthInfoFields().loginUrl;
+			const orgDomain: string = orgLoginUrl.split("/")[2];
+			const isProductionOrg: boolean = orgDomain.toUpperCase() === productionLoginUrl.toUpperCase();
 
-		if (!isValidOrg) {
-			const msg = "Destination Org can not be production because this app deletes data!";
-			Util.writeLog(msg, LogLevel.FATAL);
-			Util.throwError(msg);
-		}
+			if (isProductionOrg) {
+				if (data.settings.copyToProduction) {
+					if (data.settings.deleteDestination) {
+						const msg = "Destination Org can not be production because this app deletes data! (2)";
+						Util.writeLog(msg, LogLevel.FATAL);
+						Util.throwError(msg);
+						reject(msg);
+					} else {
+						UX.create()
+							.then((ux) => {
+								console.log("*** *** ***");
+								console.log("*** *** ***");
+								console.log("*** *** ***");
+								ux.confirm("*** *** *** Do you really, really, really want to import data into your PRODUCTION org?")
+									.then((resultYN) => {
+										if (resultYN) {
+											let expected = `${Math.floor(100000000 + Math.random() * 900000000)}`;
+											ux.prompt("ProductionDeploy", {
+												prompt: `Just to make sure you are awake, type this number [${expected}]: `,
+												type: "normal",
+												required: true,
+												default: "NOT_ENTERED"
+											})
+												.then((resultSTR) => {
+													if (resultSTR === expected) {
+														resolve();
+													} else {
+														reject("Number expected was not entered");
+													}
+												})
+												.catch((err) => {
+													reject(err);
+												});
+										} else {
+											reject("You decided not to import data into production, good boy (girl)!");
+										}
+									})
+									.catch((err) => {
+										reject(err);
+									});
+							})
+							.catch((err) => {
+								Util.throwError(err);
+								reject(err);
+							});
+					}
+				} else {
+					const msg = "Destination Org can not be production because this app deletes data! (1)";
+					Util.writeLog(msg, LogLevel.FATAL);
+					Util.throwError(msg);
+					reject(msg);
+				}
+			} else {
+				resolve();
+			}
+		});
 	}
 }
