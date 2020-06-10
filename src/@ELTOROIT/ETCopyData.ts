@@ -396,26 +396,12 @@ export class ETCopyData {
 								console.log("*** *** ***");
 								console.log("*** *** ***");
 								console.log("*** *** ***");
+								console.log("*** *** *** Review the list of sObjects above, and tell me... ");
 								ux.confirm("*** *** *** Do you really, really, really want to import data into your PRODUCTION org?")
 									.then((resultYN) => {
 										if (resultYN) {
-											let expected = `${Math.floor(100000000 + Math.random() * 900000000)}`;
-											ux.prompt("ProductionDeploy", {
-												prompt: `Just to make sure you are awake, type this number [${expected}]: `,
-												type: "normal",
-												required: true,
-												default: "NOT_ENTERED"
-											})
-												.then((resultSTR) => {
-													if (resultSTR === expected) {
-														resolve();
-													} else {
-														reject("Number expected was not entered");
-													}
-												})
-												.catch((err) => {
-													reject(err);
-												});
+											console.log("*** *** ***");
+											this.RequestedNumberEntered(ux, 0, "Just to make sure you are awake... Type this number");
 										} else {
 											reject("You decided not to import data into production, good boy (girl)!");
 										}
@@ -438,6 +424,38 @@ export class ETCopyData {
 			} else {
 				resolve();
 			}
+		});
+	}
+
+	private RequestedNumberEntered(ux: UX, counter: number, message: string): Promise<Boolean> {
+		return new Promise((resolve, reject) => {
+			let expected = `${Math.floor(100000000 + Math.random() * 900000000)}`;
+			if (counter > 0) {
+				console.log(`*** *** *** Wrong, please try again (Retry #${counter})`);
+			}
+			ux.prompt("ProductionDeploy", {
+				prompt: `*** *** *** ${message} [${expected}]: `,
+				type: "normal",
+				required: true,
+				default: "NOT_ENTERED"
+			})
+				.then((resultSTR) => {
+					if (resultSTR === expected) {
+						resolve();
+					} else {
+						// reject("Number expected was not entered");
+						this.RequestedNumberEntered(ux, counter + 1, message)
+							.then(() => {
+								resolve();
+							})
+							.catch((err) => {
+								reject(err);
+							});
+					}
+				})
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 }

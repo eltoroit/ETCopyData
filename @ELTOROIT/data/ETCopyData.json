@@ -1,8 +1,33 @@
 {
-    "now": "2020-06-10T01:53:53.308Z",
+    "now": "2020-06-10T10:39:49.279Z",
     "orgSource": "TVB_SB_Knowledge",
     "orgDestination": "TVB_SB_Knowledge",
-    "sObjectsData": [],
+    "sObjectsData": [
+        {
+            "name": "Account",
+            "ignoreFields": "",
+            "maxRecords": -1,
+            "orderBy": null,
+            "twoPassReferenceFields": "",
+            "where": null
+        },
+        {
+            "name": "Contact",
+            "ignoreFields": "",
+            "maxRecords": -1,
+            "orderBy": null,
+            "twoPassReferenceFields": "",
+            "where": null
+        },
+        {
+            "name": "Case",
+            "ignoreFields": "",
+            "maxRecords": -1,
+            "orderBy": null,
+            "twoPassReferenceFields": "",
+            "where": null
+        }
+    ],
     "sObjectsMetadata": [
         {
             "name": "User",
