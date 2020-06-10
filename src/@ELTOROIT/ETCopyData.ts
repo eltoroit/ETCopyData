@@ -353,10 +353,8 @@ export class ETCopyData {
 						this.compareSchemaForOrgs(data.orgs.get(WhichOrg.SOURCE), data.orgs.get(WhichOrg.DESTINATION));
 					})
 					.then(() => {
-						return Exporter.exportMetadata(
-							data.orgs.get(WhichOrg.DESTINATION),
-							data.orgs.get(WhichOrg.SOURCE).alias === data.orgs.get(WhichOrg.DESTINATION).alias ? "_SAME" : data.orgs.get(WhichOrg.DESTINATION).alias
-						);
+						const sameOrg: Boolean = data.orgs.get(WhichOrg.SOURCE).alias === data.orgs.get(WhichOrg.DESTINATION).alias;
+						return Exporter.exportMetadata(data.orgs.get(WhichOrg.DESTINATION), sameOrg ? "_SAME" : "");
 					})
 					.then(() => {
 						// VERBOSE: Print out the discovery information
@@ -406,7 +404,11 @@ export class ETCopyData {
 									.then((resultYN) => {
 										if (resultYN) {
 											console.log("*** *** ***");
-											this.RequestedNumberEntered(ux, 0, "Just to make sure you are awake... Type this number");
+											this.RequestedNumberEntered(ux, 0, "Just to make sure you are awake... Type this number")
+												.then(() => resolve())
+												.catch((err) => {
+													reject(err);
+												});
 										} else {
 											reject("You decided not to import data into production, good boy (girl)!");
 										}
