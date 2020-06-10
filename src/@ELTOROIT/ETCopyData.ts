@@ -384,7 +384,12 @@ export class ETCopyData {
 			const isProductionOrg: boolean = orgDomain.toUpperCase() === productionLoginUrl.toUpperCase();
 
 			if (isProductionOrg) {
-				if (data.settings.copyToProduction) {
+				if (data.settings.includeAllCustom) {
+					const msg = "You can't set [includeAllCustom] to true when importing data to production to production";
+					Util.writeLog(msg, LogLevel.FATAL);
+					Util.throwError(msg);
+					reject(msg);
+				} else if (data.settings.copyToProduction) {
 					if (data.settings.deleteDestination) {
 						const msg = "Destination Org can not be production because this app deletes data! (2)";
 						Util.writeLog(msg, LogLevel.FATAL);
