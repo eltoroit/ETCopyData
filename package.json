@@ -5,26 +5,27 @@
 	"author": "Andres Perez @ElToroIT",
 	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
 	"dependencies": {
-		"@salesforce/command": "3.0.0",
-		"@oclif/config": "1.14.0",
+		"@oclif/config": "1.15.1",
 		"@oclif/errors": "1.2.2",
-		"@oclif/plugin-help": "2.2.3",
-		"tslib": "1.11.0"
+		"@oclif/plugin-help": "3.1.0",
+		"@salesforce/command": "3.0.0",
+		"npm-check-updates": "7.0.1",
+		"tslib": "2.0.0"
 	},
 	"devDependencies": {
 		"@oclif/dev-cli": "1.22.2",
-		"@oclif/test": "1.2.5",
+		"@oclif/test": "1.2.6",
 		"@salesforce/dev-config": "1.5.0",
-		"@types/chai": "4.2.9",
-		"@types/jsforce": "1.9.13",
-		"@types/mocha": "7.0.1",
-		"@types/node": "13.7.4",
-		"globby": "11.0.0",
-		"mocha": "^7.1.2",
-		"nyc": "15.0.0",
-		"sinon": "9.0.0",
-		"ts-node": "8.6.2",
-		"typescript": "3.8.2"
+		"@types/chai": "4.2.11",
+		"@types/jsforce": "1.9.18",
+		"@types/mocha": "7.0.2",
+		"@types/node": "14.0.13",
+		"globby": "11.0.1",
+		"mocha": "8.0.0",
+		"nyc": "15.1.0",
+		"sinon": "9.0.2",
+		"ts-node": "8.10.2",
+		"typescript": "3.9.5"
 	},
 	"engines": {
 		"node": ">=8.0.0"
