@@ -27,7 +27,9 @@ export class Importer {
 				const sObjectsToLoadReversed: string[] = sObjectsToLoad.slice(0).reverse();
 
 				Util.serialize(
-					this, sObjectsToLoadReversed, (index): Promise<void> => {
+					this,
+					sObjectsToLoadReversed,
+					(index): Promise<void> => {
 						return new Promise((resolveEach, rejectEach) => {
 							const sObjName = sObjectsToLoadReversed[index];
 							this.deleteOneBeforeLoading(orgDestination, sObjName)
@@ -38,9 +40,12 @@ export class Importer {
 									}
 									resolveEach();
 								})
-								.catch((err) => { rejectEach(err); });
+								.catch((err) => {
+									rejectEach(err);
+								});
 						});
-					})
+					}
+				)
 					.then(() => {
 						let msg = "";
 						if (countErrorsRecords > 0) {
@@ -49,13 +54,15 @@ export class Importer {
 							Util.writeLog(msg, orgDestination.settings.stopOnErrors ? LogLevel.FATAL : LogLevel.WARN);
 						}
 
-						if ((!orgDestination.settings.stopOnErrors) || (countErrorsRecords === 0)) {
+						if (!orgDestination.settings.stopOnErrors || countErrorsRecords === 0) {
 							resolve(countErrorsRecords);
 						} else {
 							reject(msg);
 						}
 					})
-					.catch((err) => { reject(err); });
+					.catch((err) => {
+						reject(err);
+					});
 			} else {
 				resolve(0);
 			}
@@ -97,13 +104,15 @@ export class Importer {
 						Util.writeLog(msg, orgDestination.settings.stopOnErrors ? LogLevel.FATAL : LogLevel.WARN);
 					}
 
-					if ((!orgDestination.settings.stopOnErrors) || (this.countImportErrorsRecords === 0)) {
+					if (!orgDestination.settings.stopOnErrors || this.countImportErrorsRecords === 0) {
 						resolve(this.countImportErrorsRecords);
 					} else {
 						reject(msg);
 					}
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -145,7 +154,9 @@ export class Importer {
 					});
 					resolve();
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -155,23 +166,30 @@ export class Importer {
 			let key: string;
 			let value: string;
 
-			org.settings.readFromFile(org.alias, sObjName + ".json")
+			org.settings
+				.readFromFile(org.alias, sObjName + ".json")
 				.then((jsonSource: any) => {
 					const records: any[] = jsonSource.records;
 					records.forEach((record) => {
 						key = "";
-						matchBy.split(",").forEach(part => {
+						matchBy.split(",").forEach((part) => {
 							if (key !== "") {
 								key += "|";
 							}
-							key += record[part.trim()];
-						})
+							let v = record[part.trim()];
+							key += v;
+							if (v === undefined) {
+								reject(`Value for field [${part.trim()}] was not found in [${org.alias}] for [${sObjName}]. Check spelling.`);
+							}
+						});
 						value = record.Id;
 						tempMD.get(sObjName).get(org.alias).set(key, value);
 					});
 					resolve();
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -195,13 +213,18 @@ export class Importer {
 							this.countImportErrorsSObjects++;
 						}
 						this.loadAllSObjectData(orgSource, orgDestination, sObjectsToLoad, ++index)
-							.then(() => { resolve(); })
-							.catch((err) => { reject(err); });
+							.then(() => {
+								resolve();
+							})
+							.catch((err) => {
+								reject(err);
+							});
 					})
-					.catch((err) => { reject(err); });
+					.catch((err) => {
+						reject(err);
+					});
 			}
 		});
-
 	}
 
 	private loadOneSObjectData(orgSource: OrgManager, orgDestination: OrgManager, sObjName: string): Promise<number> {
@@ -210,13 +233,16 @@ export class Importer {
 			let msg = "";
 			let records: any[];
 			let hasNotified: boolean = false;
-			orgSource.settings.readFromFile(orgSource.alias, sObjName + ".json")
+			orgSource.settings
+				.readFromFile(orgSource.alias, sObjName + ".json")
 				.then((jsonSource: any) => {
 					records = jsonSource.records;
 					records.forEach((record: any) => {
 						// Update parent IDs.
-						orgDestination.discovery.getSObjects().get(sObjName).parents.forEach(
-							(parent: ISchemaDataParent) => {
+						orgDestination.discovery
+							.getSObjects()
+							.get(sObjName)
+							.parents.forEach((parent: ISchemaDataParent) => {
 								const sourceParentId = record[parent.parentId];
 								// Issue #003: Null pointer if there was no data, so split and check for null
 								const destinationParentMap = this.matchingIds.get(parent.sObj);
@@ -241,9 +267,11 @@ export class Importer {
 									Util.writeLog(msg, LogLevel.INFO);
 								}
 							});
-						
+
 						// Clear reference fields that will be set in second pass
-						const asArray = (param: string | string[]) => { return (typeof param === 'string') ? [param] : param; };
+						const asArray = (param: string | string[]) => {
+							return typeof param === "string" ? [param] : param;
+						};
 						asArray(orgDestination.settings.getSObjectData(sObjName).twoPassReferenceFields).forEach((fieldName: string) => {
 							if (record[fieldName] !== null && record[fieldName] !== undefined) {
 								let sObjectData = this.twoPassReferenceFieldData.get(sObjName);
@@ -309,7 +337,9 @@ export class Importer {
 						resolve(0);
 					}
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -321,7 +351,9 @@ export class Importer {
 			const keys: Array<string> = Array.from(this.twoPassReferenceFieldData.keys());
 
 			Util.serialize(
-				this, keys, (index): Promise<void> => {
+				this,
+				keys,
+				(index): Promise<void> => {
 					return new Promise((resolveEach, rejectEach) => {
 						const sObjectName = keys[index];
 						Util.writeLog(`[${orgDestination.alias}] Updating references for [${sObjectName}] (${index + 1} of ${keys.length})`, LogLevel.TRACE);
@@ -330,8 +362,10 @@ export class Importer {
 						let records = [];
 
 						let baseRecord = {};
-						schemaData.twoPassParents.forEach((parent) => { baseRecord[parent.parentId] = null; });
-						
+						schemaData.twoPassParents.forEach((parent) => {
+							baseRecord[parent.parentId] = null;
+						});
+
 						let availableMatchingIds = new Map<string, Map<string, string>>(); // field name => id mapping data (old => new)
 						schemaData.twoPassParents.forEach((parent) => {
 							if (this.matchingIds.has(parent.sObj)) {
@@ -344,7 +378,7 @@ export class Importer {
 
 						// Create an object for each record that has one or more fields that need to be updated
 						this.twoPassReferenceFieldData.get(sObjectName).forEach((mappings: Array<ReferenceFieldMapping>, id: string) => {
-							let record = Object.assign({'Id': this.matchingIds.get(sObjectName).get(id)}, baseRecord);
+							let record = Object.assign({ Id: this.matchingIds.get(sObjectName).get(id) }, baseRecord);
 							mappings.forEach((mapping: ReferenceFieldMapping) => {
 								const destinationId = availableMatchingIds.get(mapping.fieldName).get(mapping.sourceId);
 								if (destinationId !== undefined) {
@@ -369,13 +403,13 @@ export class Importer {
 							for (let i = 0; i < results.length; i++) {
 								if (results[i].success) {
 									goodCount++;
-									Util.writeLog(`[${orgDestination.alias}] Successfully updated references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]`,
-												  LogLevel.TRACE);
+									Util.writeLog(`[${orgDestination.alias}] Successfully updated references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]`, LogLevel.TRACE);
 								} else {
 									badCount++;
-									Util.writeLog(`[${orgDestination.alias}] Error updating references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]`
-													+ results[i].errors.join(", "),
-												  LogLevel.TRACE);
+									Util.writeLog(
+										`[${orgDestination.alias}] Error updating references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]` + results[i].errors.join(", "),
+										LogLevel.TRACE
+									);
 								}
 							}
 
@@ -385,11 +419,14 @@ export class Importer {
 							resolveEach();
 						});
 					});
-				})
+				}
+			)
 				.then(() => {
 					resolve();
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -401,7 +438,8 @@ export class Importer {
 			Util.writeLog(`[${org.alias}] Deleting records from [${sObjName}]`, LogLevel.TRACE);
 			org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
 			// LEARNING: Deleting sObject records in bulk
-			org.conn.sobject(sObjName)
+			org.conn
+				.sobject(sObjName)
 				.find({ CreatedDate: { $lte: Date.TOMORROW } })
 				.destroy(sObjName)
 				.then((results: RecordResult[]) => {
@@ -411,7 +449,7 @@ export class Importer {
 						if (result.success) {
 							totalSuccess++;
 						} else {
-							if ((result.errors.length === 1) && (result.errors[0] === "ENTITY_IS_DELETED:entity is deleted:--")) {
+							if (result.errors.length === 1 && result.errors[0] === "ENTITY_IS_DELETED:entity is deleted:--") {
 								// Ignore error
 							} else {
 								totalFailures++;
@@ -426,7 +464,9 @@ export class Importer {
 
 					resolve(totalFailures);
 				})
-				.catch((err) => { reject(err); });
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 }
