@@ -354,7 +354,8 @@ export class ETCopyData {
 					})
 					.then(() => {
 						const sameOrg: Boolean = data.orgs.get(WhichOrg.SOURCE).alias === data.orgs.get(WhichOrg.DESTINATION).alias;
-						return Exporter.exportMetadata(data.orgs.get(WhichOrg.DESTINATION), sameOrg ? "_SAME" : "");
+						const folderCode = sameOrg ? "_SAME" : "";
+						return Exporter.exportMetadata(data.orgs.get(WhichOrg.DESTINATION), folderCode);
 					})
 					.then(() => {
 						// VERBOSE: Print out the discovery information

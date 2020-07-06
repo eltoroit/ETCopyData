@@ -124,6 +124,10 @@ export class Importer {
 			this.matchingIds = new Map<string, Map<string, string>>();
 			tempMD = new Map<string, Map<string, Map<string, string>>>();
 
+			// Same org alias?
+			const sameOrg: Boolean = orgSource.alias === orgDestination.alias;
+			const folderCode = sameOrg ? "_SAME" : "";
+
 			// Load exported Metadata
 			const promises = [];
 			orgSource.coreMD.sObjects.forEach((sObjName: string) => {
@@ -131,10 +135,10 @@ export class Importer {
 
 				tempMD.set(sObjName, new Map<string, Map<string, string>>());
 				tempMD.get(sObjName).set(orgSource.alias, new Map<string, string>());
-				tempMD.get(sObjName).set(orgDestination.alias, new Map<string, string>());
+				tempMD.get(sObjName).set(orgDestination.alias + folderCode, new Map<string, string>());
 
-				promises.push(this.processMetadataRecords(orgSource, sObjName, matchBy, tempMD));
-				promises.push(this.processMetadataRecords(orgDestination, sObjName, matchBy, tempMD));
+				promises.push(this.processMetadataRecords(orgSource, sObjName, matchBy, tempMD, ""));
+				promises.push(this.processMetadataRecords(orgDestination, sObjName, matchBy, tempMD, folderCode));
 			});
 
 			Promise.all(promises)
@@ -142,7 +146,7 @@ export class Importer {
 					tempMD.forEach((value: Map<string, Map<string, string>>, sObjName: string) => {
 						this.matchingIds.set(sObjName, new Map<string, string>());
 						const mapSource = value.get(orgSource.alias);
-						const mapDestination = value.get(orgDestination.alias);
+						const mapDestination = value.get(orgDestination.alias + folderCode);
 
 						mapSource.forEach((idSource: string, keySource: string) => {
 							let idDestination = null;
@@ -161,13 +165,13 @@ export class Importer {
 	}
 
 	// tslint:disable-next-line:max-line-length
-	private processMetadataRecords(org: OrgManager, sObjName: string, matchBy: string, tempMD: Map<string, Map<string, Map<string, string>>>): Promise<void> {
+	private processMetadataRecords(org: OrgManager, sObjName: string, matchBy: string, tempMD: Map<string, Map<string, Map<string, string>>>, folderCode: string): Promise<void> {
 		return new Promise((resolve, reject) => {
 			let key: string;
 			let value: string;
 
 			org.settings
-				.readFromFile(org.alias, sObjName + ".json")
+				.readFromFile(org.alias + folderCode, sObjName + ".json")
 				.then((jsonSource: any) => {
 					const records: any[] = jsonSource.records;
 					records.forEach((record) => {
@@ -183,7 +187,10 @@ export class Importer {
 							}
 						});
 						value = record.Id;
-						tempMD.get(sObjName).get(org.alias).set(key, value);
+						tempMD
+							.get(sObjName)
+							.get(org.alias + folderCode)
+							.set(key, value);
 					});
 					resolve();
 				})
