@@ -327,7 +327,7 @@ export class Importer {
 								} else {
 									badCount++;
 									msg += `*** [${orgDestination.alias}] Error importing [${sObjName}] record #${i + 1}. `;
-									msg += results[i].errors.join(", ");
+									msg += JSON.stringify(results[i].errors);
 									Util.writeLog(msg, LogLevel.ERROR);
 								}
 							}
@@ -414,7 +414,7 @@ export class Importer {
 								} else {
 									badCount++;
 									Util.writeLog(
-										`[${orgDestination.alias}] Error updating references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]` + results[i].errors.join(", "),
+										`[${orgDestination.alias}] Error updating references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]` + JSON.stringify(results[i].errors),
 										LogLevel.TRACE
 									);
 								}
@@ -460,7 +460,7 @@ export class Importer {
 								// Ignore error
 							} else {
 								totalFailures++;
-								msg = `*** [${org.alias}] Error deleting [${sObjName}] records. ${result.errors.join(", ")}`;
+								msg = `*** [${org.alias}] Error deleting [${sObjName}] records. ${JSON.stringify(result)}`;
 								Util.writeLog(msg, LogLevel.ERROR);
 							}
 						}
