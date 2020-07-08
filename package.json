@@ -1,7 +1,7 @@
 {
 	"name": "etcopydata",
 	"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
-	"version": "0.5.8b",
+	"version": "0.5.10b",
 	"author": "Andres Perez @ElToroIT",
 	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
 	"dependencies": {
