@@ -353,10 +353,9 @@ export class ETCopyData {
 						this.compareSchemaForOrgs(data.orgs.get(WhichOrg.SOURCE), data.orgs.get(WhichOrg.DESTINATION));
 					})
 					.then(() => {
-						return Exporter.exportMetadata(
-							data.orgs.get(WhichOrg.DESTINATION),
-							data.orgs.get(WhichOrg.SOURCE).alias === data.orgs.get(WhichOrg.DESTINATION).alias ? "_SAME" : data.orgs.get(WhichOrg.DESTINATION).alias
-						);
+						const sameOrg: Boolean = data.orgs.get(WhichOrg.SOURCE).alias === data.orgs.get(WhichOrg.DESTINATION).alias;
+						const folderCode = sameOrg ? "_SAME" : "";
+						return Exporter.exportMetadata(data.orgs.get(WhichOrg.DESTINATION), folderCode);
 					})
 					.then(() => {
 						// VERBOSE: Print out the discovery information
@@ -384,7 +383,12 @@ export class ETCopyData {
 			const isProductionOrg: boolean = orgDomain.toUpperCase() === productionLoginUrl.toUpperCase();
 
 			if (isProductionOrg) {
-				if (data.settings.copyToProduction) {
+				if (data.settings.includeAllCustom) {
+					const msg = "You can't set [includeAllCustom] to true when importing data to production to production";
+					Util.writeLog(msg, LogLevel.FATAL);
+					Util.throwError(msg);
+					reject(msg);
+				} else if (data.settings.copyToProduction) {
 					if (data.settings.deleteDestination) {
 						const msg = "Destination Org can not be production because this app deletes data! (2)";
 						Util.writeLog(msg, LogLevel.FATAL);
@@ -396,23 +400,13 @@ export class ETCopyData {
 								console.log("*** *** ***");
 								console.log("*** *** ***");
 								console.log("*** *** ***");
+								console.log("*** *** *** Review the list of sObjects above, and tell me... ");
 								ux.confirm("*** *** *** Do you really, really, really want to import data into your PRODUCTION org?")
 									.then((resultYN) => {
 										if (resultYN) {
-											let expected = `${Math.floor(100000000 + Math.random() * 900000000)}`;
-											ux.prompt("ProductionDeploy", {
-												prompt: `Just to make sure you are awake, type this number [${expected}]: `,
-												type: "normal",
-												required: true,
-												default: "NOT_ENTERED"
-											})
-												.then((resultSTR) => {
-													if (resultSTR === expected) {
-														resolve();
-													} else {
-														reject("Number expected was not entered");
-													}
-												})
+											console.log("*** *** ***");
+											this.RequestedNumberEntered(ux, 0, "Just to make sure you are awake... Type this number")
+												.then(() => resolve())
 												.catch((err) => {
 													reject(err);
 												});
@@ -438,6 +432,38 @@ export class ETCopyData {
 			} else {
 				resolve();
 			}
+		});
+	}
+
+	private RequestedNumberEntered(ux: UX, counter: number, message: string): Promise<Boolean> {
+		return new Promise((resolve, reject) => {
+			let expected = `${Math.floor(100000000 + Math.random() * 900000000)}`;
+			if (counter > 0) {
+				console.log(`*** *** *** Wrong, please try again (Retry #${counter})`);
+			}
+			ux.prompt("ProductionDeploy", {
+				prompt: `*** *** *** ${message} [${expected}]: `,
+				type: "normal",
+				required: true,
+				default: "NOT_ENTERED"
+			})
+				.then((resultSTR) => {
+					if (resultSTR === expected) {
+						resolve();
+					} else {
+						// reject("Number expected was not entered");
+						this.RequestedNumberEntered(ux, counter + 1, message)
+							.then(() => {
+								resolve();
+							})
+							.catch((err) => {
+								reject(err);
+							});
+					}
+				})
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 }

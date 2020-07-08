@@ -11,6 +11,11 @@
     - `npm audit`
 6. Create a valid **@ELTOROIT/data/ETCopyData.json** file
 
+Other useful node tools:
+
+-   npmvet
+-   ncu
+
 # How to Test Changes
 
 ## How to Debug Your Salesforce CLI Plug-In

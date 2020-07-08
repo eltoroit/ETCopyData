@@ -3,7 +3,6 @@ import { OrgManager } from "./OrgManager";
 import { LogLevel, ResultOperation, Util } from "./Util";
 
 export class Exporter {
-
 	public static all(org: OrgManager, folderCode: string): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const promises = [];
@@ -14,8 +13,12 @@ export class Exporter {
 
 			// LEARNING: [PROMISES]: Wait for all promises which are running in parallel
 			Promise.all(promises)
-				.then(() => { resolve(); })
-				.catch((err) => { reject(err); });
+				.then(() => {
+					resolve();
+				})
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -37,14 +40,16 @@ export class Exporter {
 
 			org.order.findImportOrder().forEach((sObjName) => {
 				Util.writeLog(`[${org.alias}] Querying Data sObject [${sObjName}]`, LogLevel.TRACE);
-				promises.push(
-					this.queryData(org, sObjName, folderCode),
-				);
+				promises.push(this.queryData(org, sObjName, folderCode));
 			});
 
 			Promise.all(promises)
-				.then(() => { resolve(); })
-				.catch((err) => { reject(err); });
+				.then(() => {
+					resolve();
+				})
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 	private privExportMetadata(org: OrgManager, folderCode: string): Promise<void> {
@@ -54,14 +59,16 @@ export class Exporter {
 			// Metadata
 			org.coreMD.sObjects.forEach((sObjName) => {
 				Util.writeLog(`[${org.alias}] Querying Metadata sObject [${sObjName}]`, LogLevel.TRACE);
-				promises.push(
-					this.queryData(org, sObjName, folderCode),
-				);
+				promises.push(this.queryData(org, sObjName, folderCode));
 			});
 
 			Promise.all(promises)
-				.then(() => { resolve(); })
-				.catch((err) => { reject(err); });
+				.then(() => {
+					resolve();
+				})
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
@@ -69,46 +76,48 @@ export class Exporter {
 		this.mapRecordsFetched.set(sObjName, {
 			fetched: 0,
 			records: [],
-			total: -1,
+			total: -1
 		});
 
-		return new Promise(
-			(resolve, reject) => {
-				// let records = [];
-				org.conn.query(
-					this.makeSOQL(org, sObjName),
-					{ autoFetch: true },
-					(qErr, queryResult) => {
-						if (qErr) { reject(qErr); }
+		return new Promise((resolve, reject) => {
+			// let records = [];
+			org.conn.query(this.makeSOQL(org, sObjName), { autoFetch: true }, (qErr, queryResult) => {
+				if (qErr) {
+					reject(qErr);
+				}
 
-						this.getRecords(org, sObjName, queryResult)
-							.then(() => {
-								const data: IExportData = this.mapRecordsFetched.get(sObjName);
-								const msg = `[${org.alias}] Queried [${sObjName}], retrieved ${data.total} records `;
-								Util.writeLog(msg, LogLevel.INFO);
-								Util.logResultsAdd(org, ResultOperation.EXPORT, sObjName, data.total, 0);
+				this.getRecords(org, sObjName, queryResult)
+					.then(() => {
+						const data: IExportData = this.mapRecordsFetched.get(sObjName);
+						const msg = `[${org.alias}] Queried [${sObjName}], retrieved ${data.total} records `;
+						Util.writeLog(msg, LogLevel.INFO);
+						Util.logResultsAdd(org, ResultOperation.EXPORT, sObjName, data.total, 0);
 
-								// Checks....
-								Util.assertEquals(data.fetched, data.total, "Not all the records were fetched [1].");
-								Util.assertEquals(data.total, data.records.length, "Not all the records were fetched [2].");
+						// Checks....
+						Util.assertEquals(data.fetched, data.total, "Not all the records were fetched [1].");
+						Util.assertEquals(data.total, data.records.length, "Not all the records were fetched [2].");
 
-								if (data.total >= 0) {
-									org.settings.writeToFile(org.alias + folderCode, sObjName + ".json", data)
-										.then(() => {
-											// NOTE: Clean memory, and avoid heap dumps.
-											data.records = [];
-											// Now, resolve it.
-											resolve();
-										})
-										.catch((err) => { reject(err); });
-								} else {
+						if (data.total >= 0) {
+							org.settings
+								.writeToFile(org.alias + folderCode, sObjName + ".json", data)
+								.then(() => {
+									// NOTE: Clean memory, and avoid heap dumps.
+									data.records = [];
+									// Now, resolve it.
 									resolve();
-								}
-							})
-							.catch((err) => { reject(err); });
+								})
+								.catch((err) => {
+									reject(err);
+								});
+						} else {
+							resolve();
+						}
+					})
+					.catch((err) => {
+						reject(err);
 					});
-			},
-		);
+			});
+		});
 	}
 
 	private makeSOQL(org: OrgManager, sObjName: string): string {
@@ -138,24 +147,30 @@ export class Exporter {
 
 	// LEARNING: Querying sObject records. Performs a recursive call to invoke the QueryMore and get all the chunks.
 	private getRecords(org: OrgManager, sObjName, queryResult): Promise<void> {
-		return new Promise(
-			(resolve, reject) => {
-				const recordsFetched: IExportData = this.mapRecordsFetched.get(sObjName);
-				recordsFetched.total = queryResult.totalSize;
-				recordsFetched.fetched += queryResult.records.length;
-				recordsFetched.records = recordsFetched.records.concat(queryResult.records);
+		return new Promise((resolve, reject) => {
+			const recordsFetched: IExportData = this.mapRecordsFetched.get(sObjName);
+			recordsFetched.total = queryResult.totalSize;
+			recordsFetched.fetched += queryResult.records.length;
+			recordsFetched.records = recordsFetched.records.concat(queryResult.records);
 
-				if (queryResult.done) {
-					resolve();
-				} else {
-					org.conn.queryMore(queryResult.nextRecordsUrl, { autoFetch: true })
-						.then((qRes) => {
-							this.getRecords(org, sObjName, qRes)
-								.then(() => { resolve(); })
-								.catch((err) => { reject(err); });
-						})
-						.catch((err) => { reject(err); });
-				}
-			});
+			if (queryResult.done) {
+				resolve();
+			} else {
+				org.conn
+					.queryMore(queryResult.nextRecordsUrl, { autoFetch: true })
+					.then((qRes) => {
+						this.getRecords(org, sObjName, qRes)
+							.then(() => {
+								resolve();
+							})
+							.catch((err) => {
+								reject(err);
+							});
+					})
+					.catch((err) => {
+						reject(err);
+					});
+			}
+		});
 	}
 }
