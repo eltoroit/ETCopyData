@@ -128,7 +128,8 @@ export class SchemaDiscovery {
 		const output: any = {};
 
 		// VERBOSE:  Timestamp for testing
-		output.now = new Date();
+		// Do not update timestamp
+		// output.now = new Date();
 
 		// Which Org?
 		output.alias = this.orgManager.alias;

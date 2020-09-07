@@ -544,7 +544,8 @@ export class Settings implements ISettingsValues {
 		const output: ConfigContents = {};
 
 		// VERBOSE: Print debug time in output file so files do get changed, and we know we are looking at the right file.
-		output.now = toAnyJson(new Date().toJSON());
+		// Do not update timestamp
+		// output.now = toAnyJson(new Date().toJSON());
 
 		// Output regular data
 		output[WhichOrg.SOURCE] = this.orgAliases.get(WhichOrg.SOURCE);
