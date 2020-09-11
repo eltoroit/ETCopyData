@@ -303,9 +303,12 @@ export class Importer {
 						orgDestination.conn.bulk.pollTimeout = orgDestination.settings.pollingTimeout;
 						// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
 						// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
-						const bulkOptions: BulkOptions = { concurrencyMode: "Parallel", extIdField: null };
+						const bulkOptions: BulkOptions = { concurrencyMode: "Parallel", extIdField: orgDestination.settings.getSObjectData(sObjName).externalIdField || null };
 						// LEARNING: Inserting sObject records in bulk
-						orgDestination.conn.bulk.load(sObjName, "insert", bulkOptions, records, (error, results: any[]) => {
+						const operation = orgDestination.settings.getSObjectData(sObjName).externalIdField ? "upsert" : "insert";
+						Util.writeLog(`Importing [${sObjName}] using [${operation}] with options [${JSON.stringify(bulkOptions)}]`, LogLevel.DEBUG);
+
+						orgDestination.conn.bulk.load(sObjName, operation, bulkOptions, this.getRecordsForOperation(records, operation), (error, results: any[]) => {
 							let badCount: number = 0;
 							let goodCount: number = 0;
 
@@ -348,6 +351,19 @@ export class Importer {
 					reject(err);
 				});
 		});
+	}
+
+	private getRecordsForOperation(records: any[], operation: String): any[] {
+		if (operation === "insert") {
+			return records;
+		}
+
+		// Must remove the ID field without impacting the mapping
+		let result = JSON.parse(JSON.stringify(records));
+		for (let i = 0; i < result.length; i++) {
+			delete result[i].Id;
+		}
+		return result;
 	}
 
 	private setTwoPassReferences(orgSource: OrgManager, orgDestination: OrgManager): Promise<void> {

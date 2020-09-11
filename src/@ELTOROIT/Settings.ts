@@ -24,6 +24,7 @@ export interface ISettingsSObjectData extends ISettingsSObjectBase {
 	ignoreFields: string | string[];
 	twoPassReferenceFields: string | string[];
 	maxRecords: number;
+	externalIdField: string;
 }
 
 // NOTE: Metadata in the configuration file
@@ -497,7 +498,8 @@ export class Settings implements ISettingsValues {
 			maxRecords: -1,
 			name: sObjName,
 			orderBy: null,
-			where: null
+			where: null,
+			externalIdField: null
 		};
 		// LEARNING: [OBJECT]: How to loop through the values of an JSON object, which is not a Typescript Map.
 		Object.keys(sObject).forEach((key) => {
@@ -645,7 +647,8 @@ export class Settings implements ISettingsValues {
 				maxRecords: this.maxRecordsEachRaw,
 				name: null,
 				orderBy: null,
-				where: null
+				where: null,
+				externalIdField: null
 			};
 			this.blankSObjectData = output;
 		}
