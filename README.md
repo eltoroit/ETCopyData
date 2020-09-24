@@ -144,9 +144,7 @@ This is the structure for each sObject
 	"fieldsToExport": "FirstName,LastName,Email,Id",
 	"matchBy": "Email",
 	"orderBy": "LastName",
-	"twoPassReferenceFields": "Foo__c,Bar__c",
-	"where": null,
-	"externalIdField": null
+	"where": null
 }
 ```
 
