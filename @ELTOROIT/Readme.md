@@ -32,6 +32,7 @@ https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_plugins.meta/sfdx_cli
 
 -   `NODE_OPTIONS=--inspect-brk bin/run ETCopyData:export -c "./@ELTOROIT/data" --loglevel trace --json`
 -   `NODE_OPTIONS=--inspect-brk bin/run ETCopyData:import -c "./@ELTOROIT/data" --loglevel trace --json`
+-   `NODE_OPTIONS=--inspect-brk bin/run ETCopyData:export -c "/Users/aperez/DO NOT BACKUP/GitProjects/Content Recommendation/COE2/@ELTOROIT/data" --loglevel trace --json`
 
 # How to Install Plugin
 

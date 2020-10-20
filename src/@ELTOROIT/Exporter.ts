@@ -81,6 +81,7 @@ export class Exporter {
 
 		return new Promise((resolve, reject) => {
 			// let records = [];
+			// ELTOROIT: Bulk or SOAP?
 			org.conn.query(this.makeSOQL(org, sObjName), { autoFetch: true }, (qErr, queryResult) => {
 				if (qErr) {
 					reject(qErr);

@@ -1,31 +1,31 @@
 {
 	"name": "etcopydata",
 	"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
-	"version": "0.5.11b",
+	"version": "0.5.12-b",
 	"author": "Andres Perez @ElToroIT",
 	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
 	"dependencies": {
-		"@oclif/config": "1.16.0",
+		"@oclif/config": "1.17.0",
 		"@oclif/errors": "1.3.3",
-		"@oclif/plugin-help": "3.1.0",
-		"@salesforce/command": "3.0.1",
-		"npm-check-updates": "7.0.1",
-		"tslib": "^2.0.0"
+		"@oclif/plugin-help": "3.2.0",
+		"@salesforce/command": "3.0.3",
+		"npm-check-updates": "8.1.0",
+		"tslib": "2.0.1"
 	},
 	"devDependencies": {
 		"@oclif/dev-cli": "1.22.2",
-		"@oclif/test": "1.2.6",
-		"@salesforce/dev-config": "1.6.0",
-		"@types/chai": "4.2.11",
-		"@types/jsforce": "1.9.18",
-		"@types/mocha": "7.0.2",
-		"@types/node": "14.0.20",
+		"@oclif/test": "1.2.7",
+		"@salesforce/dev-config": "2.0.0",
+		"@types/chai": "4.2.12",
+		"@types/jsforce": "1.9.20",
+		"@types/mocha": "8.0.3",
+		"@types/node": "14.6.4",
 		"globby": "11.0.1",
-		"mocha": "^8.0.1",
+		"mocha": "8.1.3",
 		"nyc": "15.1.0",
-		"sinon": "9.0.2",
-		"ts-node": "8.10.2",
-		"typescript": "3.9.6"
+		"sinon": "9.0.3",
+		"ts-node": "9.0.0",
+		"typescript": "4.0.2"
 	},
 	"engines": {
 		"node": ">=8.0.0"

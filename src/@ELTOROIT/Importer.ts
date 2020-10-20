@@ -305,6 +305,7 @@ export class Importer {
 						// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
 						const bulkOptions: BulkOptions = { concurrencyMode: "Parallel", extIdField: null };
 						// LEARNING: Inserting sObject records in bulk
+						// ELTOROIT: Bulk or SOAP?
 						orgDestination.conn.bulk.load(sObjName, "insert", bulkOptions, records, (error, results: any[]) => {
 							let badCount: number = 0;
 							let goodCount: number = 0;
@@ -399,6 +400,7 @@ export class Importer {
 						});
 
 						// Update the records using the bulk api
+						// ELTOROIT: Bulk or SOAP?
 						orgDestination.conn.bulk.load(sObjectName, "update", bulkOptions, records, (error, results: any[]) => {
 							let badCount: number = 0;
 							let goodCount: number = 0;
@@ -445,6 +447,7 @@ export class Importer {
 			Util.writeLog(`[${org.alias}] Deleting records from [${sObjName}]`, LogLevel.TRACE);
 			org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
 			// LEARNING: Deleting sObject records in bulk
+			// ELTOROIT: Bulk or SOAP?
 			org.conn
 				.sobject(sObjName)
 				.find({ CreatedDate: { $lte: Date.TOMORROW } })
