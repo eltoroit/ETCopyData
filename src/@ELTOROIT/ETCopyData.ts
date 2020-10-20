@@ -341,13 +341,13 @@ export class ETCopyData {
 						data.coreMD = new CoreMetadataSObjects(data.settings);
 					})
 					.then(() => {
-						return this.setupOrg(data, WhichOrg.SOURCE);
-					})
-					.then(() => {
 						return this.setupOrg(data, WhichOrg.DESTINATION);
 					})
 					.then(() => {
 						return this.makeSureThisOrgIsSafe(data, data.orgs.get(WhichOrg.DESTINATION));
+					})
+					.then(() => {
+						return this.setupOrg(data, WhichOrg.SOURCE);
 					})
 					.then(() => {
 						this.compareSchemaForOrgs(data.orgs.get(WhichOrg.SOURCE), data.orgs.get(WhichOrg.DESTINATION));
@@ -375,63 +375,96 @@ export class ETCopyData {
 		});
 	}
 
-	private makeSureThisOrgIsSafe(data: IETCopyData, org: any): Promise<void> {
-		return new Promise((resolve, reject) => {
-			const productionLoginUrl: string = "login.salesforce.com";
-			const orgLoginUrl: string = org.conn.getAuthInfoFields().loginUrl;
-			const orgDomain: string = orgLoginUrl.split("/")[2];
-			const isProductionOrg: boolean = orgDomain.toUpperCase() === productionLoginUrl.toUpperCase();
+	private async makeSureThisOrgIsSafe(data: IETCopyData, org: any): Promise<void> {
+		const productionLoginUrl: string = "login.salesforce.com";
+		const orgLoginUrl: string = org.conn.getAuthInfoFields().loginUrl;
+		const orgDomain: string = orgLoginUrl.split("/")[2];
+		const isProductionOrg: boolean = orgDomain.toUpperCase() === productionLoginUrl.toUpperCase();
 
-			if (isProductionOrg) {
-				if (data.settings.includeAllCustom) {
-					const msg = "You can't set [includeAllCustom] to true when importing data to production to production";
-					Util.writeLog(msg, LogLevel.FATAL);
-					Util.throwError(msg);
-					reject(msg);
-				} else if (data.settings.copyToProduction) {
-					if (data.settings.deleteDestination) {
-						const msg = "Destination Org can not be production because this app deletes data! (2)";
-						Util.writeLog(msg, LogLevel.FATAL);
-						Util.throwError(msg);
-						reject(msg);
-					} else {
-						UX.create()
-							.then((ux) => {
+		// RESOLVE: If destination org a production org
+		if (isProductionOrg) {
+			// Continue checking
+		} else {
+			return;
+		}
+
+		// REJECT: If we are not copying to production
+		if (data.settings.copyToProduction) {
+			// Continue checking
+		} else {
+			const msg = "*** *** *** Destination org is production, but the setting [copyToProduction] is false. Can not import!";
+			Util.throwError(msg);
+			return;
+		}
+
+		// REJECT: If not stopping on errors
+		if (data.settings.stopOnErrors) {
+			// Continue checking
+		} else {
+			const msg = "*** *** *** You can't import data to production if [stopOnErrors] is false";
+			Util.throwError(msg);
+			return;
+		}
+
+		// // REJECT: If all custom sObjects are included
+		// if (data.settings.includeAllCustom) {
+		// 	const msg = "*** *** *** You can't set [includeAllCustom] to true when importing data to production";
+		// 	Util.throwError(msg);
+		// 	return;
+		// }
+
+		// // REJECT: If deleting records
+		// if (data.settings.deleteDestination) {
+		// 	const msg = "*** *** *** You can't set [deleteDestination] to true when importing data to production";
+		// 	Util.throwError(msg);
+		// 	return;
+		// }
+
+		// 	ASK: Make sure user is awake ;-)
+		if (await this.PromptUserYN(`Do you really, really, really want to import data into your PRODUCTION org?`)) {
+			return;
+		} else {
+			const msg = "*** *** *** Destination Org can not be production because this app deletes data!";
+			Util.throwError(msg);
+			return;
+		}
+	}
+
+	// private PrintStars() {
+	// 	console.error("*** *** ***");
+	// 	console.error("*** *** *** Importing to production destination...");
+	// 	console.error("*** *** ***");
+	// }
+
+	private PromptUserYN(question: string): Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			UX.create()
+				.then((ux) => {
+					console.log("*** *** ***");
+					console.log("*** *** ***");
+					console.log("*** *** ***");
+					console.log("*** *** *** Review the list of sObjects above, and tell me... ");
+					ux.confirm(`*** *** *** ${question} [Y|N|YES|NO]`)
+						.then((resultYN) => {
+							if (resultYN) {
 								console.log("*** *** ***");
-								console.log("*** *** ***");
-								console.log("*** *** ***");
-								console.log("*** *** *** Review the list of sObjects above, and tell me... ");
-								ux.confirm("*** *** *** Do you really, really, really want to import data into your PRODUCTION org?")
-									.then((resultYN) => {
-										if (resultYN) {
-											console.log("*** *** ***");
-											this.RequestedNumberEntered(ux, 0, "Just to make sure you are awake... Type this number")
-												.then(() => resolve())
-												.catch((err) => {
-													reject(err);
-												});
-										} else {
-											reject("You decided not to import data into production, good boy (girl)!");
-										}
-									})
+								this.RequestedNumberEntered(ux, 0, "Just to make sure you are awake... Type this number")
+									.then(() => resolve(true))
 									.catch((err) => {
 										reject(err);
 									});
-							})
-							.catch((err) => {
-								Util.throwError(err);
-								reject(err);
-							});
-					}
-				} else {
-					const msg = "Destination Org can not be production because this app deletes data! (1)";
-					Util.writeLog(msg, LogLevel.FATAL);
-					Util.throwError(msg);
-					reject(msg);
-				}
-			} else {
-				resolve();
-			}
+							} else {
+								reject("You decided not to import data into production, good boy (girl)!");
+							}
+						})
+						.catch((err) => {
+							reject(err);
+						});
+				})
+				.catch((err) => {
+					Util.throwError(err);
+					reject(err);
+				});
 		});
 	}
 
