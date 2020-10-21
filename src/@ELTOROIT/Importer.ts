@@ -1,4 +1,4 @@
-import { BulkOptions, Date, RecordResult } from "jsforce";
+import { BulkOptions, Date, RecordResult, RestApiOptions } from "jsforce";
 import { ISchemaDataParent } from "./Interfaces";
 import { OrgManager } from "./OrgManager";
 import { LogLevel, ResultOperation, Util } from "./Util";
@@ -90,7 +90,7 @@ export class Importer {
 					this.countImportErrorsRecords = 0;
 					this.countImportErrorsSObjects = 0;
 					const sObjectsToLoad: string[] = orgDestination.order.findImportOrder();
-					Util.writeLog("sObjects should be processed in this order: " + sObjectsToLoad, LogLevel.TRACE);
+					Util.writeLog("sObjects should be processed in this order: " + sObjectsToLoad.join(", "), LogLevel.TRACE);
 					return this.loadAllSObjectData(orgSource, orgDestination, sObjectsToLoad, 0);
 				})
 				.then(() => {
@@ -298,15 +298,7 @@ export class Importer {
 					});
 
 					if (records.length > 0) {
-						// LOADING
-						this.matchingIds.set(sObjName, new Map<string, string>());
-						orgDestination.conn.bulk.pollTimeout = orgDestination.settings.pollingTimeout;
-						// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
-						// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
-						const bulkOptions: BulkOptions = { concurrencyMode: "Parallel", extIdField: null };
-						// LEARNING: Inserting sObject records in bulk
-						// ELTOROIT: Bulk or SOAP?
-						orgDestination.conn.bulk.load(sObjName, "insert", bulkOptions, records, (error, results: any[]) => {
+						const processResults = (error, results: any[]) => {
 							let badCount: number = 0;
 							let goodCount: number = 0;
 
@@ -340,7 +332,22 @@ export class Importer {
 							Util.logResultsAdd(orgDestination, ResultOperation.IMPORT, sObjName, goodCount, badCount);
 
 							resolve(badCount);
-						});
+						};
+
+						// LOADING
+						this.matchingIds.set(sObjName, new Map<string, string>());
+						// ELTOROIT: Bulk or SOAP?
+						if (orgDestination.settings.useBulkAPI) {
+							// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
+							// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
+							orgDestination.conn.bulk.pollTimeout = orgDestination.settings.pollingTimeout;
+							const options: BulkOptions = { concurrencyMode: "Parallel", extIdField: null };
+							// LEARNING: Inserting sObject records in bulk
+							orgDestination.conn.bulk.load(sObjName, "insert", options, records, processResults);
+						} else {
+							const options: RestApiOptions = { allOrNone: true, allowRecursive: true };
+							orgDestination.conn.sobject(sObjName).create(records, options, processResults);
+						}
 					} else {
 						resolve(0);
 					}
