@@ -362,7 +362,6 @@ export class Importer {
 		return new Promise((resolve, reject) => {
 			// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
 			// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
-			const bulkOptions: BulkOptions = { concurrencyMode: "Parallel", extIdField: null };
 			const keys: Array<string> = Array.from(this.twoPassReferenceFieldData.keys());
 
 			Util.serialize(
@@ -406,9 +405,8 @@ export class Importer {
 							records.push(record);
 						});
 
-						// Update the records using the bulk api
-						// ELTOROIT: Bulk or SOAP?
-						orgDestination.conn.bulk.load(sObjectName, "update", bulkOptions, records, (error, results: any[]) => {
+						// UPDATING the records
+						const processResults = (error, results: any[]) => {
 							let badCount: number = 0;
 							let goodCount: number = 0;
 
@@ -433,7 +431,16 @@ export class Importer {
 							Util.logResultsAdd(orgDestination, ResultOperation.IMPORT, sObjectName, goodCount, badCount);
 
 							resolveEach();
-						});
+						};
+
+						// ELTOROIT: Bulk or SOAP?
+						if (orgDestination.settings.useBulkAPI) {
+							const bulkOptions: BulkOptions = { concurrencyMode: "Parallel", extIdField: null };
+							orgDestination.conn.bulk.load(sObjectName, "update", bulkOptions, records, processResults);
+						} else {
+							const options: RestApiOptions = { allOrNone: true, allowRecursive: true };
+							orgDestination.conn.sobject(sObjectName).update(records, options, processResults);
+						}
 					});
 				}
 			)
@@ -451,6 +458,7 @@ export class Importer {
 
 		return new Promise((resolve, reject) => {
 			// DELETING
+			const options: any = { allowBulk: org.settings.useBulkAPI };
 			Util.writeLog(`[${org.alias}] Deleting records from [${sObjName}]`, LogLevel.TRACE);
 			org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
 			// LEARNING: Deleting sObject records in bulk
@@ -458,7 +466,7 @@ export class Importer {
 			org.conn
 				.sobject(sObjName)
 				.find({ CreatedDate: { $lte: Date.TOMORROW } })
-				.destroy(sObjName)
+				.destroy(sObjName, options)
 				.then((results: RecordResult[]) => {
 					let totalSuccess: number = 0;
 					let totalFailures: number = 0;
