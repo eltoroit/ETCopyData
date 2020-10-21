@@ -455,18 +455,15 @@ export class Importer {
 
 	private deleteOneBeforeLoading(org: OrgManager, sObjName: string): Promise<number> {
 		let msg = "";
-
 		return new Promise((resolve, reject) => {
 			// DELETING
-			const options: any = { allowBulk: org.settings.useBulkAPI };
 			Util.writeLog(`[${org.alias}] Deleting records from [${sObjName}]`, LogLevel.TRACE);
 			org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
 			// LEARNING: Deleting sObject records in bulk
-			// ELTOROIT: Bulk or SOAP?
 			org.conn
 				.sobject(sObjName)
 				.find({ CreatedDate: { $lte: Date.TOMORROW } })
-				.destroy(sObjName, options)
+				.destroy(sObjName)
 				.then((results: RecordResult[]) => {
 					let totalSuccess: number = 0;
 					let totalFailures: number = 0;
