@@ -26,6 +26,7 @@ export class Importer {
 				const sObjectsToLoad: string[] = orgDestination.order.findImportOrder();
 				const sObjectsToLoadReversed: string[] = sObjectsToLoad.slice(0).reverse();
 
+				Util.writeLog("sObjects should be deleted in this order: " + sObjectsToLoadReversed.join(", "), LogLevel.TRACE);
 				Util.serialize(
 					this,
 					sObjectsToLoadReversed,

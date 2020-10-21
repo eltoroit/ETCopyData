@@ -305,13 +305,15 @@ export class Settings implements ISettingsValues {
 					// Source Org
 					overridenValue = overrideSettings.orgAliases.get(WhichOrg.SOURCE);
 					if (overridenValue) {
-						msg = `Configuration value for [${WhichOrg.SOURCE}] read from command line: ${overridenValue}`;
 						this.orgAliases.set(WhichOrg.SOURCE, overridenValue);
+						msg = `Configuration value for [${WhichOrg.SOURCE}]: ${overridenValue} (read from command line)`;
 						Util.writeLog(msg, LogLevel.INFO);
 					} else {
 						promises.push(
 							this.processStringValues(resValues, WhichOrg.SOURCE, true).then((value: string) => {
 								this.orgAliases.set(WhichOrg.SOURCE, value);
+								msg = `Configuration value for [${WhichOrg.SOURCE}]: ${value}`;
+								Util.writeLog(msg, LogLevel.INFO);
 							})
 						);
 					}
@@ -319,13 +321,15 @@ export class Settings implements ISettingsValues {
 					// Destination Org
 					overridenValue = overrideSettings.orgAliases.get(WhichOrg.DESTINATION);
 					if (overridenValue) {
-						msg = `Configuration value for [${WhichOrg.DESTINATION}] read from command line: ${overridenValue}`;
 						this.orgAliases.set(WhichOrg.DESTINATION, overridenValue);
+						msg = `Configuration value for [${WhichOrg.DESTINATION}]: ${overridenValue} (read from command line)`;
 						Util.writeLog(msg, LogLevel.INFO);
 					} else {
 						promises.push(
 							this.processStringValues(resValues, WhichOrg.DESTINATION, true).then((value: string) => {
 								this.orgAliases.set(WhichOrg.DESTINATION, value);
+								msg = `Configuration value for [${WhichOrg.DESTINATION}]: ${value}`;
+								Util.writeLog(msg, LogLevel.INFO);
 							})
 						);
 					}
@@ -333,7 +337,7 @@ export class Settings implements ISettingsValues {
 					// sObjectsData
 					promises.push(
 						this.processsObjectsValues(resValues, "sObjectsData", true).then(() => {
-							msg = `Configuration value for [sObjectsData]: ${this.sObjectsDataRaw.size} sObjects found.`;
+							msg = `Configuration value for [sObjectsData]: ${this.sObjectsDataRaw.size} sObjects explicitly mentioned.`;
 							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
@@ -341,7 +345,7 @@ export class Settings implements ISettingsValues {
 					// sObjectsMetadata
 					promises.push(
 						this.processsObjectsValues(resValues, "sObjectsMetadata", true).then(() => {
-							msg = `Configuration value for [sObjectsMetadata]: ${this.sObjectsMetadataRaw.size} sObjects found.`;
+							msg = `Configuration value for [sObjectsMetadata]: ${this.sObjectsMetadataRaw.size} sObjects explicitly mentioned.`;
 							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
@@ -350,6 +354,8 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "includeAllCustom", false).then((value: string) => {
 							this.includeAllCustom = value === "true";
+							msg = `Configuration value for [includeAllCustom]: ${this.includeAllCustom}`;
+							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
 
@@ -357,6 +363,8 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "stopOnErrors", false).then((value: string) => {
 							this.stopOnErrors = value === "true";
+							msg = `Configuration value for [stopOnErrors]: ${this.stopOnErrors}`;
+							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
 
@@ -364,6 +372,8 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "copyToProduction", false).then((value: string) => {
 							this.copyToProduction = value === "true";
+							msg = `Configuration value for [copyToProduction]: ${this.copyToProduction}`;
+							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
 
@@ -371,6 +381,8 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "useBulkAPI", false).then((value: string) => {
 							this.useBulkAPI = value === "true";
+							msg = `Configuration value for [useBulkAPI]: ${this.useBulkAPI}`;
+							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
 
@@ -380,8 +392,9 @@ export class Settings implements ISettingsValues {
 							.then((value: string) => {
 								return this.getDataFolder(value, overrideSettings);
 							})
-							.then(() => {
-								//
+							.then((value) => {
+								msg = `Configuration value for [rootFolder]: ${value}`;
+								Util.writeLog(msg, LogLevel.INFO);
 							})
 					);
 
@@ -389,6 +402,8 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "ignoreFields", false).then((value: string) => {
 							this.ignoreFieldsRaw = value;
+							msg = `Configuration value for [ignoreFields]: ${this.ignoreFieldsRaw}`;
+							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
 
@@ -396,6 +411,8 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "twoPassReferenceFields", false).then((value: string) => {
 							this.twoPassReferenceFieldsRaw = value;
+							msg = `Configuration value for [twoPassReferenceFields]: ${this.twoPassReferenceFieldsRaw}`;
+							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
 
@@ -405,6 +422,8 @@ export class Settings implements ISettingsValues {
 							// LEARNING: Parsing a string into a number, 10 is for the base (16 for hex)
 							.then((value: string) => {
 								this.maxRecordsEachRaw = parseInt(value, 10);
+								msg = `Configuration value for [maxRecordsEach]: ${this.maxRecordsEachRaw}`;
+								Util.writeLog(msg, LogLevel.INFO);
 							})
 					);
 
@@ -412,6 +431,8 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "deleteDestination", false).then((value: string) => {
 							this.deleteDestination = value === "true";
+							msg = `Configuration value for [deleteDestination]: ${this.deleteDestination}`;
+							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
 
@@ -419,6 +440,8 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "pollingTimeout", false).then((value: string) => {
 							this.pollingTimeout = parseInt(value, 10);
+							msg = `Configuration value for [pollingTimeout]: ${this.pollingTimeout}`;
+							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
 
@@ -447,7 +470,6 @@ export class Settings implements ISettingsValues {
 				} else {
 					valueStr = value.toString();
 				}
-				Util.writeLog("Configuration value for [" + entryName + "]: " + valueStr, LogLevel.INFO);
 				resolve(valueStr);
 			} else {
 				if (isRequired) {
