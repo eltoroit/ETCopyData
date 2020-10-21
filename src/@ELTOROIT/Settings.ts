@@ -42,6 +42,7 @@ export interface ISettingsValues {
 	stopOnErrors: boolean;
 	copyToProduction: boolean;
 	useBulkAPI: boolean;
+	customObjectsToIgnoreRaw: string;
 	ignoreFieldsRaw: string;
 	twoPassReferenceFieldsRaw: string;
 	maxRecordsEachRaw: number;
@@ -82,6 +83,8 @@ export class Settings implements ISettingsValues {
 	public stopOnErrors: boolean;
 	public copyToProduction: boolean;
 	public useBulkAPI: boolean;
+	public customObjectsToIgnoreRaw: string;
+	public customObjectsToIgnore: string[];
 	public maxRecordsEachRaw: number;
 	public deleteDestination: boolean;
 	public pollingTimeout: number;
@@ -386,6 +389,16 @@ export class Settings implements ISettingsValues {
 						})
 					);
 
+					// customObjectsToIgnore
+					promises.push(
+						this.processStringValues(resValues, "customObjectsToIgnore", false).then((value: string) => {
+							this.customObjectsToIgnoreRaw = value;
+							this.customObjectsToIgnore = Util.mergeAndCleanArrays(this.customObjectsToIgnoreRaw as string, this.customObjectsToIgnoreRaw);
+							msg = `Configuration value for [customObjectsToIgnore]: ${this.customObjectsToIgnoreRaw}`;
+							Util.writeLog(msg, LogLevel.INFO);
+						})
+					);
+
 					// rootFolder
 					promises.push(
 						this.processStringValues(resValues, "rootFolder", false)
@@ -589,6 +602,7 @@ export class Settings implements ISettingsValues {
 		output.ignoreFields = this.ignoreFieldsRaw;
 		output.copyToProduction = this.copyToProduction;
 		output.useBulkAPI = this.useBulkAPI;
+		output.customObjectsToIgnore = this.customObjectsToIgnoreRaw;
 		output.twoPassReferenceFields = this.twoPassReferenceFieldsRaw;
 		output.maxRecordsEach = this.maxRecordsEachRaw;
 		output.deleteDestination = this.deleteDestination;
@@ -662,6 +676,7 @@ export class Settings implements ISettingsValues {
 		this.stopOnErrors = true;
 		this.copyToProduction = false;
 		this.useBulkAPI = false;
+		this.customObjectsToIgnoreRaw = null;
 		this.ignoreFieldsRaw = null;
 		this.twoPassReferenceFieldsRaw = null;
 		this.maxRecordsEachRaw = -1;

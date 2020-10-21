@@ -269,6 +269,10 @@ export class SchemaDiscovery {
 					localRejects.push("Was Not requested");
 				}
 			}
+			if (this.orgManager.settings.customObjectsToIgnore.includes(sObj.name)) {
+				localRejects.push("Ignore requested");
+				Util.writeLog(`[${this.orgManager.alias}] Found sObject [${sObj.name}], but it was explicitly ignored`, LogLevel.TRACE);
+			}
 
 			if (localRejects.length === 0) {
 				this.privSObjects.set(sObj.name, {
