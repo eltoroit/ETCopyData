@@ -6,12 +6,13 @@ SFDX Plugin to populate your scratch org and/or developer sandbox with data extr
 
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- toc -->
-* [ETCopyData](#etcopydata)
-* [Install](#install)
-* [Documentation](#documentation)
-* [Commands](#commands)
-<!-- tocstop -->
-  <!-- ET-AUTO-STOP: This section is auto-updated... -->
+
+-   [ETCopyData](#etcopydata)
+-   [Install](#install)
+-   [Documentation](#documentation)
+-   [Commands](#commands)
+    <!-- tocstop -->
+      <!-- ET-AUTO-STOP: This section is auto-updated... -->
 
 # Install
 
@@ -70,20 +71,20 @@ This plugin is highly configurable with a JSON file named `ETCopyData.json` loca
 
 ### Fields
 
-| Field | Data Type | Description |
-| --- | --- | --- |
-| **now** | DateTime | Timestamp that automatically updates every time the plugin is executed. |
-| **orgSource** | String | SFDX alias given to the org that has the data you want to export. |
-| **orgDestination<sup>1</sup>** | String | SFDX alias given to the org that receive the data that you import. |
-| **sObjectsData<sup>2</sup>** | sObjectsData[] | List of custom or standard sObjects where the data is going to be exported from, and where it will be imported to. |
-| **sObjectsMetadata<sup>3</sup>** | sObjectsMetadata[] | Metadata sObjects that will be used for importing your data. |
-| **rootFolder** | String | Folder used to store the exported data and where the data will be imported from. |
-| **includeAllCustom** | Boolean | True if you want all the customer sObjects, false if you only want the ones listed in the orgDestination section |
-| **stopOnErrors** | Boolean | True if you want to stop on errors deleting data or importing data, false and the errors will be reported back but they will not stop the execution. |
-| **ignoreFields<sup>4</sup>** | String | List of fields to ignore for every sObject, each field is separated with a comma. Example: "Field1**c, Field2**c, Field\_\_3" |
-| **maxRecordsEach<sup>5</sup>** | Integer | What is the maximum number of records to export for each sObject |
-| **deleteDestination<sup>6</sup>** | Boolean | True if you want to delete the existing records in the destination org before you load the new records. |
-| **pollingTimeout<sup>7<sup>** | Integer | Timeout in milliseconds that Bulk API operations will timeout. |
+| Field                             | Data Type          | Description                                                                                                                                          |
+| --------------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **now**                           | DateTime           | Timestamp that automatically updates every time the plugin is executed.                                                                              |
+| **orgSource**                     | String             | SFDX alias given to the org that has the data you want to export.                                                                                    |
+| **orgDestination<sup>1</sup>**    | String             | SFDX alias given to the org that receive the data that you import.                                                                                   |
+| **sObjectsData<sup>2</sup>**      | sObjectsData[]     | List of custom or standard sObjects where the data is going to be exported from, and where it will be imported to.                                   |
+| **sObjectsMetadata<sup>3</sup>**  | sObjectsMetadata[] | Metadata sObjects that will be used for importing your data.                                                                                         |
+| **rootFolder**                    | String             | Folder used to store the exported data and where the data will be imported from.                                                                     |
+| **includeAllCustom**              | Boolean            | True if you want all the customer sObjects, false if you only want the ones listed in the orgDestination section                                     |
+| **stopOnErrors**                  | Boolean            | True if you want to stop on errors deleting data or importing data, false and the errors will be reported back but they will not stop the execution. |
+| **ignoreFields<sup>4</sup>**      | String             | List of fields to ignore for every sObject, each field is separated with a comma. Example: "Field1**c, Field2**c, Field\_\_3"                        |
+| **maxRecordsEach<sup>5</sup>**    | Integer            | What is the maximum number of records to export for each sObject                                                                                     |
+| **deleteDestination<sup>6</sup>** | Boolean            | True if you want to delete the existing records in the destination org before you load the new records.                                              |
+| **pollingTimeout<sup>7<sup>**     | Integer            | Timeout in milliseconds that Bulk API operations will timeout.                                                                                       |
 
 ## sObjectsData
 
@@ -122,7 +123,7 @@ This is the structure for each sObject
 | orderBy                | null    | String    | For exports, determines the order for the records that are exported.                                                       |
 | twoPassReferenceFields | null    | String[]  | For imports, lists the fields that need to be set using a separate update as they refer an SObject that is not loaded yet. |
 | where                  | null    | String    | Restrict which records are be exported.                                                                                    |
-| externalIdField        | null    | String    | API name of external ID field to be used for an upsert operation.                                                                                    |
+| externalIdField        | null    | String    | API name of external ID field to be used for an upsert operation.                                                          |
 
 ## sObjectsMetadata
 
@@ -144,7 +145,9 @@ This is the structure for each sObject
 	"fieldsToExport": "FirstName,LastName,Email,Id",
 	"matchBy": "Email",
 	"orderBy": "LastName",
-	"where": null
+  "twoPassReferenceFields": "Foo__c,Bar__c",
+	"where": null,
+	"externalIdField": "External_Id_Field__c"
 }
 ```
 
@@ -183,8 +186,8 @@ Configuring twoPassReferenceFields can be automated, but currently is a manual p
 
 As an example, assume you have the following SObject and fields:
 
-- SObject A**c: field RefB**c of type Lookup(B\_\_c)
-- SObject B**c: field RefA**c of type Lookup(A\_\_c)
+-   SObject A**c: field RefB**c of type Lookup(B\_\_c)
+-   SObject B**c: field RefA**c of type Lookup(A\_\_c)
 
 If your dataset contains 1000 A**c records and 10 B**c records, the optimal configuration is to configure B**c.RefA**c as twoPassReferenceField. On import, ETCopyData will execute the following steps:
 
@@ -208,11 +211,12 @@ If your dataset contains 1000 A**c records and 10 B**c records, the optimal conf
 
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- commands -->
-* [`sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatacompare--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatadelete--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataexport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatafull--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataimport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+
+-   [`sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatacompare--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+-   [`sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatadelete--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+-   [`sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataexport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+-   [`sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatafull--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+-   [`sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataimport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
 ## `sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -220,7 +224,7 @@ Checks the source and destination org for any differences in the sObject's metad
 
 ```
 USAGE
-  $ sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -247,7 +251,7 @@ Deletes data from destination org, preparing for the new data that will be uploa
 
 ```
 USAGE
-  $ sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -274,7 +278,7 @@ Exports the data from the source org, and saves it in the destination folder so 
 
 ```
 USAGE
-  $ sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -301,7 +305,7 @@ Performs all the steps, including comparing schemas, exporting data from the sou
 
 ```
 USAGE
-  $ sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -328,7 +332,7 @@ Imports data into destination org, you can control if the data in the destinatio
 
 ```
 USAGE
-  $ sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -348,5 +352,6 @@ OPTIONS
 ```
 
 _See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v0.5.14-b/src/commands/ETCopyData/import.ts)_
+
 <!-- commandsstop -->
 <!-- ET-AUTO-STOP: This section is auto-updated... -->
