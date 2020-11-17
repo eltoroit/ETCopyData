@@ -337,16 +337,25 @@ export class Importer {
 						// LOADING
 						this.matchingIds.set(sObjName, new Map<string, string>());
 						// ELTOROIT: Bulk or SOAP?
+
+						const operation = orgDestination.settings.getSObjectData(sObjName).externalIdField ? "upsert" : "insert";
 						if (orgDestination.settings.useBulkAPI) {
 							// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
 							// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
 							orgDestination.conn.bulk.pollTimeout = orgDestination.settings.pollingTimeout;
-							const options: BulkOptions = { concurrencyMode: "Parallel", extIdField: null };
+							const options: BulkOptions = { concurrencyMode: "Parallel", extIdField: orgDestination.settings.getSObjectData(sObjName).externalIdField || null };
+
+							Util.writeLog(`Importing [${sObjName}] using [${operation}] with options [${JSON.stringify(options)}]`, LogLevel.DEBUG);
+							
 							// LEARNING: Inserting sObject records in bulk
-							orgDestination.conn.bulk.load(sObjName, "insert", options, records, processResults);
+							orgDestination.conn.bulk.load(sObjName, operation, options, this.getRecordsForOperation(records, operation), processResults);
 						} else {
 							const options: RestApiOptions = { allOrNone: true, allowRecursive: true };
-							orgDestination.conn.sobject(sObjName).create(records, options, processResults);
+							if (operation === "insert") {
+								orgDestination.conn.sobject(sObjName).create(records, options, processResults);
+							} else {
+								orgDestination.conn.sobject(sObjName).upsert(records, orgDestination.settings.getSObjectData(sObjName).externalIdField, options, processResults);
+							}
 						}
 					} else {
 						resolve(0);
@@ -356,6 +365,19 @@ export class Importer {
 					reject(err);
 				});
 		});
+	}
+
+	private getRecordsForOperation(records: any[], operation: String): any[] {
+		if (operation === "insert") {
+			return records;
+		}
+
+		// Must remove the ID field without impacting the mapping
+		let result = JSON.parse(JSON.stringify(records));
+		for (let i = 0; i < result.length; i++) {
+			delete result[i].Id;
+		}
+		return result;
 	}
 
 	private setTwoPassReferences(orgSource: OrgManager, orgDestination: OrgManager): Promise<void> {

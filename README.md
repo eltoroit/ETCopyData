@@ -105,7 +105,8 @@ You must provide the name of the sObject
 	"ignoreFields": "OwnerId, IgnoreField__c",
 	"maxRecords": 50,
 	"orderBy": "City__c",
-	"where": "State__c = 'Texas'"
+	"where": "State__c = 'Texas'",
+	"externalIdField": "External_Id_Field__c"
 }
 ```
 
@@ -121,6 +122,7 @@ This is the structure for each sObject
 | orderBy                | null    | String    | For exports, determines the order for the records that are exported.                                                       |
 | twoPassReferenceFields | null    | String[]  | For imports, lists the fields that need to be set using a separate update as they refer an SObject that is not loaded yet. |
 | where                  | null    | String    | Restrict which records are be exported.                                                                                    |
+| externalIdField        | null    | String    | API name of external ID field to be used for an upsert operation.                                                                                    |
 
 ## sObjectsMetadata
 
@@ -142,7 +144,6 @@ This is the structure for each sObject
 	"fieldsToExport": "FirstName,LastName,Email,Id",
 	"matchBy": "Email",
 	"orderBy": "LastName",
-	"twoPassReferenceFields": "Foo__c,Bar__c",
 	"where": null
 }
 ```
