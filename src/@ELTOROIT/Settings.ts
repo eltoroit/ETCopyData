@@ -598,14 +598,14 @@ export class Settings implements ISettingsValues {
 		output.sObjectsMetadata = this.valuesToWriteForSobjectMap(true);
 		output.rootFolder = this.rootFolderRaw;
 		output.includeAllCustom = this.includeAllCustom;
+		output.customObjectsToIgnore = this.customObjectsToIgnoreRaw;
 		output.stopOnErrors = this.stopOnErrors;
 		output.ignoreFields = this.ignoreFieldsRaw;
 		output.copyToProduction = this.copyToProduction;
-		output.useBulkAPI = this.useBulkAPI;
-		output.customObjectsToIgnore = this.customObjectsToIgnoreRaw;
 		output.twoPassReferenceFields = this.twoPassReferenceFieldsRaw;
 		output.maxRecordsEach = this.maxRecordsEachRaw;
 		output.deleteDestination = this.deleteDestination;
+		output.useBulkAPI = this.useBulkAPI;
 		output.pollingTimeout = this.pollingTimeout;
 
 		return output;
