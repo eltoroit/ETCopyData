@@ -81,6 +81,7 @@ export class Exporter {
 
 		return new Promise((resolve, reject) => {
 			// let records = [];
+			// ELTOROIT: Bulk or SOAP?
 			org.conn.query(this.makeSOQL(org, sObjName), { autoFetch: true }, (qErr, queryResult) => {
 				if (qErr) {
 					reject(qErr);
@@ -101,7 +102,7 @@ export class Exporter {
 							org.settings
 								.writeToFile(org.alias + folderCode, sObjName + ".json", data)
 								.then(() => {
-									// NOTE: Clean memory, and avoid heap dumps.
+									// NOTE: Clean memory, and avoid heap overflow.
 									data.records = [];
 									// Now, resolve it.
 									resolve();

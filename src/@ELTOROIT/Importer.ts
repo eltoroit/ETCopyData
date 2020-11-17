@@ -337,6 +337,7 @@ export class Importer {
 						// LOADING
 						this.matchingIds.set(sObjName, new Map<string, string>());
 						// ELTOROIT: Bulk or SOAP?
+
 						const operation = orgDestination.settings.getSObjectData(sObjName).externalIdField ? "upsert" : "insert";
 						if (orgDestination.settings.useBulkAPI) {
 							// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
@@ -476,7 +477,6 @@ export class Importer {
 
 	private deleteOneBeforeLoading(org: OrgManager, sObjName: string): Promise<number> {
 		let msg = "";
-
 		return new Promise((resolve, reject) => {
 			// DELETING
 			Util.writeLog(`[${org.alias}] Deleting records from [${sObjName}]`, LogLevel.TRACE);

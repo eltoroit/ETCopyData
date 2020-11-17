@@ -6,8 +6,20 @@ import { OrgManager } from "./OrgManager";
 // import { asAnyJson } from "@salesforce/ts-types";
 
 // TRACE is just for making sure the code works.
-export enum LogLevel { TRACE = 1, DEBUG = 2, INFO = 3, WARN = 4, ERROR = 5, FATAL = 6 }
-export enum ResultOperation { SCHEMA, DELETE, EXPORT, IMPORT }
+export enum LogLevel {
+	TRACE = 1,
+	DEBUG = 2,
+	INFO = 3,
+	WARN = 4,
+	ERROR = 5,
+	FATAL = 6
+}
+export enum ResultOperation {
+	SCHEMA,
+	DELETE,
+	EXPORT,
+	IMPORT
+}
 
 export interface ILogger {
 	entryNumber: string;
@@ -98,7 +110,7 @@ export class Util {
 			return;
 		}
 
-		const lineNumber: string = this.getLineNumber((new Error()).stack);
+		const lineNumber: string = this.getLineNumber(new Error().stack);
 		const timestamp = this.getWallTime(false).split("T")[1];
 
 		if (message instanceof Array) {
@@ -113,23 +125,22 @@ export class Util {
 	public static getLogsTable(): Partial<Result> {
 		return {
 			// LEARNING: Defining the function in an object
-			display: (() => {
+			display: () => {
 				// LEARNING: [ARRAY]: Shadow clone of the array.
 				const data = this.entries.slice(0);
 				// LEARNING: Getting ux in a static method
-				UX.create()
-					.then((ux) => {
-						ux.table(data, {
-							columns: [
-								{ key: "timestamp", label: "Timestamp" },
-								{ key: "entryNumber", label: "#" },
-								{ key: "level", label: "Level" },
-								{ key: "lineNumber", label: "Line Number" },
-								{ key: "description", label: "Description" },
-							],
-						});
+				UX.create().then((ux) => {
+					ux.table(data, {
+						columns: [
+							{ key: "timestamp", label: "Timestamp" },
+							{ key: "entryNumber", label: "#" },
+							{ key: "level", label: "Level" },
+							{ key: "lineNumber", label: "Line Number" },
+							{ key: "description", label: "Description" }
+						]
 					});
-			}),
+				});
+			}
 		};
 	}
 
@@ -138,10 +149,10 @@ export class Util {
 		let arrValue1: string[] = [];
 		let arrValue2: string[] = [];
 
-		if ((strValue1 !== "") && (strValue1 !== null)) {
+		if (strValue1 !== "" && strValue1 !== null) {
 			arrValue1 = strValue1.split(",");
 		}
-		if ((strValue2 !== "") && (strValue2 !== null)) {
+		if (strValue2 !== "" && strValue2 !== null) {
 			arrValue2 = strValue2.split(",");
 		}
 
@@ -177,12 +188,30 @@ export class Util {
 		const orgAlias = org.alias;
 		const operation = ResultOperation[action];
 
-		if (!this.myResults) { this.myResults = {}; }
-		if (!this.myResults[operation]) { this.myResults[operation] = {}; }
-		if (!this.myResults[operation][orgAlias]) { this.myResults[operation][orgAlias] = {}; }
-		if (!this.myResults[operation][orgAlias][sObj]) { this.myResults[operation][orgAlias][sObj] = { bad: 0, good: 0 }; }
-		this.myResults[operation][orgAlias][sObj].good += good;
+		// Check JSObject exists before populating it.
+		if (!this.myResults) {
+			this.myResults = {};
+		}
+		if (!this.myResults[operation]) {
+			this.myResults[operation] = {};
+		}
+		if (!this.myResults[operation][orgAlias]) {
+			this.myResults[operation][orgAlias] = {};
+		}
+
+		// Subtotals per sObject
+		if (!this.myResults[operation][orgAlias][sObj]) {
+			this.myResults[operation][orgAlias][sObj] = { bad: 0, good: 0 };
+		}
 		this.myResults[operation][orgAlias][sObj].bad += bad;
+		this.myResults[operation][orgAlias][sObj].good += good;
+
+		// Totals for org
+		if (!this.myResults[operation]._TOTAL_RECORDS) {
+			this.myResults[operation]._TOTAL_RECORDS = { bad: 0, good: 0 };
+		}
+		this.myResults[operation]._TOTAL_RECORDS.bad += bad;
+		this.myResults[operation]._TOTAL_RECORDS.good += good;
 	}
 
 	public static getMyResults() {
@@ -192,7 +221,8 @@ export class Util {
 	public static serialize(thisCaller: any, data: any[], callback: AnyFunction, index: number = 0): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (index < data.length) {
-				callback.apply(thisCaller, [index])
+				callback
+					.apply(thisCaller, [index])
 					.then(() => {
 						// Util.writeLog(`**** ASCENDING: ${index}`, LogLevel.DEBUG);
 						return this.serialize(thisCaller, data, callback, index + 1);
@@ -201,7 +231,9 @@ export class Util {
 						// Util.writeLog(`**** DESCENDING: ${index}`, LogLevel.DEBUG);
 						resolve();
 					})
-					.catch((err) => { reject(err); });
+					.catch((err) => {
+						reject(err);
+					});
 			} else {
 				resolve();
 			}
@@ -220,9 +252,7 @@ export class Util {
 
 		try {
 			messageStr = JSON.stringify(message);
-			if ((message.length + 2 === messageStr.length) &&
-				(messageStr[0] === '"') &&
-				(messageStr[messageStr.length - 1] === '"')) {
+			if (message.length + 2 === messageStr.length && messageStr[0] === '"' && messageStr[messageStr.length - 1] === '"') {
 				messageStr = message;
 			}
 		} catch (ex) {
@@ -264,7 +294,7 @@ export class Util {
 			entryNumber: this.counter + (segmentNumber > 1 ? `.${segmentNumber}` : ""),
 			level: LogLevel[level],
 			lineNumber: lineNumber.padEnd(20, " "),
-			timestamp,
+			timestamp
 		});
 
 		// Add entry to SFDX logger
