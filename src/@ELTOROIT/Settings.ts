@@ -1,5 +1,5 @@
 import { ConfigContents, ConfigFile, fs } from "@salesforce/core";
-import { AnyJson, Dictionary, toAnyJson } from "@salesforce/ts-types";
+import { AnyJson, Dictionary } from "@salesforce/ts-types";
 import { WhichOrg } from "./OrgManager";
 import { LogLevel, Util } from "./Util";
 
@@ -42,6 +42,7 @@ export interface ISettingsValues {
 	includeAllCustom: boolean;
 	stopOnErrors: boolean;
 	copyToProduction: boolean;
+	useBulkAPI: boolean;
 	ignoreFieldsRaw: string;
 	twoPassReferenceFieldsRaw: string;
 	maxRecordsEachRaw: number;
@@ -81,6 +82,7 @@ export class Settings implements ISettingsValues {
 	public includeAllCustom: boolean;
 	public stopOnErrors: boolean;
 	public copyToProduction: boolean;
+	public useBulkAPI: boolean;
 	public maxRecordsEachRaw: number;
 	public deleteDestination: boolean;
 	public pollingTimeout: number;
@@ -366,6 +368,13 @@ export class Settings implements ISettingsValues {
 						})
 					);
 
+					// useBulkAPI
+					promises.push(
+						this.processStringValues(resValues, "useBulkAPI", false).then((value: string) => {
+							this.useBulkAPI = value === "true";
+						})
+					);
+
 					// rootFolder
 					promises.push(
 						this.processStringValues(resValues, "rootFolder", false)
@@ -546,7 +555,8 @@ export class Settings implements ISettingsValues {
 		const output: ConfigContents = {};
 
 		// VERBOSE: Print debug time in output file so files do get changed, and we know we are looking at the right file.
-		output.now = toAnyJson(new Date().toJSON());
+		// Do not update timestamp
+		// output.now = toAnyJson(new Date().toJSON());
 
 		// Output regular data
 		output[WhichOrg.SOURCE] = this.orgAliases.get(WhichOrg.SOURCE);
@@ -558,6 +568,7 @@ export class Settings implements ISettingsValues {
 		output.stopOnErrors = this.stopOnErrors;
 		output.ignoreFields = this.ignoreFieldsRaw;
 		output.copyToProduction = this.copyToProduction;
+		output.useBulkAPI = this.useBulkAPI;
 		output.twoPassReferenceFields = this.twoPassReferenceFieldsRaw;
 		output.maxRecordsEach = this.maxRecordsEachRaw;
 		output.deleteDestination = this.deleteDestination;
@@ -630,6 +641,7 @@ export class Settings implements ISettingsValues {
 		this.includeAllCustom = false;
 		this.stopOnErrors = true;
 		this.copyToProduction = false;
+		this.useBulkAPI = false;
 		this.ignoreFieldsRaw = null;
 		this.twoPassReferenceFieldsRaw = null;
 		this.maxRecordsEachRaw = -1;
