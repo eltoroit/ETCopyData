@@ -73,4 +73,8 @@ Plugin can be found here: https://www.npmjs.com/package/etcopydata/
 
 # Compile
 
--   clear && rm -r node_modules && npm install & npm run prepare && yarn run prepare && echo "--- --- --- LINK --- --- ---" && sfdx plugins:link -v && npm publish ./ --tag beta
+-   npm install
+-   clear && rm -r node_modules && npm install
+-   clear && npm run prepare && yarn run prepare
+-   clear && sfdx plugins:link -v
+-   clear && npm publish ./ --tag beta
