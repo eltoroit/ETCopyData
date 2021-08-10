@@ -1,6 +1,6 @@
-import { core, UX } from "@salesforce/command";
+import { UX } from "@salesforce/command";
 import { Result } from "@salesforce/command/lib/sfdxCommand";
-import { Logger } from "@salesforce/core";
+import { Logger, SfdxError } from "@salesforce/core";
 import { AnyFunction } from "@salesforce/ts-types";
 import { OrgManager } from "./OrgManager";
 // import { asAnyJson } from "@salesforce/ts-types";
@@ -64,7 +64,7 @@ export class Util {
 			Util.writeLog(msg.stack, LogLevel.FATAL);
 		}
 
-		throw new core.SfdxError(msg, "Error", null, -1);
+		throw new SfdxError(msg, "Error", null, -1);
 	}
 
 	public static doesLogOutputsEachStep(): boolean {

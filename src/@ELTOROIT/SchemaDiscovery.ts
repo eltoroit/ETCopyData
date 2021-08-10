@@ -50,7 +50,7 @@ export class SchemaDiscovery {
 	public findObjectsAsync(): Promise<Map<string, ISchemaData>> {
 		return new Promise((resolve, reject) => {
 			if (this.privSObjects !== null) {
-				resolve();
+				resolve(null);
 			}
 
 			this.privSObjects = new Map<string, ISchemaData>();

@@ -6,29 +6,30 @@
 	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
 	"dependencies": {
 		"@oclif/config": "1.17.0",
-		"@oclif/errors": "1.3.4",
-		"@oclif/plugin-help": "3.2.0",
-		"@salesforce/command": "3.0.5",
-		"npm-check-updates": "10.2.1",
-		"tslib": "2.0.3"
+		"@oclif/errors": "1.3.5",
+		"@oclif/plugin-help": "3.2.2",
+		"@salesforce/command": "4.0.4",
+		"jsforce": "^1.10.1",
+		"npm-check-updates": "11.8.3",
+		"tslib": "2.3.0"
 	},
 	"devDependencies": {
-		"@oclif/dev-cli": "1.23.1",
-		"@oclif/test": "1.2.7",
-		"@salesforce/dev-config": "2.0.0",
-		"@types/chai": "4.2.14",
-		"@types/jsforce": "1.9.24",
-		"@types/mocha": "8.0.4",
-		"@types/node": "14.14.7",
+		"@oclif/dev-cli": "1.26.0",
+		"@oclif/test": "1.2.8",
+		"@salesforce/dev-config": "2.1.2",
+		"@types/chai": "4.2.21",
+		"@types/jsforce": "1.9.33",
+		"@types/mocha": "9.0.0",
+		"@types/node": "16.4.13",
 		"globby": "11.0.1",
-		"mocha": "8.2.1",
+		"mocha": "9.0.3",
 		"nyc": "15.1.0",
-		"sinon": "9.2.1",
-		"ts-node": "9.0.0",
-		"typescript": "4.0.5"
+		"sinon": "9.2.0",
+		"ts-node": "10.2.0",
+		"typescript": "4.3.5"
 	},
 	"engines": {
-		"node": ">=8.0.0"
+		"node": ">=14.0.0"
 	},
 	"files": [
 		"/lib",

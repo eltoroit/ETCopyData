@@ -179,6 +179,11 @@ export class ETCopyData {
 					const importer: Importer = new Importer();
 					const orgSource: OrgManager = data.orgs.get(WhichOrg.SOURCE);
 					const orgDestination: OrgManager = data.orgs.get(WhichOrg.DESTINATION);
+
+					if (data.settings.orgAliases.get(WhichOrg.SOURCE) === "soNULL") {
+						orgSource.alias = "soNULL";
+					}
+
 					return importer.importAll(orgSource, orgDestination);
 				})
 				.then(() => {
@@ -219,20 +224,44 @@ export class ETCopyData {
 	// tslint:disable-next-line:max-line-length
 	private setupOrg(data: IETCopyData, wo: WhichOrg): Promise<void> {
 		return new Promise((resolve, reject) => {
-			const alias = data.settings.getOrgAlias(wo);
-			const org: OrgManager = new OrgManager(data.settings, data.coreMD);
+			const doSetupOrg = () => {
+				const alias = data.settings.getOrgAlias(wo);
+				const org: OrgManager = new OrgManager(data.settings, data.coreMD);
 
-			org.setAlias(alias)
-				.then((res) => {
-					data.orgs.set(wo, org);
-					return org.discovery.findObjectsAsync();
-				})
-				.then(() => {
-					resolve();
-				})
-				.catch((err) => {
-					reject(err);
-				});
+				org.setAlias(alias)
+					.then((res) => {
+						data.orgs.set(wo, org);
+						return org.discovery.findObjectsAsync();
+					})
+					.then(() => {
+						resolve();
+					})
+					.catch((err) => {
+						reject(err);
+					});
+			};
+
+			if (wo === WhichOrg.SOURCE) {
+				if (data.settings.getOrgAlias(WhichOrg.SOURCE) === "soNULL") {
+					const org: OrgManager = new OrgManager(data.settings, data.coreMD);
+
+					org.setAlias(data.settings.getOrgAlias(WhichOrg.DESTINATION))
+						.then((res) => {
+							data.orgs.set(WhichOrg.SOURCE, org);
+							return org.discovery.findObjectsAsync();
+						})
+						.then(() => {
+							resolve();
+						})
+						.catch((err) => {
+							reject(err);
+						});
+				} else {
+					doSetupOrg();
+				}
+			} else {
+				doSetupOrg();
+			}
 		});
 	}
 
@@ -468,7 +497,7 @@ export class ETCopyData {
 		});
 	}
 
-	private RequestedNumberEntered(ux: UX, counter: number, message: string): Promise<Boolean> {
+	private RequestedNumberEntered(ux: UX, counter: number, message: string): Promise<void> {
 		return new Promise((resolve, reject) => {
 			let expected = `${Math.floor(100000000 + Math.random() * 900000000)}`;
 			if (counter > 0) {

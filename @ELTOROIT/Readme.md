@@ -70,3 +70,7 @@ Plugin can be found here: https://www.npmjs.com/package/etcopydata/
     -   `npm publish ./ --tag beta`
 -   Publish a production package
     -   `npm publish ./`
+
+# Compile
+
+-   clear && rm -r node_modules && npm install & npm run prepare && yarn run prepare && echo "--- --- --- LINK --- --- ---" && sfdx plugins:link -v && npm publish ./ --tag beta
