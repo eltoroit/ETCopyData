@@ -1,3 +1,6 @@
+const fse = require("fs-extra");
+const path = require("path");
+import { fs } from "@salesforce/core";
 import { OutputFlags } from "@oclif/parser";
 import { flags, UX } from "@salesforce/command";
 import { CoreMetadataSObjects } from "./CoreMetadataSObjects";
@@ -179,11 +182,6 @@ export class ETCopyData {
 					const importer: Importer = new Importer();
 					const orgSource: OrgManager = data.orgs.get(WhichOrg.SOURCE);
 					const orgDestination: OrgManager = data.orgs.get(WhichOrg.DESTINATION);
-
-					if (data.settings.orgAliases.get(WhichOrg.SOURCE) === "soNULL") {
-						orgSource.alias = "soNULL";
-					}
-
 					return importer.importAll(orgSource, orgDestination);
 				})
 				.then(() => {
@@ -244,8 +242,10 @@ export class ETCopyData {
 			if (wo === WhichOrg.SOURCE) {
 				if (data.settings.getOrgAlias(WhichOrg.SOURCE) === "soNULL") {
 					const org: OrgManager = new OrgManager(data.settings, data.coreMD);
-
-					org.setAlias(data.settings.getOrgAlias(WhichOrg.DESTINATION))
+					this.copyFolder(data.settings.rootFolderFull, data.settings.getOrgAlias(WhichOrg.SOURCE), data.settings.getOrgAlias(WhichOrg.DESTINATION))
+						.then(() => {
+							return org.setAlias(data.settings.getOrgAlias(WhichOrg.DESTINATION));
+						})
 						.then((res) => {
 							data.orgs.set(WhichOrg.SOURCE, org);
 							return org.discovery.findObjectsAsync();
@@ -262,6 +262,17 @@ export class ETCopyData {
 			} else {
 				doSetupOrg();
 			}
+		});
+	}
+
+	private copyFolder(rootPath: string, folderSource: string, folderDestination: string): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			folderSource = path.join(rootPath, folderSource);
+			folderDestination = path.join(rootPath, folderDestination);
+			fse.copy(folderSource, folderDestination, (err) => {
+				if (err) reject(err);
+				resolve();
+			});
 		});
 	}
 
