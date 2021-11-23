@@ -66,6 +66,7 @@ Should indicate the version like this:
 Plugin can be found here: https://www.npmjs.com/package/etcopydata/
 
 -   Update version number in the **package.json** file.
+-   Commit to repo
 -   Publish a beta package
     -   `npm publish ./ --tag beta`
 -   Publish a production package
