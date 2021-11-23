@@ -1,6 +1,6 @@
 const fse = require("fs-extra");
 const path = require("path");
-import { fs } from "@salesforce/core";
+// import { fs } from "@salesforce/core";
 import { OutputFlags } from "@oclif/parser";
 import { flags, UX } from "@salesforce/command";
 import { CoreMetadataSObjects } from "./CoreMetadataSObjects";
