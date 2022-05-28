@@ -1,4 +1,6 @@
-import { ConfigContents, ConfigFile, fs } from "@salesforce/core";
+import mkdirp from "mkdirp";
+import * as fsPromises from "fs/promises";
+import { ConfigContents, ConfigFile } from "@salesforce/core";
 import { AnyJson, Dictionary } from "@salesforce/ts-types";
 import { WhichOrg } from "./OrgManager";
 import { LogLevel, Util } from "./Util";
@@ -186,7 +188,7 @@ export class Settings implements ISettingsValues {
 
 		return new Promise((resolve, reject) => {
 			const fullPath = this.rootFolderFull + `/${path}`;
-			fs.mkdirp(fullPath).then(() => {
+			mkdirp(fullPath).then(() => {
 				let strData = "";
 				if (isVerbose) {
 					// LEARNING: [JSON]: Prettyfy JSON.
@@ -195,7 +197,8 @@ export class Settings implements ISettingsValues {
 					strData = JSON.stringify(data);
 				}
 
-				fs.writeFile(fullPath + `/${fileName}`, strData)
+				fsPromises
+					.writeFile(fullPath + `/${fileName}`, strData)
 					.then(() => {
 						resolve();
 					})
@@ -209,9 +212,10 @@ export class Settings implements ISettingsValues {
 	public readFromFile(path: string, fileName: string): Promise<object> {
 		return new Promise((resolve, reject) => {
 			const fullPath = this.rootFolderFull + `/${path}`;
-			fs.mkdirp(fullPath)
+			mkdirp(fullPath)
 				.then(() => {
-					fs.readFile(fullPath + `/${fileName}`)
+					fsPromises
+						.readFile(fullPath + `/${fileName}`)
 						.then((value: Buffer) => {
 							resolve(JSON.parse(value.toString()));
 						})
@@ -278,14 +282,14 @@ export class Settings implements ISettingsValues {
 				}
 			}
 
-			fs.mkdirp(this.rootFolderFull).then(() => {
+			mkdirp(this.rootFolderFull).then(() => {
 				let path: string = "";
 				path = this.rootFolderFull;
 
 				// VERBOSE: Create sub-folders based on time so files do not override
 				// path += `/${Util.getWallTime(true)}`;
 
-				fs.mkdirp(path).then(() => {
+				mkdirp(path).then(() => {
 					this.rootFolderFull = path;
 					resolve(this.rootFolderFull);
 				});

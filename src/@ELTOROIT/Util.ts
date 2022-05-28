@@ -123,6 +123,15 @@ export class Util {
 	}
 
 	public static getLogsTable(): Partial<Result> {
+		let tableColumnData: any = {
+			columns: [
+				{ key: "timestamp", label: "Timestamp" },
+				{ key: "entryNumber", label: "#" },
+				{ key: "level", label: "Level" },
+				{ key: "lineNumber", label: "Line Number" },
+				{ key: "description", label: "Description" }
+			]
+		};
 		return {
 			// LEARNING: Defining the function in an object
 			display: () => {
@@ -130,15 +139,7 @@ export class Util {
 				const data = this.entries.slice(0);
 				// LEARNING: Getting ux in a static method
 				UX.create().then((ux) => {
-					ux.table(data, {
-						columns: [
-							{ key: "timestamp", label: "Timestamp" },
-							{ key: "entryNumber", label: "#" },
-							{ key: "level", label: "Level" },
-							{ key: "lineNumber", label: "Line Number" },
-							{ key: "description", label: "Description" }
-						]
-					});
+					ux.table(data, tableColumnData);
 				});
 			}
 		};

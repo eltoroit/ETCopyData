@@ -80,44 +80,47 @@ export class Exporter {
 		});
 
 		return new Promise((resolve, reject) => {
-			// let records = [];
 			// ELTOROIT: Bulk or SOAP?
-			org.conn.query(this.makeSOQL(org, sObjName), { autoFetch: true }, (qErr, queryResult) => {
-				if (qErr) {
-					reject(qErr);
-				}
+			let records = [];
+			let query = org.conn
+				.query(this.makeSOQL(org, sObjName))
+				.on("record", (record) => {
+					records.push(record);
+				})
+				.on("end", () => {
+					const msg = `[${org.alias}] Queried [${sObjName}], retrieved ${records.length} records `;
+					Util.writeLog(msg, LogLevel.INFO);
+					Util.logResultsAdd(org, ResultOperation.EXPORT, sObjName, records.length, 0);
 
-				this.getRecords(org, sObjName, queryResult)
-					.then(() => {
-						const data: IExportData = this.mapRecordsFetched.get(sObjName);
-						const msg = `[${org.alias}] Queried [${sObjName}], retrieved ${data.total} records `;
-						Util.writeLog(msg, LogLevel.INFO);
-						Util.logResultsAdd(org, ResultOperation.EXPORT, sObjName, data.total, 0);
+					const data: IExportData = this.mapRecordsFetched.get(sObjName);
+					data.total = query.totalSize;
+					data.fetched = records.length;
+					data.records = records;
 
-						// Checks....
-						Util.assertEquals(data.fetched, data.total, "Not all the records were fetched [1].");
-						Util.assertEquals(data.total, data.records.length, "Not all the records were fetched [2].");
+					// Checks....
+					Util.assertEquals(data.fetched, data.total, "Not all the records were fetched [1].");
+					Util.assertEquals(data.total, data.records.length, "Not all the records were fetched [2].");
 
-						if (data.total >= 0) {
-							org.settings
-								.writeToFile(org.alias + folderCode, sObjName + ".json", data)
-								.then(() => {
-									// NOTE: Clean memory, and avoid heap overflow.
-									data.records = [];
-									// Now, resolve it.
-									resolve();
-								})
-								.catch((err) => {
-									reject(err);
-								});
-						} else {
-							resolve();
-						}
-					})
-					.catch((err) => {
-						reject(err);
-					});
-			});
+					if (data.total >= 0) {
+						org.settings
+							.writeToFile(org.alias + folderCode, sObjName + ".json", data)
+							.then(() => {
+								// NOTE: Clean memory, and avoid heap overflow.
+								data.records = [];
+								// Now, resolve it.
+								resolve();
+							})
+							.catch((err) => {
+								reject(err);
+							});
+					} else {
+						resolve();
+					}
+				})
+				.on("error", (err) => {
+					reject(err);
+				})
+				.run({ autoFetch: true, maxFetch: 4000 });
 		});
 	}
 
@@ -144,34 +147,5 @@ export class Exporter {
 		Util.writeLog(`[${org.alias}] Querying [${sObjName}] with SOQL: [${soql}]`, LogLevel.TRACE);
 
 		return soql;
-	}
-
-	// LEARNING: Querying sObject records. Performs a recursive call to invoke the QueryMore and get all the chunks.
-	private getRecords(org: OrgManager, sObjName, queryResult): Promise<void> {
-		return new Promise((resolve, reject) => {
-			const recordsFetched: IExportData = this.mapRecordsFetched.get(sObjName);
-			recordsFetched.total = queryResult.totalSize;
-			recordsFetched.fetched += queryResult.records.length;
-			recordsFetched.records = recordsFetched.records.concat(queryResult.records);
-
-			if (queryResult.done) {
-				resolve();
-			} else {
-				org.conn
-					.queryMore(queryResult.nextRecordsUrl, { autoFetch: true })
-					.then((qRes) => {
-						this.getRecords(org, sObjName, qRes)
-							.then(() => {
-								resolve();
-							})
-							.catch((err) => {
-								reject(err);
-							});
-					})
-					.catch((err) => {
-						reject(err);
-					});
-			}
-		});
 	}
 }

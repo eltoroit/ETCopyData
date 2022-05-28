@@ -3,6 +3,8 @@
   "compilerOptions": {
     "target": "es2015",
     "module": "commonjs",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "outDir": "./lib",
     "rootDir": "./src"

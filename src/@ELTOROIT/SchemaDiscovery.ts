@@ -1,4 +1,3 @@
-import { DescribeGlobalSObjectResult } from "jsforce";
 import { ISchemaData } from "./Interfaces";
 import { OrgManager } from "./OrgManager";
 import { LogLevel, Util } from "./Util";
@@ -62,7 +61,7 @@ export class SchemaDiscovery {
 					const allSObjectNames: string[] = [];
 
 					// find objects and select the ones we are working with
-					value.sobjects.forEach((sObj: DescribeGlobalSObjectResult) => {
+					value.sobjects.forEach((sObj: any) => {
 						this.allFields.set(sObj.name, []);
 						allSObjectNames.push(sObj.name);
 						this.addSObject(sObj);
@@ -189,7 +188,7 @@ export class SchemaDiscovery {
 			const url = this.privSObjects.get(sObjName).describeUrl;
 			this.orgManager.conn
 				.request(url)
-				.then((res) => {
+				.then((res: any) => {
 					this.processFields(res, sObjName);
 					this.processChildren(res, sObjName);
 					resolve(res);
@@ -219,7 +218,7 @@ export class SchemaDiscovery {
 		});
 	}
 
-	private addSObject(sObj: DescribeGlobalSObjectResult): void {
+	private addSObject(sObj: any): void {
 		if (this.orgManager.coreMD.isMD(sObj.name)) {
 			this.orgManager.coreMD.setValues(sObj);
 		} else {
@@ -390,7 +389,7 @@ export class SchemaDiscovery {
 		}
 	}
 
-	private overrideIncludeSobject(sObj: DescribeGlobalSObjectResult): boolean {
+	private overrideIncludeSobject(sObj: any): boolean {
 		if (this.orgManager.settings.includeAllCustom && sObj.custom) {
 			return true;
 		}

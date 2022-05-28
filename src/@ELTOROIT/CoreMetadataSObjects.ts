@@ -1,4 +1,3 @@
-import { DescribeGlobalSObjectResult } from "jsforce";
 import { ISchemaMetadata } from "./Interfaces";
 import { ISettingsSObjectMetatada, Settings } from "./Settings";
 
@@ -44,17 +43,16 @@ export class CoreMetadataSObjects {
 	public getByKeyPrefix(keyPrefix: string): ISchemaMetadata {
 		this.makeMetadata();
 
-		this.metadataSobjects.forEach(
-			(md: ISchemaMetadata) => {
-				if (md.keyPrefix === keyPrefix) {
-					return md;
-				}
-			});
+		this.metadataSobjects.forEach((md: ISchemaMetadata) => {
+			if (md.keyPrefix === keyPrefix) {
+				return md;
+			}
+		});
 
 		return null;
 	}
 
-	public setValues(sObj: DescribeGlobalSObjectResult) {
+	public setValues(sObj: any) {
 		this.makeMetadata();
 
 		this.metadataSobjects.get(sObj.name).label = sObj.label;
@@ -71,36 +69,34 @@ export class CoreMetadataSObjects {
 	public forPrint(): object {
 		const output = {};
 
-		this.metadataSobjects.forEach(
-			(value: ISchemaMetadata, key: string) => {
-				output[key] = {};
-				output[key].Name = value.name;
-				output[key].label = value.label;
-				output[key].keyPrefix = value.keyPrefix;
-				output[key].fields = value.fields;
-				output[key].describeUrl = value.describeUrl;
-			});
+		this.metadataSobjects.forEach((value: ISchemaMetadata, key: string) => {
+			output[key] = {};
+			output[key].Name = value.name;
+			output[key].label = value.label;
+			output[key].keyPrefix = value.keyPrefix;
+			output[key].fields = value.fields;
+			output[key].describeUrl = value.describeUrl;
+		});
 		return output;
 	}
 
 	private makeMetadata(): void {
 		if (this.metadataSobjects == null) {
 			this.metadataSobjects = new Map<string, ISchemaMetadata>();
-			this.settings.getRequestedSObjectNames(true).forEach(
-				(sObjName: string) => {
-					const sObj: ISettingsSObjectMetatada = this.settings.getSObjectMetadata(sObjName);
-					const fieldList: string[] = sObj.fieldsToExport as string[];
+			this.settings.getRequestedSObjectNames(true).forEach((sObjName: string) => {
+				const sObj: ISettingsSObjectMetatada = this.settings.getSObjectMetadata(sObjName);
+				const fieldList: string[] = sObj.fieldsToExport as string[];
 
-					this.metadataSobjects.set(sObjName, {
-						describeUrl: null,
-						fields: fieldList,
-						keyPrefix: null,
-						label: null,
-						name: sObjName,
-						orderBy: sObj.orderBy,
-						where: null,
-					});
+				this.metadataSobjects.set(sObjName, {
+					describeUrl: null,
+					fields: fieldList,
+					keyPrefix: null,
+					label: null,
+					name: sObjName,
+					orderBy: sObj.orderBy,
+					where: null
 				});
+			});
 		}
 	}
 }
