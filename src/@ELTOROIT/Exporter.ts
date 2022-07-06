@@ -32,6 +32,7 @@ export class Exporter {
 		return exporter.privExportMetadata(org, folderCode);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/member-ordering
 	private mapRecordsFetched: Map<string, IExportData> = new Map<string, IExportData>();
 
 	private privExportData(org: OrgManager, folderCode: string): Promise<void> {
@@ -81,8 +82,8 @@ export class Exporter {
 
 		return new Promise((resolve, reject) => {
 			// ELTOROIT: Bulk or SOAP?
-			let records = [];
-			let query = org.conn
+			const records = [];
+			const query: any = org.conn
 				.query(this.makeSOQL(org, sObjName))
 				.on("record", (record) => {
 					records.push(record);

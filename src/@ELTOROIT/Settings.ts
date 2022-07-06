@@ -282,7 +282,7 @@ export class Settings implements ISettingsValues {
 				}
 			}
 
-			mkdirp(this.rootFolderFull).then(() => {
+			mkdirp(this.rootFolderFull).then((value) => {
 				let path: string = "";
 				path = this.rootFolderFull;
 

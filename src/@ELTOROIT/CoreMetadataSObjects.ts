@@ -5,7 +5,7 @@ export class CoreMetadataSObjects {
 	private settings: Settings;
 	private metadataSobjects: Map<string, ISchemaMetadata> = null;
 
-	constructor(settings: Settings) {
+	public constructor(settings: Settings) {
 		this.settings = settings;
 	}
 
@@ -52,7 +52,7 @@ export class CoreMetadataSObjects {
 		return null;
 	}
 
-	public setValues(sObj: any) {
+	public setValues(sObj: any): void {
 		this.makeMetadata();
 
 		this.metadataSobjects.get(sObj.name).label = sObj.label;

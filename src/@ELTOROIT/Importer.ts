@@ -6,7 +6,7 @@ import { LogLevel, ResultOperation, Util } from "./Util";
 class ReferenceFieldMapping {
 	public fieldName: string;
 	public sourceId: string;
-	constructor(fieldName: string, sourceId: string) {
+	public constructor(fieldName: string, sourceId: string) {
 		this.fieldName = fieldName;
 		this.sourceId = sourceId;
 	}
@@ -232,6 +232,46 @@ export class Importer {
 	}
 
 	private loadOneSObjectData(orgSource: OrgManager, orgDestination: OrgManager, sObjName: string): Promise<number> {
+		function splitIntoChunks(records: any[]): any[] {
+			const output = [];
+			const chunkSize = 10000;
+			for (let i = 0; i < records.length; i += chunkSize) {
+				output.push(records.slice(i, i + chunkSize));
+			}
+			return output;
+		}
+
+		const processResults = (error, offset, records: any[], results: any[]): any => {
+			let msg;
+			const count = { good: 0, bad: 0 };
+
+			if (error) {
+				throw new Error(error);
+			}
+
+			// NOTE: I need a traditional loop because the index (i) will be used in two lists of same size and same order.
+			for (let i = 0; i < results.length; i++) {
+				msg = "";
+				if (results[i].success) {
+					count.good++;
+					this.matchingIds.get(sObjName).set(records[i].Id, results[i].id);
+
+					// VERBOSE: Show record was added succesfully
+					msg += `[${orgDestination.alias}] Successfully imported [${sObjName}] record #${offset + i + 1}. `;
+					msg += `Ids mapped: [${records[i].Id}] => [${results[i].id}]`;
+					Util.writeLog(msg, LogLevel.TRACE);
+				} else {
+					count.bad++;
+					msg += `*** [${orgDestination.alias}] Error importing [${sObjName}] record #${offset + i + 1}. `;
+					msg += JSON.stringify(results[i].errors);
+					Util.writeLog(msg, LogLevel.ERROR);
+				}
+			}
+			Util.logResultsAdd(orgDestination, ResultOperation.IMPORT, sObjName, count.good, count.bad);
+
+			return count;
+		};
+
 		return new Promise((resolve, reject) => {
 			// Read file from JSON into usable structure
 			let msg = "";
@@ -295,42 +335,6 @@ export class Importer {
 					});
 
 					if (records.length > 0) {
-						const processResults = (error, results: any[]) => {
-							let badCount: number = 0;
-							let goodCount: number = 0;
-
-							if (error) {
-								reject(error);
-							}
-
-							// NOTE: I need a traditional loop because the index (i) will be used in two lists of same size and same order.
-							for (let i = 0; i < results.length; i++) {
-								msg = "";
-								if (results[i].success) {
-									goodCount++;
-									this.matchingIds.get(sObjName).set(records[i].Id, results[i].id);
-
-									// VERBOSE: Show record was added succesfully
-									msg += `[${orgDestination.alias}] Successfully imported [${sObjName}] record #${i + 1}. `;
-									msg += `Ids mapped: [${records[i].Id}] => [${results[i].id}]`;
-									Util.writeLog(msg, LogLevel.TRACE);
-								} else {
-									badCount++;
-									msg += `*** [${orgDestination.alias}] Error importing [${sObjName}] record #${i + 1}. `;
-									msg += JSON.stringify(results[i].errors);
-									Util.writeLog(msg, LogLevel.ERROR);
-								}
-							}
-
-							msg = "";
-							msg += `[${orgDestination.alias}] Imported [${sObjName}]. `;
-							msg += `Record count: [Good = ${goodCount}, Bad = ${badCount}]`;
-							Util.writeLog(msg, LogLevel.INFO);
-							Util.logResultsAdd(orgDestination, ResultOperation.IMPORT, sObjName, goodCount, badCount);
-
-							resolve(badCount);
-						};
-
 						// LOADING
 						this.matchingIds.set(sObjName, new Map<string, string>());
 						// ELTOROIT: Bulk or SOAP?
@@ -342,37 +346,64 @@ export class Importer {
 							orgDestination.conn.bulk.pollTimeout = orgDestination.settings.pollingTimeout;
 							const options: any = { concurrencyMode: "Parallel", extIdField: orgDestination.settings.getSObjectData(sObjName).externalIdField || null };
 
-							Util.writeLog(`Importing [${sObjName}] using [${operation}] with options [${JSON.stringify(options)}]`, LogLevel.DEBUG);
+							Util.writeLog(`Importing [${records.length}] [${sObjName}] records using [${operation}] with external Id [${options.extIdField}]`, LogLevel.DEBUG);
 
-							// LEARNING: Inserting sObject records in bulk
-							let job = orgDestination.conn.bulk.createJob(sObjName, operation, options);
-							let batch = job.createBatch();
-							batch.execute(this.getRecordsForOperation(records, operation));
-							batch.on("error", (batchError) => {
-								processResults(batchError, null);
+							const totalCount = { good: 0, bad: 0 };
+							const promises: Promise<any>[] = splitIntoChunks(records).map((chunk) => {
+								return new Promise((chunkResolved, chunkRejected) => {
+									// LEARNING: Inserting sObject records in bulk
+									const job = orgDestination.conn.bulk.createJob(sObjName, operation, options);
+									const batch = job.createBatch();
+									batch.execute(this.getRecordsForOperation(chunk, operation));
+									batch.on("error", (batchError) => {
+										const count = processResults(batchError, totalCount.good + totalCount.bad, chunk, null);
+										totalCount.bad += count.bad;
+										totalCount.good += count.good;
+										chunkResolved(totalCount);
+									});
+									batch.on("queue", (batchInfo) => {
+										// Fired when batch request is queued in server.
+										// Start polling - Do not poll until the batch has started
+										batch.poll(1000 /* interval(ms) */, 30 * 60 * 1e3 /* timeout(ms) */);
+									});
+									batch.on("response", (results) => {
+										// Fired when batch finished and result retrieved
+										const count = processResults(null, totalCount.good + totalCount.bad, chunk, results);
+										totalCount.bad += count.bad;
+										totalCount.good += count.good;
+										chunkResolved(totalCount);
+									});
+									batch.on("progress", (batchInfo) => {
+										// Fired when batch finished and result retrieved
+										console.log(JSON.stringify(batchInfo, null, 2));
+										// debugger;
+									});
+								});
 							});
-							batch.on("queue", (batchInfo) => {
-								// Fired when batch request is queued in server.
-								// Start polling - Do not poll until the batch has started
-								batch.poll(1000 /* interval(ms) */, 20000 /* timeout(ms) */);
-							});
-							batch.on("response", (results) => {
-								// Fired when batch finished and result retrieved
-								processResults(null, results);
-							});
+							Promise.allSettled(promises)
+								.then((promisesResult) => {
+									msg = "";
+									msg += `[${orgDestination.alias}] Imported [${sObjName}]. `;
+									msg += `Record count: [Good = ${totalCount.good}, Bad = ${totalCount.bad}]`;
+									Util.writeLog(msg, LogLevel.INFO);
+									resolve(totalCount.bad);
+								})
+								.catch((temp2) => {
+									debugger;
+								});
 						} else {
 							const options: any = { allOrNone: true, allowRecursive: true };
 							if (operation === "insert") {
 								orgDestination.conn
 									.sobject(sObjName)
 									.create(records, options)
-									.then((results) => processResults(null, results))
+									.then((results: any) => processResults(null, results))
 									.catch((error) => processResults(error, null));
 							} else {
 								orgDestination.conn
 									.sobject(sObjName)
 									.upsert(records, orgDestination.settings.getSObjectData(sObjName).externalIdField, options)
-									.then((results) => processResults(null, results))
+									.then((results: any) => processResults(null, results))
 									.catch((error) => processResults(error, null));
 							}
 						}
@@ -418,26 +449,30 @@ export class Importer {
 						baseRecord[parent.parentId] = null;
 					});
 
+					let tmpIndex = 0;
 					let availableMatchingIds = new Map<string, Map<string, string>>(); // field name => id mapping data (old => new)
 					schemaData.twoPassParents.forEach((parent) => {
+						tmpIndex++;
 						if (this.matchingIds.has(parent.sObj)) {
 							availableMatchingIds.set(parent.parentId, this.matchingIds.get(parent.sObj));
-							Util.writeLog(`[${orgDestination.alias}] mapping field [${parent.parentId}] to SObject [${parent.sObj}]`, LogLevel.TRACE);
+							Util.writeLog(`[${orgDestination.alias}] mapping field [${parent.parentId}] (#${tmpIndex}) to SObject [${parent.sObj}]`, LogLevel.TRACE);
 						} else {
-							Util.writeLog(`[${orgDestination.alias}] data not available for mapping field [${parent.parentId}] to SObject [${parent.sObj}]`, LogLevel.WARN);
+							Util.writeLog(`[${orgDestination.alias}] data not available for mapping field [${parent.parentId}] (#${tmpIndex}) to SObject [${parent.sObj}]`, LogLevel.WARN);
 						}
 					});
 
 					// Create an object for each record that has one or more fields that need to be updated
+					tmpIndex = 0;
 					this.twoPassReferenceFieldData.get(sObjectName).forEach((mappings: Array<ReferenceFieldMapping>, id: string) => {
+						tmpIndex++;
 						let record = Object.assign({ Id: this.matchingIds.get(sObjectName).get(id) }, baseRecord);
 						mappings.forEach((mapping: ReferenceFieldMapping) => {
 							const destinationId = availableMatchingIds.get(mapping.fieldName).get(mapping.sourceId);
 							if (destinationId !== undefined) {
 								record[mapping.fieldName] = destinationId;
-								Util.writeLog(`[${orgDestination.alias}] mapping field [${mapping.fieldName}] for [${id}]:[ ${mapping.sourceId}] => [${destinationId}]`, LogLevel.TRACE);
+								Util.writeLog(`[${orgDestination.alias}] mapping field [${mapping.fieldName}] for (#${tmpIndex}) [${id}]:[ ${mapping.sourceId}] => [${destinationId}]`, LogLevel.TRACE);
 							} else {
-								Util.writeLog(`[${orgDestination.alias}] mapping data for [${mapping.fieldName}] did not include mapping for [${mapping.sourceId}]`, LogLevel.INFO);
+								Util.writeLog(`[${orgDestination.alias}] mapping data for [${mapping.fieldName}] did not include mapping for [${mapping.sourceId}] (#${tmpIndex}) `, LogLevel.INFO);
 							}
 						});
 						records.push(record);
@@ -495,7 +530,7 @@ export class Importer {
 						orgDestination.conn
 							.sobject(sObjectName)
 							.update(records, options)
-							.then((results) => processResults(null, results))
+							.then((results: any) => processResults(null, results))
 							.catch((error) => processResults(error, null));
 					}
 				});
@@ -511,36 +546,61 @@ export class Importer {
 
 	private deleteOneBeforeLoading(org: OrgManager, sObjName: string): Promise<number> {
 		let msg = "";
+
+		function deleteRecords(): any {
+			// LEARNING: Deleting sObject records in bulk
+			return new Promise((resolve, reject) => {
+				org.conn
+					.sobject(sObjName)
+					.find({ CreatedDate: { $lte: Date.TOMORROW } })
+					.destroy(sObjName)
+					.then((results: any[]) => {
+						const count = { good: 0, bad: 0 };
+						results.forEach((result: any) => {
+							if (result.success) {
+								count.good++;
+							} else {
+								// eslint-disable-next-line no-lonely-if
+								if (result.errors.length === 1 && result.errors[0] === "ENTITY_IS_DELETED:entity is deleted:--") {
+									// Ignore error
+								} else {
+									count.bad++;
+									msg = `*** [${org.alias}] Error deleting [${sObjName}] records. ${JSON.stringify(result)}`;
+									Util.writeLog(msg, LogLevel.ERROR);
+								}
+							}
+						});
+						Util.logResultsAdd(org, ResultOperation.DELETE, sObjName, count.good, count.bad);
+						msg = `[${org.alias}] Deleted ${count.good} records from [${sObjName}]`;
+						Util.writeLog(msg, LogLevel.INFO);
+
+						resolve(count);
+					})
+					.catch((err) => {
+						reject(err);
+					});
+			});
+		}
+
 		return new Promise((resolve, reject) => {
 			// DELETING
+			const total = { good: 0, bad: 0 };
 			Util.writeLog(`[${org.alias}] Deleting records from [${sObjName}]`, LogLevel.TRACE);
 			org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
-			// LEARNING: Deleting sObject records in bulk
-			org.conn
-				.sobject(sObjName)
-				.find({ CreatedDate: { $lte: Date.TOMORROW } })
-				.destroy(sObjName)
-				.then((results: any[]) => {
-					let totalSuccess: number = 0;
-					let totalFailures: number = 0;
-					results.forEach((result: any) => {
-						if (result.success) {
-							totalSuccess++;
-						} else {
-							if (result.errors.length === 1 && result.errors[0] === "ENTITY_IS_DELETED:entity is deleted:--") {
-								// Ignore error
-							} else {
-								totalFailures++;
-								msg = `*** [${org.alias}] Error deleting [${sObjName}] records. ${JSON.stringify(result)}`;
-								Util.writeLog(msg, LogLevel.ERROR);
-							}
-						}
-					});
-					Util.logResultsAdd(org, ResultOperation.DELETE, sObjName, totalSuccess, totalFailures);
-					msg = `[${org.alias}] Deleted ${totalSuccess} records from [${sObjName}]`;
-					Util.writeLog(msg, LogLevel.INFO);
+			async function loop(): Promise<any> {
+				const count = await deleteRecords();
+				total.bad += count.bad;
+				total.good += count.good;
+				if (count.good + count.bad < 10e3) {
+					return;
+				} else {
+					await loop();
+				}
+			}
 
-					resolve(totalFailures);
+			loop()
+				.then(() => {
+					resolve(total.bad);
 				})
 				.catch((err) => {
 					reject(err);
