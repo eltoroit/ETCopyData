@@ -1,65 +1,85 @@
 {
-	"name": "etcopydata",
-	"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
-	"version": "0.6.6-Beta",
-	"author": "Andres Perez @ElToroIT",
-	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
-	"dependencies": {
-		"@oclif/config": "1.18.3",
-		"@oclif/errors": "1.3.5",
-		"@oclif/plugin-help": "5.1.12",
-		"@salesforce/command": "5.2.1",
-		"npm-check-updates": "15.0.4",
-		"tslib": "2.4.0"
-	},
-	"devDependencies": {
-		"@oclif/dev-cli": "1.26.10",
-		"@oclif/test": "2.1.0",
-		"@salesforce/dev-config": "3.0.1",
-		"@types/chai": "4.3.1",
-		"@types/jsforce": "1.9.42",
-		"@types/mocha": "9.1.1",
-		"@types/node": "18.0.3",
-		"globby": "13.1.2",
-		"mocha": "10.0.0",
-		"nyc": "15.1.0",
-		"sinon": "14.0.0",
-		"ts-node": "10.8.2",
-		"typescript": "4.7.4"
-	},
-	"engines": {
-		"node": ">=14.0.0"
-	},
-	"files": [
-		"/lib",
-		"/messages",
-		"/npm-shrinkwrap.json",
-		"/oclif.manifest.json"
-	],
-	"homepage": "https://github.com/eltoroit/ETCopyData",
-	"keywords": [
-		"sfdx-plugin"
-	],
-	"license": "MIT",
-	"oclif": {
-		"commands": "./lib/commands",
-		"topics": {
-			"ETCopyData": {
-				"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.y data from an org to a scratch org."
-			}
-		},
-		"bin": "sfdx",
-		"devPlugins": [
-			"@oclif/plugin-help"
-		]
-	},
-	"repository": "https://github.com/eltoroit/ETCopyData",
-	"scripts": {
-		"postpack": "rm -f oclif.manifest.json npm-shrinkwrap.json",
-		"posttest": "tsc -p test --noEmit && tslint -p test -t stylish",
-		"prepack": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
-		"prepare": "rm -rf lib && tsc && oclif-dev manifest && oclif-dev readme && npm shrinkwrap",
-		"test": "nyc mocha --forbid-only \"test/**/*.test.ts\"",
-		"version": "oclif-dev readme && git add README.md"
-	}
+  "name": "ETCopyData",
+  "description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
+  "version": "0.7.0-Beta",
+  "author": "Andres Perez @ElToroIT",
+  "bugs": "https://github.com/eltoroit/ETCopyData/issues",
+  "dependencies": {
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/errors": "^1",
+    "@salesforce/command": "^4",
+    "@salesforce/core": "^2",
+    "tslib": "^2"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1",
+    "@oclif/plugin-help": "^3",
+    "@oclif/test": "^1",
+    "@salesforce/dev-config": "^2",
+    "@salesforce/dev-scripts": "^0",
+    "@salesforce/prettier-config": "^0",
+    "@salesforce/ts-sinon": "^1",
+    "@types/chai": "^4",
+    "@types/jsforce": "^1.9.29",
+    "@types/mocha": "^8",
+    "@typescript-eslint/eslint-plugin": "^4",
+    "@typescript-eslint/parser": "^4",
+    "chai": "^4",
+    "eslint": "^7",
+    "eslint-config-oclif": "^3.1",
+    "eslint-config-prettier": "^8",
+    "eslint-config-salesforce": "^0",
+    "eslint-config-salesforce-typescript": "^0",
+    "eslint-plugin-header": "^3",
+    "eslint-plugin-import": "^2",
+    "eslint-plugin-jsdoc": "^35",
+    "eslint-plugin-prettier": "^3",
+    "eslint-plugin-typescript": "^0",
+    "globby": "^11",
+    "husky": "^4",
+    "mocha": "^8",
+    "nyc": "^15",
+    "prettier": "^2",
+    "pretty-quick": "^3",
+    "sinon": "10.0.0",
+    "ts-node": "^10",
+    "typescript": "4"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "files": [
+    "/lib",
+    "/messages",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/eltoroit/ETCopyData",
+  "keywords": [
+    "sfdx-plugin"
+  ],
+  "license": "MIT",
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "sfdx",
+    "topics": {
+      "hello": {
+        "description": "Commands to say hello."
+      }
+    },
+    "devPlugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "repository": "eltoroit/ETCopyData",
+  "scripts": {
+    "build": "tsc -p .",
+    "lint": "eslint src/**/*.ts test/**/*.ts",
+    "postpack": "rm -f oclif.manifest.json",
+    "posttest": "eslint src/**/*.ts test/**/*.ts",
+    "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "test": "nyc --extension .ts --require ts-node/register mocha --forbid-only \"test/**/*.test.ts\"",
+    "version": "oclif-dev readme && git add README.md"
+  }
 }

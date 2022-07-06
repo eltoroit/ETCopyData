@@ -5,6 +5,6 @@
 /dist
 /lib
 /tmp
+/package-lock.json
 /node_modules
 @ELTOROIT/data
-sfdx-project.json

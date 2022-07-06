@@ -1,6 +1,13 @@
 {
-	"search.exclude": {
-		"**/node_modules": false,
-		"**/node_modules2": true
-	}
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true
+  },
+  "search.exclude": {
+    "**/lib": true,
+    "**/bin": true
+  }
 }
