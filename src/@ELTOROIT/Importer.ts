@@ -243,7 +243,7 @@ export class Importer {
 
 		const processResults = (error, offset, records: any[], results: any[]): any => {
 			let msg;
-			const count = { good: 0, bad: 0 };
+			const count = { bad: 0, good: 0 };
 
 			if (error) {
 				throw new Error(error);
@@ -348,7 +348,7 @@ export class Importer {
 
 							Util.writeLog(`Importing [${records.length}] [${sObjName}] records using [${operation}] with external Id [${options.extIdField}]`, LogLevel.DEBUG);
 
-							const totalCount = { good: 0, bad: 0 };
+							const totalCount = { bad: 0, good: 0 };
 							const promises: Promise<any>[] = splitIntoChunks(records).map((chunk) => {
 								return new Promise((chunkResolved, chunkRejected) => {
 									// LEARNING: Inserting sObject records in bulk
@@ -546,7 +546,123 @@ export class Importer {
 
 	private deleteOneBeforeLoading(org: OrgManager, sObjName: string): Promise<number> {
 		let msg = "";
+		const chunkSize = 100;
+		const total = { bad: 0, good: 0 };
 
+		function countRecords(): Promise<number> {
+			return new Promise((resolve, reject) => {
+				const query = org.conn
+					.query(`SELECT count() FROM ${sObjName}`)
+					.on("record", (record) => {
+						// Do not remove this event handler!
+						// console.log(record);
+					})
+					.on("end", () => {
+						msg = `[${org.alias}] There are [${query.totalSize}] [${sObjName}] records that need deletion`;
+						Util.writeLog(msg, LogLevel.INFO);
+						resolve(query.totalSize);
+					})
+					.on("error", (err) => {
+						msg = `[${org.alias}] Error counting [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
+						Util.writeLog(msg, LogLevel.ERROR);
+						reject(err);
+					})
+					.run({ autoFetch: true, maxFetch: 100 });
+			});
+		}
+
+		function queryRecords(maxFetch): Promise<any> {
+			return new Promise((resolve, reject) => {
+				if (maxFetch === 0) {
+					resolve([]);
+					return;
+				} else {
+					let chunks = [];
+					const allChunks = [];
+					const query = org.conn
+						.query(`SELECT Id FROM ${sObjName}`)
+						.on("record", (record) => {
+							chunks.push(record.Id);
+							if (chunks.length >= chunkSize) {
+								allChunks.push(chunks);
+								msg = `[${org.alias}] Finding [${sObjName}] records to be deleted. [${allChunks.length * chunkSize}]`;
+								Util.writeLog(msg, LogLevel.TRACE);
+								chunks = [];
+							}
+						})
+						.on("end", () => {
+							msg = `[${org.alias}] found [${sObjName}] records to be deleted. [${allChunks.length * chunkSize + chunks.length}] ([${query.totalFetched} of ${query.totalSize}])`;
+							allChunks.push(chunks);
+							Util.writeLog(msg, LogLevel.INFO);
+							resolve(allChunks);
+						})
+						.on("error", (err) => {
+							msg = `[${org.alias}] Error querying [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
+							Util.writeLog(msg, LogLevel.ERROR);
+							reject(err);
+						})
+						.run({ autoFetch: true, maxFetch }); // synonym of Query#execute();
+				}
+			});
+		}
+
+		function deleteRecords(records): Promise<any> {
+			return new Promise((resolve, reject) => {
+				if (records.length === 0) {
+					resolve(records);
+					msg = `[${org.alias}] Deleted records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
+					Util.writeLog(msg, LogLevel.INFO);
+				} else {
+					// eslint-disable-next-line @typescript-eslint/no-floating-promises
+					org.conn.sobject(sObjName).del(records, (err, rets) => {
+						if (err) {
+							msg = `*** [${org.alias}] Error deleting [${sObjName}] record. ${JSON.stringify(err)}`;
+							Util.writeLog(msg, LogLevel.ERROR);
+							reject(err);
+						} else {
+							// eslint-disable-next-line @typescript-eslint/prefer-for-of
+							for (let i = 0; i < rets.length; i++) {
+								if (rets[i].success) {
+									total.good++;
+								} else {
+									total.bad++;
+									msg = `*** [${org.alias}] Error deleting [${sObjName}] record. ${JSON.stringify(rets[i])}`;
+									Util.writeLog(msg, LogLevel.ERROR);
+								}
+							}
+							msg = `[${org.alias}] Deleting records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
+							Util.writeLog(msg, LogLevel.TRACE);
+							resolve(records);
+						}
+					});
+				}
+			});
+		}
+
+		return new Promise((resolve, reject) => {
+			countRecords()
+				.then((maxFetch) => {
+					return queryRecords(maxFetch);
+				})
+				.then(async (allChunks) => {
+					for (const chunk of allChunks) {
+						// eslint-disable-next-line no-await-in-loop
+						await deleteRecords(chunk);
+					}
+					if (total.good + total.bad > 0) {
+						msg = `[${org.alias}] Deleted records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
+						Util.writeLog(msg, LogLevel.INFO);
+						resolve(total.bad);
+					}
+				})
+				.catch((err) => {
+					msg = `[${org.alias}] Error deleting [${sObjName}] records [${JSON.stringify(err)}]`;
+					Util.writeLog(msg, LogLevel.ERROR);
+					reject(err);
+				});
+		});
+
+		/*
 		function deleteRecords(): any {
 			// LEARNING: Deleting sObject records in bulk
 			return new Promise((resolve, reject) => {
@@ -555,7 +671,7 @@ export class Importer {
 					.find({ CreatedDate: { $lte: Date.TOMORROW } })
 					.destroy(sObjName)
 					.then((results: any[]) => {
-						const count = { good: 0, bad: 0 };
+						const count = { bad: 0, good: 0 };
 						results.forEach((result: any) => {
 							if (result.success) {
 								count.good++;
@@ -584,14 +700,14 @@ export class Importer {
 
 		return new Promise((resolve, reject) => {
 			// DELETING
-			const total = { good: 0, bad: 0 };
+			const total = { bad: 0, good: 0 };
 			Util.writeLog(`[${org.alias}] Deleting records from [${sObjName}]`, LogLevel.TRACE);
 			org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
 			async function loop(): Promise<any> {
 				const count = await deleteRecords();
 				total.bad += count.bad;
 				total.good += count.good;
-				if (count.good + count.bad < 10e3) {
+				if (count < 10e3) {
 					return;
 				} else {
 					await loop();
@@ -606,5 +722,6 @@ export class Importer {
 					reject(err);
 				});
 		});
+		*/
 	}
 }

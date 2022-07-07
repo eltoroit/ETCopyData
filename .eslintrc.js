@@ -16,6 +16,7 @@ module.exports = {
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/array-type": "off",
     "@typescript-eslint/no-unused-vars": "Off",
+    "@typescript-eslint/no-unsafe-call": "off",
     "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unsafe-argument": "off",
