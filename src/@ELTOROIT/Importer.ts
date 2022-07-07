@@ -1,4 +1,4 @@
-import { Date } from "jsforce";
+import { Date as jsDate } from "jsforce";
 import { ISchemaDataParent } from "./Interfaces";
 import { OrgManager } from "./OrgManager";
 import { LogLevel, ResultOperation, Util } from "./Util";
@@ -364,7 +364,7 @@ export class Importer {
 									batch.on("queue", (batchInfo) => {
 										// Fired when batch request is queued in server.
 										// Start polling - Do not poll until the batch has started
-										batch.poll(1000 /* interval(ms) */, 30 * 60 * 1e3 /* timeout(ms) */);
+										batch.poll(1000 /* interval(ms) */, orgDestination.settings.pollingTimeout /* timeout(ms) */);
 									});
 									batch.on("response", (results) => {
 										// Fired when batch finished and result retrieved
@@ -546,7 +546,7 @@ export class Importer {
 
 	private deleteOneBeforeLoading(org: OrgManager, sObjName: string): Promise<number> {
 		let msg = "";
-		const chunkSize = 100;
+		const chunkSize = 1000;
 		const total = { bad: 0, good: 0 };
 
 		function countRecords(): Promise<number> {
@@ -579,10 +579,11 @@ export class Importer {
 				} else {
 					let chunks = [];
 					const allChunks = [];
-					const query = org.conn
+					org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
+					org.conn.bulk
 						.query(`SELECT Id FROM ${sObjName}`)
 						.on("record", (record) => {
-							chunks.push(record.Id);
+							chunks.push(record);
 							if (chunks.length >= chunkSize) {
 								allChunks.push(chunks);
 								msg = `[${org.alias}] Finding [${sObjName}] records to be deleted. [${allChunks.length * chunkSize}]`;
@@ -591,7 +592,7 @@ export class Importer {
 							}
 						})
 						.on("end", () => {
-							msg = `[${org.alias}] found [${sObjName}] records to be deleted. [${allChunks.length * chunkSize + chunks.length}] ([${query.totalFetched} of ${query.totalSize}])`;
+							msg = `[${org.alias}] found [${sObjName}] records to be deleted. [${allChunks.length * chunkSize + chunks.length}]`;
 							allChunks.push(chunks);
 							Util.writeLog(msg, LogLevel.INFO);
 							resolve(allChunks);
@@ -600,42 +601,90 @@ export class Importer {
 							msg = `[${org.alias}] Error querying [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
 							Util.writeLog(msg, LogLevel.ERROR);
 							reject(err);
-						})
-						.run({ autoFetch: true, maxFetch }); // synonym of Query#execute();
+						});
+
+					// const query = org.conn
+					// 	.query(`SELECT Id FROM ${sObjName}`)
+					// 	.on("record", (record) => {
+					// 		chunks.push(record);
+					// 		if (chunks.length >= chunkSize) {
+					// 			allChunks.push(chunks);
+					// 			msg = `[${org.alias}] Finding [${sObjName}] records to be deleted. [${allChunks.length * chunkSize}]`;
+					// 			Util.writeLog(msg, LogLevel.TRACE);
+					// 			chunks = [];
+					// 		}
+					// 	})
+					// 	.on("end", () => {
+					// 		msg = `[${org.alias}] found [${sObjName}] records to be deleted. [${allChunks.length * chunkSize + chunks.length}] ([${query.totalFetched} of ${query.totalSize}])`;
+					// 		allChunks.push(chunks);
+					// 		Util.writeLog(msg, LogLevel.INFO);
+					// 		resolve(allChunks);
+					// 	})
+					// 	.on("error", (err) => {
+					// 		msg = `[${org.alias}] Error querying [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
+					// 		Util.writeLog(msg, LogLevel.ERROR);
+					// 		reject(err);
+					// 	})
+					// 	.run({ autoFetch: true, maxFetch }); // synonym of Query#execute();
 				}
 			});
 		}
 
 		function deleteRecords(records): Promise<any> {
 			return new Promise((resolve, reject) => {
-				if (records.length === 0) {
+				const operation = "delete";
+				const options: any = { concurrencyMode: "Parallel" };
+				org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
+
+				const job = org.conn.bulk.createJob(sObjName, operation, options);
+				const batch = job.createBatch();
+				batch.execute(records);
+				batch.on("error", (batchError) => {
+					msg = `[${org.alias}] Error deleting [${sObjName}] records  [${JSON.stringify(batchError)}]`;
+					Util.writeLog(msg, LogLevel.ERROR);
 					resolve(records);
-					msg = `[${org.alias}] Deleted records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
-					Util.writeLog(msg, LogLevel.INFO);
-				} else {
-					// eslint-disable-next-line @typescript-eslint/no-floating-promises
-					org.conn.sobject(sObjName).del(records, (err, rets) => {
-						if (err) {
-							msg = `*** [${org.alias}] Error deleting [${sObjName}] record. ${JSON.stringify(err)}`;
-							Util.writeLog(msg, LogLevel.ERROR);
-							reject(err);
-						} else {
-							// eslint-disable-next-line @typescript-eslint/prefer-for-of
-							for (let i = 0; i < rets.length; i++) {
-								if (rets[i].success) {
-									total.good++;
-								} else {
-									total.bad++;
-									msg = `*** [${org.alias}] Error deleting [${sObjName}] record. ${JSON.stringify(rets[i])}`;
-									Util.writeLog(msg, LogLevel.ERROR);
-								}
-							}
-							msg = `[${org.alias}] Deleting records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
-							Util.writeLog(msg, LogLevel.TRACE);
-							resolve(records);
-						}
-					});
-				}
+				});
+				batch.on("queue", (batchInfo) => {
+					// // Fired when batch request is queued in server.
+					// // Start polling - Do not poll until the batch has started
+					batch.poll(1000 /* interval(ms) */, org.settings.pollingTimeout /* timeout(ms) */);
+				});
+				batch.on("response", (results) => {
+					for (const result of results) {
+						total[result.success ? "good" : "bad"]++;
+					}
+					msg = `[${org.alias}] Deleting records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
+					Util.writeLog(msg, LogLevel.TRACE);
+					resolve(records);
+				});
+				batch.on("progress", (batchInfo) => {
+					// debugger;
+					// // Fired with temporary progress
+					// console.log(new Date().toJSON(), JSON.stringify(batchInfo, null, 2));
+				});
+
+				// // eslint-disable-next-line @typescript-eslint/no-floating-promises
+				// org.conn.sobject(sObjName).del(records, (err, rets) => {
+				// 	if (err) {
+				// 		msg = `*** [${org.alias}] Error deleting [${sObjName}] record. ${JSON.stringify(err)}`;
+				// 		Util.writeLog(msg, LogLevel.ERROR);
+				// 		reject(err);
+				// 	} else {
+				// 		// eslint-disable-next-line @typescript-eslint/prefer-for-of
+				// 		for (let i = 0; i < rets.length; i++) {
+				// 			if (rets[i].success) {
+				// 				total.good++;
+				// 			} else {
+				// 				total.bad++;
+				// 				msg = `*** [${org.alias}] Error deleting [${sObjName}] record. ${JSON.stringify(rets[i])}`;
+				// 				Util.writeLog(msg, LogLevel.ERROR);
+				// 			}
+				// 		}
+				// 		msg = `[${org.alias}] Deleting records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
+				// 		Util.writeLog(msg, LogLevel.TRACE);
+				// 		resolve(records);
+				// 	}
+				// });
 			});
 		}
 
@@ -652,8 +701,8 @@ export class Importer {
 					if (total.good + total.bad > 0) {
 						msg = `[${org.alias}] Deleted records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
 						Util.writeLog(msg, LogLevel.INFO);
-						resolve(total.bad);
 					}
+					resolve(total.bad);
 				})
 				.catch((err) => {
 					msg = `[${org.alias}] Error deleting [${sObjName}] records [${JSON.stringify(err)}]`;
@@ -668,7 +717,7 @@ export class Importer {
 			return new Promise((resolve, reject) => {
 				org.conn
 					.sobject(sObjName)
-					.find({ CreatedDate: { $lte: Date.TOMORROW } })
+					.find({ CreatedDate: { $lte: jsDate.TOMORROW } })
 					.destroy(sObjName)
 					.then((results: any[]) => {
 						const count = { bad: 0, good: 0 };
