@@ -1,6 +1,6 @@
-import { Date as jsDate } from "jsforce";
-import { ISchemaDataParent } from "./Interfaces";
+import BulkAPI from "./BulkAPI";
 import { OrgManager } from "./OrgManager";
+import { ISchemaDataParent } from "./Interfaces";
 import { LogLevel, ResultOperation, Util } from "./Util";
 
 class ReferenceFieldMapping {
@@ -26,7 +26,7 @@ export class Importer {
 				const sObjectsToLoad: string[] = orgDestination.order.findImportOrder();
 				const sObjectsToLoadReversed: string[] = sObjectsToLoad.slice(0).reverse();
 
-				Util.writeLog("sObjects should be deleted in this order: " + sObjectsToLoadReversed.join(", "), LogLevel.TRACE);
+				Util.writeLog(`[${orgDestination.alias}] sObjects should be deleted in this order: ${sObjectsToLoadReversed.join(", ")}`, LogLevel.TRACE);
 				Util.serialize(this, sObjectsToLoadReversed, (index): Promise<void> => {
 					return new Promise((resolveEach, rejectEach) => {
 						const sObjName = sObjectsToLoadReversed[index];
@@ -79,15 +79,15 @@ export class Importer {
 
 			this.twoPassReferenceFieldData = new Map<string, Map<string, Array<ReferenceFieldMapping>>>();
 
+			this.countImportErrorsRecords = 0;
+			this.countImportErrorsSObjects = 0;
 			this.deleteAll(orgDestination)
 				.then((numberErrors: number) => {
 					return this.findMatchingMetadataIds(orgSource, orgDestination);
 				})
 				.then(() => {
-					this.countImportErrorsRecords = 0;
-					this.countImportErrorsSObjects = 0;
 					const sObjectsToLoad: string[] = orgDestination.order.findImportOrder();
-					Util.writeLog("sObjects should be processed in this order: " + sObjectsToLoad.join(", "), LogLevel.TRACE);
+					Util.writeLog(`[${orgDestination.alias}] sObjects should be imported in this order: ${sObjectsToLoad.join(", ")}`, LogLevel.TRACE);
 					return this.loadAllSObjectData(orgSource, orgDestination, sObjectsToLoad, 0);
 				})
 				.then(() => {
@@ -212,7 +212,6 @@ export class Importer {
 				Util.writeLog(msg, LogLevel.TRACE);
 				this.loadOneSObjectData(orgSource, orgDestination, sObjName)
 					.then((value: number) => {
-						this.countImportErrorsRecords += value;
 						if (value > 0) {
 							this.countImportErrorsSObjects++;
 						}
@@ -232,188 +231,93 @@ export class Importer {
 	}
 
 	private loadOneSObjectData(orgSource: OrgManager, orgDestination: OrgManager, sObjName: string): Promise<number> {
-		function splitIntoChunks(records: any[]): any[] {
-			const output = [];
-			const chunkSize = 10000;
-			for (let i = 0; i < records.length; i += chunkSize) {
-				output.push(records.slice(i, i + chunkSize));
-			}
-			return output;
-		}
+		// Read file from JSON into usable structure
+		let msg = "";
+		let hasNotified: boolean = false;
 
-		const processResults = (error, offset, records: any[], results: any[]): any => {
-			let msg;
-			const count = { bad: 0, good: 0 };
+		const readFileAndUpdateIds = (): any => {
+			let records: any[];
+			return new Promise((resolve, reject) => {
+				orgSource.settings
+					.readFromFile(orgSource.alias, sObjName + ".json")
+					.then((jsonSource: any) => {
+						records = jsonSource.records;
+						records.forEach((record: any) => {
+							// Update parent IDs.
+							orgDestination.discovery
+								.getSObjects()
+								.get(sObjName)
+								.parents.forEach((parent: ISchemaDataParent) => {
+									const sourceParentId = record[parent.parentId];
+									// Issue #003: Null pointer if there was no data, so split and check for null
+									const destinationParentMap = this.matchingIds.get(parent.sObj);
+									const destinationParentId = destinationParentMap ? destinationParentMap.get(sourceParentId) : null;
+									record[parent.parentId] = destinationParentId;
 
-			if (error) {
-				throw new Error(error);
-			}
+									if (destinationParentId === null) {
+										// Do not include fields that are blank, so default values can be used.
+										delete record[parent.parentId];
 
-			// NOTE: I need a traditional loop because the index (i) will be used in two lists of same size and same order.
-			for (let i = 0; i < results.length; i++) {
-				msg = "";
-				if (results[i].success) {
-					count.good++;
-					this.matchingIds.get(sObjName).set(records[i].Id, results[i].id);
+										// VERBOSE: This may blank a field if there is no corresponding parent in the destination
+										if (!hasNotified) {
+											msg = `Default fields values are being used because no parents were found`;
+											Util.writeLog(msg, LogLevel.WARN);
+											hasNotified = true;
+										}
 
-					// VERBOSE: Show record was added succesfully
-					msg += `[${orgDestination.alias}] Successfully imported [${sObjName}] record #${offset + i + 1}. `;
-					msg += `Ids mapped: [${records[i].Id}] => [${results[i].id}]`;
-					Util.writeLog(msg, LogLevel.TRACE);
-				} else {
-					count.bad++;
-					msg += `*** [${orgDestination.alias}] Error importing [${sObjName}] record #${offset + i + 1}. `;
-					msg += JSON.stringify(results[i].errors);
-					Util.writeLog(msg, LogLevel.ERROR);
-				}
-			}
-			Util.logResultsAdd(orgDestination, ResultOperation.IMPORT, sObjName, count.good, count.bad);
+										msg = ``;
+										msg += `[${orgDestination.alias}] [${sObjName + "." + parent.parentId}] `;
+										msg += `for source [${record.Id}] cleared, because `;
+										msg += `no [${parent.sObj}] matched source [${sourceParentId}] `;
+										Util.writeLog(msg, LogLevel.INFO);
+									}
+								});
 
-			return count;
+							// Clear reference fields that will be set in second pass
+							const asArray = (param: string | string[]): string[] => {
+								return typeof param === "string" ? [param] : param;
+							};
+							asArray(orgDestination.settings.getSObjectData(sObjName).twoPassReferenceFields).forEach((fieldName: string) => {
+								if (record[fieldName] !== null && record[fieldName] !== undefined) {
+									let sObjectData = this.twoPassReferenceFieldData.get(sObjName);
+									if (sObjectData === undefined) {
+										sObjectData = new Map<string, Array<ReferenceFieldMapping>>();
+										this.twoPassReferenceFieldData.set(sObjName, sObjectData);
+									}
+									let mappings = sObjectData.get(record.Id);
+									if (mappings === undefined) {
+										mappings = new Array<ReferenceFieldMapping>();
+										sObjectData.set(record.Id, mappings);
+									}
+									mappings.push(new ReferenceFieldMapping(fieldName, record[fieldName]));
+									delete record[fieldName];
+								}
+							});
+						});
+						resolve(records);
+					})
+					.catch((err) => reject(err));
+			});
 		};
 
 		return new Promise((resolve, reject) => {
-			// Read file from JSON into usable structure
-			let msg = "";
-			let records: any[];
-			let hasNotified: boolean = false;
-			orgSource.settings
-				.readFromFile(orgSource.alias, sObjName + ".json")
-				.then((jsonSource: any) => {
-					records = jsonSource.records;
-					records.forEach((record: any) => {
-						// Update parent IDs.
-						orgDestination.discovery
-							.getSObjects()
-							.get(sObjName)
-							.parents.forEach((parent: ISchemaDataParent) => {
-								const sourceParentId = record[parent.parentId];
-								// Issue #003: Null pointer if there was no data, so split and check for null
-								const destinationParentMap = this.matchingIds.get(parent.sObj);
-								const destinationParentId = destinationParentMap ? destinationParentMap.get(sourceParentId) : null;
-								record[parent.parentId] = destinationParentId;
-
-								if (destinationParentId === null) {
-									// Do not include fields that are blank, so default values can be used.
-									delete record[parent.parentId];
-
-									// VERBOSE: This may blank a field if there is no corresponding parent in the destination
-									if (!hasNotified) {
-										msg = `Default fields values are being used because no parents were found`;
-										Util.writeLog(msg, LogLevel.WARN);
-										hasNotified = true;
-									}
-
-									msg = ``;
-									msg += `[${orgDestination.alias}] [${sObjName + "." + parent.parentId}] `;
-									msg += `for source [${record.Id}] cleared, because `;
-									msg += `no [${parent.sObj}] matched source [${sourceParentId}] `;
-									Util.writeLog(msg, LogLevel.INFO);
-								}
-							});
-
-						// Clear reference fields that will be set in second pass
-						const asArray = (param: string | string[]) => {
-							return typeof param === "string" ? [param] : param;
-						};
-						asArray(orgDestination.settings.getSObjectData(sObjName).twoPassReferenceFields).forEach((fieldName: string) => {
-							if (record[fieldName] !== null && record[fieldName] !== undefined) {
-								let sObjectData = this.twoPassReferenceFieldData.get(sObjName);
-								if (sObjectData === undefined) {
-									sObjectData = new Map<string, Array<ReferenceFieldMapping>>();
-									this.twoPassReferenceFieldData.set(sObjName, sObjectData);
-								}
-								let mappings = sObjectData.get(record.Id);
-								if (mappings === undefined) {
-									mappings = new Array<ReferenceFieldMapping>();
-									sObjectData.set(record.Id, mappings);
-								}
-								mappings.push(new ReferenceFieldMapping(fieldName, record[fieldName]));
-								delete record[fieldName];
-							}
-						});
-					});
-
-					if (records.length > 0) {
-						// LOADING
-						this.matchingIds.set(sObjName, new Map<string, string>());
-						// ELTOROIT: Bulk or SOAP?
-
-						const operation = orgDestination.settings.getSObjectData(sObjName).externalIdField ? "upsert" : "insert";
-						if (orgDestination.settings.useBulkAPI) {
-							// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
-							// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
-							orgDestination.conn.bulk.pollTimeout = orgDestination.settings.pollingTimeout;
-							const options: any = { concurrencyMode: "Parallel", extIdField: orgDestination.settings.getSObjectData(sObjName).externalIdField || null };
-
-							Util.writeLog(`Importing [${records.length}] [${sObjName}] records using [${operation}] with external Id [${options.extIdField}]`, LogLevel.DEBUG);
-
-							const totalCount = { bad: 0, good: 0 };
-							const promises: Promise<any>[] = splitIntoChunks(records).map((chunk) => {
-								return new Promise((chunkResolved, chunkRejected) => {
-									// LEARNING: Inserting sObject records in bulk
-									const job = orgDestination.conn.bulk.createJob(sObjName, operation, options);
-									const batch = job.createBatch();
-									batch.execute(this.getRecordsForOperation(chunk, operation));
-									batch.on("error", (batchError) => {
-										const count = processResults(batchError, totalCount.good + totalCount.bad, chunk, null);
-										totalCount.bad += count.bad;
-										totalCount.good += count.good;
-										chunkResolved(totalCount);
-									});
-									batch.on("queue", (batchInfo) => {
-										// Fired when batch request is queued in server.
-										// Start polling - Do not poll until the batch has started
-										batch.poll(1000 /* interval(ms) */, orgDestination.settings.pollingTimeout /* timeout(ms) */);
-									});
-									batch.on("response", (results) => {
-										// Fired when batch finished and result retrieved
-										const count = processResults(null, totalCount.good + totalCount.bad, chunk, results);
-										totalCount.bad += count.bad;
-										totalCount.good += count.good;
-										chunkResolved(totalCount);
-									});
-									batch.on("progress", (batchInfo) => {
-										// Fired when batch finished and result retrieved
-										console.log(JSON.stringify(batchInfo, null, 2));
-										// debugger;
-									});
-								});
-							});
-							Promise.allSettled(promises)
-								.then((promisesResult) => {
-									msg = "";
-									msg += `[${orgDestination.alias}] Imported [${sObjName}]. `;
-									msg += `Record count: [Good = ${totalCount.good}, Bad = ${totalCount.bad}]`;
-									Util.writeLog(msg, LogLevel.INFO);
-									resolve(totalCount.bad);
-								})
-								.catch((temp2) => {
-									debugger;
-								});
-						} else {
-							const options: any = { allOrNone: true, allowRecursive: true };
-							if (operation === "insert") {
-								orgDestination.conn
-									.sobject(sObjName)
-									.create(records, options)
-									.then((results: any) => processResults(null, results))
-									.catch((error) => processResults(error, null));
-							} else {
-								orgDestination.conn
-									.sobject(sObjName)
-									.upsert(records, orgDestination.settings.getSObjectData(sObjName).externalIdField, options)
-									.then((results: any) => processResults(null, results))
-									.catch((error) => processResults(error, null));
-							}
-						}
-					} else {
+			readFileAndUpdateIds()
+				.then((records) => {
+					if (records.length === 0) {
 						resolve(0);
+					} else {
+						this.matchingIds.set(sObjName, new Map<string, string>());
+						const operation = orgDestination.settings.getSObjectData(sObjName).externalIdField ? "upsert" : "insert";
+						const recordsProcessed = this.getRecordsForOperation(records, operation);
+						BulkAPI.upsert(orgDestination, operation, sObjName, recordsProcessed, this.matchingIds, orgDestination.settings.getSObjectData(sObjName).externalIdField || null)
+							.then((badCount) => {
+								this.countImportErrorsRecords += badCount;
+								resolve(badCount);
+							})
+							.catch((err) => reject(err));
 					}
 				})
-				.catch((err) => {
-					reject(err);
-				});
+				.catch((err) => reject(err));
 		});
 	}
 
@@ -423,17 +327,16 @@ export class Importer {
 		}
 
 		// Must remove the ID field without impacting the mapping
-		let result = JSON.parse(JSON.stringify(records));
-		for (let i = 0; i < result.length; i++) {
-			delete result[i].Id;
-		}
-		return result;
+		let newRecords = JSON.parse(JSON.stringify(records));
+		newRecords = newRecords.map((record) => {
+			delete record.Id;
+			return record;
+		});
+		return newRecords;
 	}
 
 	private setTwoPassReferences(orgSource: OrgManager, orgDestination: OrgManager): Promise<void> {
 		return new Promise((resolve, reject) => {
-			// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
-			// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
 			const keys: Array<string> = Array.from(this.twoPassReferenceFieldData.keys());
 
 			Util.serialize(this, keys, (index): Promise<void> => {
@@ -442,17 +345,15 @@ export class Importer {
 					Util.writeLog(`[${orgDestination.alias}] Updating references for [${sObjectName}] (${index + 1} of ${keys.length})`, LogLevel.TRACE);
 
 					const schemaData = orgDestination.discovery.getSObjects().get(sObjectName);
-					let records = [];
+					const records = [];
 
-					let baseRecord = {};
+					const baseRecord = {};
 					schemaData.twoPassParents.forEach((parent) => {
 						baseRecord[parent.parentId] = null;
 					});
 
-					let tmpIndex = 0;
-					let availableMatchingIds = new Map<string, Map<string, string>>(); // field name => id mapping data (old => new)
-					schemaData.twoPassParents.forEach((parent) => {
-						tmpIndex++;
+					const availableMatchingIds = new Map<string, Map<string, string>>(); // field name => id mapping data (old => new)
+					schemaData.twoPassParents.forEach((parent, tmpIndex) => {
 						if (this.matchingIds.has(parent.sObj)) {
 							availableMatchingIds.set(parent.parentId, this.matchingIds.get(parent.sObj));
 							Util.writeLog(`[${orgDestination.alias}] mapping field [${parent.parentId}] (#${tmpIndex}) to SObject [${parent.sObj}]`, LogLevel.TRACE);
@@ -462,10 +363,10 @@ export class Importer {
 					});
 
 					// Create an object for each record that has one or more fields that need to be updated
-					tmpIndex = 0;
+					let tmpIndex = 0;
 					this.twoPassReferenceFieldData.get(sObjectName).forEach((mappings: Array<ReferenceFieldMapping>, id: string) => {
 						tmpIndex++;
-						let record = Object.assign({ Id: this.matchingIds.get(sObjectName).get(id) }, baseRecord);
+						const record = Object.assign({ Id: this.matchingIds.get(sObjectName).get(id) }, baseRecord);
 						mappings.forEach((mapping: ReferenceFieldMapping) => {
 							const destinationId = availableMatchingIds.get(mapping.fieldName).get(mapping.sourceId);
 							if (destinationId !== undefined) {
@@ -478,61 +379,12 @@ export class Importer {
 						records.push(record);
 					});
 
-					// UPDATING the records
-					const processResults = (error, results: any[]) => {
-						let badCount: number = 0;
-						let goodCount: number = 0;
-
-						if (error) {
-							rejectEach(error);
-						}
-
-						for (let i = 0; i < results.length; i++) {
-							if (results[i].success) {
-								goodCount++;
-								Util.writeLog(`[${orgDestination.alias}] Successfully updated references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]`, LogLevel.TRACE);
-							} else {
-								badCount++;
-								Util.writeLog(
-									`[${orgDestination.alias}] Error updating references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]` + JSON.stringify(results[i].errors),
-									LogLevel.TRACE
-								);
-							}
-						}
-
-						Util.writeLog(`[${orgDestination.alias}] Updated references for [${sObjectName}]. Record count: [Good = ${goodCount}, Bad = ${badCount}]`, LogLevel.INFO);
-						Util.logResultsAdd(orgDestination, ResultOperation.IMPORT, sObjectName, goodCount, badCount);
-
-						resolveEach();
-					};
-
-					// ELTOROIT: Bulk or SOAP?
-					if (orgDestination.settings.useBulkAPI) {
-						const bulkOptions: any = { concurrencyMode: "Parallel", extIdField: null };
-						// orgDestination.conn.bulk.load(sObjectName, "update", bulkOptions, records, processResults);
-						let job = orgDestination.conn.bulk.createJob(sObjectName, "update", bulkOptions);
-						let batch = job.createBatch();
-						batch.execute(records);
-						batch.on("error", (batchError) => {
-							processResults(batchError, null);
-						});
-						batch.on("queue", (batchInfo) => {
-							// Fired when batch request is queued in server.
-							// Start polling - Do not poll until the batch has started
-							batch.poll(1000 /* interval(ms) */, 20000 /* timeout(ms) */);
-						});
-						batch.on("response", (results) => {
-							// Fired when batch finished and result retrieved
-							processResults(null, results);
-						});
-					} else {
-						const options: any = { allOrNone: true, allowRecursive: true };
-						orgDestination.conn
-							.sobject(sObjectName)
-							.update(records, options)
-							.then((results: any) => processResults(null, results))
-							.catch((error) => processResults(error, null));
-					}
+					BulkAPI.update(orgDestination, sObjectName, records)
+						.then((badCount) => {
+							this.countImportErrorsRecords += badCount;
+							resolveEach(badCount);
+						})
+						.catch((err) => rejectEach(err));
 				});
 			})
 				.then(() => {
@@ -545,232 +397,13 @@ export class Importer {
 	}
 
 	private deleteOneBeforeLoading(org: OrgManager, sObjName: string): Promise<number> {
-		let msg = "";
-		const chunkSize = 1000;
-		const total = { bad: 0, good: 0 };
-
-		function countRecords(): Promise<number> {
-			return new Promise((resolve, reject) => {
-				const query = org.conn
-					.query(`SELECT count() FROM ${sObjName}`)
-					.on("record", (record) => {
-						// Do not remove this event handler!
-						// console.log(record);
-					})
-					.on("end", () => {
-						msg = `[${org.alias}] There are [${query.totalSize}] [${sObjName}] records that need deletion`;
-						Util.writeLog(msg, LogLevel.INFO);
-						resolve(query.totalSize);
-					})
-					.on("error", (err) => {
-						msg = `[${org.alias}] Error counting [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
-						Util.writeLog(msg, LogLevel.ERROR);
-						reject(err);
-					})
-					.run({ autoFetch: true, maxFetch: 100 });
-			});
-		}
-
-		function queryRecords(maxFetch): Promise<any> {
-			return new Promise((resolve, reject) => {
-				if (maxFetch === 0) {
-					resolve([]);
-					return;
-				} else {
-					let chunks = [];
-					const allChunks = [];
-					org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
-					org.conn.bulk
-						.query(`SELECT Id FROM ${sObjName}`)
-						.on("record", (record) => {
-							chunks.push(record);
-							if (chunks.length >= chunkSize) {
-								allChunks.push(chunks);
-								msg = `[${org.alias}] Finding [${sObjName}] records to be deleted. [${allChunks.length * chunkSize}]`;
-								Util.writeLog(msg, LogLevel.TRACE);
-								chunks = [];
-							}
-						})
-						.on("end", () => {
-							msg = `[${org.alias}] found [${sObjName}] records to be deleted. [${allChunks.length * chunkSize + chunks.length}]`;
-							allChunks.push(chunks);
-							Util.writeLog(msg, LogLevel.INFO);
-							resolve(allChunks);
-						})
-						.on("error", (err) => {
-							msg = `[${org.alias}] Error querying [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
-							Util.writeLog(msg, LogLevel.ERROR);
-							reject(err);
-						});
-
-					// const query = org.conn
-					// 	.query(`SELECT Id FROM ${sObjName}`)
-					// 	.on("record", (record) => {
-					// 		chunks.push(record);
-					// 		if (chunks.length >= chunkSize) {
-					// 			allChunks.push(chunks);
-					// 			msg = `[${org.alias}] Finding [${sObjName}] records to be deleted. [${allChunks.length * chunkSize}]`;
-					// 			Util.writeLog(msg, LogLevel.TRACE);
-					// 			chunks = [];
-					// 		}
-					// 	})
-					// 	.on("end", () => {
-					// 		msg = `[${org.alias}] found [${sObjName}] records to be deleted. [${allChunks.length * chunkSize + chunks.length}] ([${query.totalFetched} of ${query.totalSize}])`;
-					// 		allChunks.push(chunks);
-					// 		Util.writeLog(msg, LogLevel.INFO);
-					// 		resolve(allChunks);
-					// 	})
-					// 	.on("error", (err) => {
-					// 		msg = `[${org.alias}] Error querying [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
-					// 		Util.writeLog(msg, LogLevel.ERROR);
-					// 		reject(err);
-					// 	})
-					// 	.run({ autoFetch: true, maxFetch }); // synonym of Query#execute();
-				}
-			});
-		}
-
-		function deleteRecords(records): Promise<any> {
-			return new Promise((resolve, reject) => {
-				const operation = "delete";
-				const options: any = { concurrencyMode: "Parallel" };
-				org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
-
-				const job = org.conn.bulk.createJob(sObjName, operation, options);
-				const batch = job.createBatch();
-				batch.execute(records);
-				batch.on("error", (batchError) => {
-					msg = `[${org.alias}] Error deleting [${sObjName}] records  [${JSON.stringify(batchError)}]`;
-					Util.writeLog(msg, LogLevel.ERROR);
-					resolve(records);
-				});
-				batch.on("queue", (batchInfo) => {
-					// // Fired when batch request is queued in server.
-					// // Start polling - Do not poll until the batch has started
-					batch.poll(1000 /* interval(ms) */, org.settings.pollingTimeout /* timeout(ms) */);
-				});
-				batch.on("response", (results) => {
-					for (const result of results) {
-						total[result.success ? "good" : "bad"]++;
-					}
-					msg = `[${org.alias}] Deleting records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
-					Util.writeLog(msg, LogLevel.TRACE);
-					resolve(records);
-				});
-				batch.on("progress", (batchInfo) => {
-					// debugger;
-					// // Fired with temporary progress
-					// console.log(new Date().toJSON(), JSON.stringify(batchInfo, null, 2));
-				});
-
-				// // eslint-disable-next-line @typescript-eslint/no-floating-promises
-				// org.conn.sobject(sObjName).del(records, (err, rets) => {
-				// 	if (err) {
-				// 		msg = `*** [${org.alias}] Error deleting [${sObjName}] record. ${JSON.stringify(err)}`;
-				// 		Util.writeLog(msg, LogLevel.ERROR);
-				// 		reject(err);
-				// 	} else {
-				// 		// eslint-disable-next-line @typescript-eslint/prefer-for-of
-				// 		for (let i = 0; i < rets.length; i++) {
-				// 			if (rets[i].success) {
-				// 				total.good++;
-				// 			} else {
-				// 				total.bad++;
-				// 				msg = `*** [${org.alias}] Error deleting [${sObjName}] record. ${JSON.stringify(rets[i])}`;
-				// 				Util.writeLog(msg, LogLevel.ERROR);
-				// 			}
-				// 		}
-				// 		msg = `[${org.alias}] Deleting records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
-				// 		Util.writeLog(msg, LogLevel.TRACE);
-				// 		resolve(records);
-				// 	}
-				// });
-			});
-		}
-
 		return new Promise((resolve, reject) => {
-			countRecords()
-				.then((maxFetch) => {
-					return queryRecords(maxFetch);
+			BulkAPI.delete(org, sObjName)
+				.then((badCount) => {
+					this.countImportErrorsRecords += badCount;
+					resolve(badCount);
 				})
-				.then(async (allChunks) => {
-					for (const chunk of allChunks) {
-						// eslint-disable-next-line no-await-in-loop
-						await deleteRecords(chunk);
-					}
-					if (total.good + total.bad > 0) {
-						msg = `[${org.alias}] Deleted records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}]`;
-						Util.writeLog(msg, LogLevel.INFO);
-					}
-					resolve(total.bad);
-				})
-				.catch((err) => {
-					msg = `[${org.alias}] Error deleting [${sObjName}] records [${JSON.stringify(err)}]`;
-					Util.writeLog(msg, LogLevel.ERROR);
-					reject(err);
-				});
+				.catch((err) => reject(err));
 		});
-
-		/*
-		function deleteRecords(): any {
-			// LEARNING: Deleting sObject records in bulk
-			return new Promise((resolve, reject) => {
-				org.conn
-					.sobject(sObjName)
-					.find({ CreatedDate: { $lte: jsDate.TOMORROW } })
-					.destroy(sObjName)
-					.then((results: any[]) => {
-						const count = { bad: 0, good: 0 };
-						results.forEach((result: any) => {
-							if (result.success) {
-								count.good++;
-							} else {
-								// eslint-disable-next-line no-lonely-if
-								if (result.errors.length === 1 && result.errors[0] === "ENTITY_IS_DELETED:entity is deleted:--") {
-									// Ignore error
-								} else {
-									count.bad++;
-									msg = `*** [${org.alias}] Error deleting [${sObjName}] records. ${JSON.stringify(result)}`;
-									Util.writeLog(msg, LogLevel.ERROR);
-								}
-							}
-						});
-						Util.logResultsAdd(org, ResultOperation.DELETE, sObjName, count.good, count.bad);
-						msg = `[${org.alias}] Deleted ${count.good} records from [${sObjName}]`;
-						Util.writeLog(msg, LogLevel.INFO);
-
-						resolve(count);
-					})
-					.catch((err) => {
-						reject(err);
-					});
-			});
-		}
-
-		return new Promise((resolve, reject) => {
-			// DELETING
-			const total = { bad: 0, good: 0 };
-			Util.writeLog(`[${org.alias}] Deleting records from [${sObjName}]`, LogLevel.TRACE);
-			org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
-			async function loop(): Promise<any> {
-				const count = await deleteRecords();
-				total.bad += count.bad;
-				total.good += count.good;
-				if (count < 10e3) {
-					return;
-				} else {
-					await loop();
-				}
-			}
-
-			loop()
-				.then(() => {
-					resolve(total.bad);
-				})
-				.catch((err) => {
-					reject(err);
-				});
-		});
-		*/
 	}
 }

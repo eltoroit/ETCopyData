@@ -141,9 +141,6 @@ export class Exporter {
 			if (sObjSettings.orderBy != null) {
 				soql += "ORDER BY " + sObjSettings.orderBy + " ";
 			}
-			if (sObjSettings.maxRecords > 0) {
-				soql += "LIMIT " + sObjSettings.maxRecords + " ";
-			}
 		}
 		Util.writeLog(`[${org.alias}] Querying [${sObjName}] with SOQL: [${soql}]`, LogLevel.TRACE);
 
