@@ -1,9 +1,10 @@
 import { OrgManager } from "./OrgManager";
+import { IExportData } from "./Interfaces";
 import { LogLevel, ResultOperation, Util } from "./Util";
 
 export default class BulkAPI {
 	private static msg = "";
-	private static chunkSize = 1000;
+	private static chunkSize = 10000;
 
 	public static delete(org: OrgManager, sObjName: string): Promise<number> {
 		const total = { bad: 0, good: 0, totalSize: 0 };
@@ -49,23 +50,58 @@ export default class BulkAPI {
 			});
 		};
 
+		const queryRecords = (totalSize: number): Promise<any> => {
+			return new Promise((resolve, reject) => {
+				if (totalSize === 0) {
+					resolve([]);
+					return;
+				} else {
+					let chunks = [];
+					const allChunks = [];
+					org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
+					org.conn.bulk
+						.query(`SELECT Id FROM ${sObjName}`)
+						.on("record", (record) => {
+							chunks.push(record);
+							if (chunks.length >= BulkAPI.chunkSize) {
+								allChunks.push(chunks);
+								BulkAPI.msg = `[${org.alias}] Querying [${sObjName}] records to be deleted. [${allChunks.length * BulkAPI.chunkSize}]`;
+								Util.writeLog(BulkAPI.msg, LogLevel.TRACE);
+								chunks = [];
+							}
+						})
+						.on("end", () => {
+							BulkAPI.msg = `[${org.alias}] Queried [${allChunks.length * BulkAPI.chunkSize + chunks.length}] [${sObjName}] records to be deleted.`;
+							allChunks.push(chunks);
+							Util.writeLog(BulkAPI.msg, LogLevel.INFO);
+							resolve(allChunks);
+						})
+						.on("progress", (batchInfo) => {
+							// debugger;
+							// Fired with temporary progress
+							// console.log(new Date().toJSON(), JSON.stringify(batchInfo, null, 2));
+						})
+						.on("error", (err) => {
+							BulkAPI.msg = `[${org.alias}] Error querying [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
+							Util.writeLog(BulkAPI.msg, LogLevel.ERROR);
+							reject(err);
+						});
+				}
+			});
+		};
+
 		return new Promise((resolve, reject) => {
-			BulkAPI.countRecords(org, sObjName)
+			BulkAPI.countRecords(org, sObjName, "Deleting")
 				.then((totalSize) => {
 					total.totalSize = totalSize;
-					return BulkAPI.queryRecords(org, sObjName, totalSize);
+					return queryRecords(totalSize);
 				})
-				.then((allChunks) => {
-					// for (const chunk of allChunks) {
-					// 	// eslint-disable-next-line no-await-in-loop
-					// 	await BulkAPI.deleteChunk(org, sObjName, chunk, total);
-					// }
-					// return Promise.resolve();
-
-					const promises = allChunks.map((chunk) => {
-						return deleteChunk(chunk);
-					});
-					return Promise.allSettled(promises);
+				.then(async (allChunks) => {
+					for (const chunk of allChunks) {
+						// eslint-disable-next-line no-await-in-loop
+						await deleteChunk(chunk);
+					}
+					return Promise.resolve();
 				})
 				.then((promisesResult) => {
 					if (total.good + total.bad > 0) {
@@ -180,7 +216,7 @@ export default class BulkAPI {
 				}
 			}
 
-			Util.writeLog(`[${org.alias}] Updated references for [${sObjName}]. Record count: [Good = ${total.good}, Bad = ${total.bad}]`, LogLevel.INFO);
+			Util.writeLog(`[${org.alias}] Updated references for [${sObjName}]. Record count: [Good = ${total.good}, Bad = ${total.bad}]`, LogLevel.TRACE);
 		};
 
 		const updateChunk = (chunk: any[]): Promise<any> => {
@@ -234,7 +270,61 @@ export default class BulkAPI {
 		});
 	}
 
-	private static countRecords(org: OrgManager, sObjName: string): Promise<number> {
+	public static export(org: any, sObjName: string, SOQL: string, mapRecordsFetched: any, fileName: any): Promise<void> {
+		return new Promise((resolve, reject) => {
+			this.countRecords(org, sObjName, "Exporting")
+				.then((maxFetch) => {
+					const records = [];
+					const query: any = org.conn
+						.query(SOQL)
+						.on("record", (record) => {
+							records.push(record);
+							const recordCount = records.length;
+							if (recordCount % BulkAPI.chunkSize === 0) {
+								const msg = `[${org.alias}] Querying [${sObjName}], retrieved ${recordCount} records (${((100 * recordCount) / maxFetch).toFixed(1)}%)`;
+								Util.writeLog(msg, LogLevel.TRACE);
+							}
+						})
+						.on("end", () => {
+							const msg = `[${org.alias}] Queried [${sObjName}], retrieved ${records.length} records `;
+							Util.writeLog(msg, LogLevel.INFO);
+							Util.logResultsAdd(org, ResultOperation.EXPORT, sObjName, records.length, 0);
+
+							const data: IExportData = mapRecordsFetched.get(sObjName);
+							data.total = query.totalSize;
+							data.fetched = records.length;
+							data.records = records;
+
+							// Checks....
+							Util.assertEquals(data.fetched, data.total, "Not all the records were fetched [1].");
+							Util.assertEquals(data.total, data.records.length, "Not all the records were fetched [2].");
+
+							if (data.total >= 0) {
+								org.settings
+									.writeToFile(fileName.folder, fileName.file, data)
+									.then(() => {
+										// NOTE: Clean memory, and avoid heap overflow.
+										data.records = [];
+										// Now, resolve it.
+										resolve();
+									})
+									.catch((err) => {
+										reject(err);
+									});
+							} else {
+								resolve();
+							}
+						})
+						.on("error", (err) => {
+							reject(err);
+						})
+						.run({ autoFetch: true, maxFetch });
+				})
+				.catch((err) => reject(err));
+		});
+	}
+
+	private static countRecords(org: OrgManager, sObjName: string, operation: string): Promise<number> {
 		return new Promise((resolve, reject) => {
 			const query = org.conn
 				.query(`SELECT count() FROM ${sObjName}`)
@@ -243,51 +333,17 @@ export default class BulkAPI {
 					// console.log(record);
 				})
 				.on("end", () => {
-					BulkAPI.msg = `[${org.alias}] Counted [${query.totalSize}] [${sObjName}] records that need deletion`;
+					const data: any = query;
+					BulkAPI.msg = `[${org.alias}] Counted [${data.totalSize}] [${sObjName}] records (${operation})`;
 					Util.writeLog(BulkAPI.msg, LogLevel.INFO);
-					resolve(query.totalSize);
+					resolve(data.totalSize);
 				})
 				.on("error", (err) => {
-					BulkAPI.msg = `[${org.alias}] Error counting [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
+					BulkAPI.msg = `[${org.alias}] Error counting [${sObjName}] records (${operation}) [${JSON.stringify(err)}]`;
 					Util.writeLog(BulkAPI.msg, LogLevel.ERROR);
 					reject(err);
 				})
 				.run({ autoFetch: true, maxFetch: 100 });
-		});
-	}
-
-	private static queryRecords(org: OrgManager, sObjName: string, totalSize: number): Promise<any> {
-		return new Promise((resolve, reject) => {
-			if (totalSize === 0) {
-				resolve([]);
-				return;
-			} else {
-				let chunks = [];
-				const allChunks = [];
-				org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
-				org.conn.bulk
-					.query(`SELECT Id FROM ${sObjName}`)
-					.on("record", (record) => {
-						chunks.push(record);
-						if (chunks.length >= BulkAPI.chunkSize) {
-							allChunks.push(chunks);
-							BulkAPI.msg = `[${org.alias}] Querying [${sObjName}] records to be deleted. [${allChunks.length * BulkAPI.chunkSize}]`;
-							Util.writeLog(BulkAPI.msg, LogLevel.TRACE);
-							chunks = [];
-						}
-					})
-					.on("end", () => {
-						BulkAPI.msg = `[${org.alias}] Queried [${allChunks.length * BulkAPI.chunkSize + chunks.length}] [${sObjName}] records to be deleted.`;
-						allChunks.push(chunks);
-						Util.writeLog(BulkAPI.msg, LogLevel.INFO);
-						resolve(allChunks);
-					})
-					.on("error", (err) => {
-						BulkAPI.msg = `[${org.alias}] Error querying [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
-						Util.writeLog(BulkAPI.msg, LogLevel.ERROR);
-						reject(err);
-					});
-			}
 		});
 	}
 

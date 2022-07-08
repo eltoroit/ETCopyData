@@ -73,7 +73,7 @@ export class ETCopyData {
 		if (!Util.doesLogOutputsEachStep()) {
 			UX.create()
 				.then((ux) => {
-					ux.startSpinner("ETCopyData:Compare");
+					ux.startSpinner("ETCopyData:compare");
 				})
 				.catch((err) => {
 					Util.throwError(err);

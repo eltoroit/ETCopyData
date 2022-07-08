@@ -9,3 +9,5 @@
 /node_modules
 @ELTOROIT/data
 ETCopyData.json
+# "Tab separated values" files
+*.tsv

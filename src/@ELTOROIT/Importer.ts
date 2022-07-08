@@ -1,7 +1,7 @@
 import BulkAPI from "./BulkAPI";
 import { OrgManager } from "./OrgManager";
 import { ISchemaDataParent } from "./Interfaces";
-import { LogLevel, ResultOperation, Util } from "./Util";
+import { LogLevel, Util } from "./Util";
 
 class ReferenceFieldMapping {
 	public fieldName: string;
@@ -116,10 +116,8 @@ export class Importer {
 	private findMatchingMetadataIds(orgSource: OrgManager, orgDestination: OrgManager): Promise<void> {
 		return new Promise((resolve, reject) => {
 			// Map<sObjName, Map<string (SRC, DST), Map<Key, Id>>>>
-			let tempMD: Map<string, Map<string, Map<string, string>>>;
-
 			this.matchingIds = new Map<string, Map<string, string>>();
-			tempMD = new Map<string, Map<string, Map<string, string>>>();
+			const tempMD: Map<string, Map<string, Map<string, string>>> = new Map<string, Map<string, Map<string, string>>>();
 
 			// Same org alias?
 			const sameOrg: Boolean = orgSource.alias === orgDestination.alias;
@@ -177,7 +175,7 @@ export class Importer {
 							if (key !== "") {
 								key += "|";
 							}
-							let v = record[part.trim()];
+							const v = record[part.trim()];
 							key += v;
 							if (v === undefined) {
 								reject(`Value for field [${part.trim()}] was not found in [${org.alias}] for [${sObjName}]. Check spelling.`);
