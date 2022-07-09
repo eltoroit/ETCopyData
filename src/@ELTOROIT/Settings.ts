@@ -1,5 +1,5 @@
-import mkdirp from "mkdirp";
 import * as fsPromises from "fs/promises";
+import mkdirp from "mkdirp";
 import { ConfigContents, ConfigFile } from "@salesforce/core";
 import { AnyJson, Dictionary } from "@salesforce/ts-types";
 import { WhichOrg } from "./OrgManager";
@@ -180,24 +180,26 @@ export class Settings implements ISettingsValues {
 
 		return new Promise((resolve, reject) => {
 			const fullPath = this.rootFolderFull + `/${path}`;
-			mkdirp(fullPath).then(() => {
-				let strData = "";
-				if (isVerbose) {
-					// LEARNING: [JSON]: Prettyfy JSON.
-					strData = JSON.stringify(data, null, "	");
-				} else {
-					strData = JSON.stringify(data);
-				}
+			mkdirp(fullPath)
+				.then(() => {
+					let strData = "";
+					if (isVerbose) {
+						// LEARNING: [JSON]: Prettyfy JSON.
+						strData = JSON.stringify(data, null, "	");
+					} else {
+						strData = JSON.stringify(data);
+					}
 
-				fsPromises
-					.writeFile(fullPath + `/${fileName}`, strData)
-					.then(() => {
-						resolve();
-					})
-					.catch((err) => {
-						reject(err);
-					});
-			});
+					fsPromises
+						.writeFile(fullPath + `/${fileName}`, strData)
+						.then(() => {
+							resolve();
+						})
+						.catch((err) => {
+							reject(err);
+						});
+				})
+				.catch((err) => reject(err));
 		});
 	}
 
@@ -269,23 +271,27 @@ export class Settings implements ISettingsValues {
 			this.rootFolderFull = this.rootFolderRaw;
 
 			if (overrideFolder) {
-				if (readFolder.indexOf(overrideFolder) !== 0) {
+				if (!readFolder.startsWith(overrideFolder)) {
 					this.rootFolderFull = overrideFolder + "/" + readFolder;
 				}
 			}
 
-			mkdirp(this.rootFolderFull).then((value) => {
-				let path: string = "";
-				path = this.rootFolderFull;
+			mkdirp(this.rootFolderFull)
+				.then((value) => {
+					let path: string = "";
+					path = this.rootFolderFull;
 
-				// VERBOSE: Create sub-folders based on time so files do not override
-				// path += `/${Util.getWallTime(true)}`;
+					// VERBOSE: Create sub-folders based on time so files do not override
+					// path += `/${Util.getWallTime(true)}`;
 
-				mkdirp(path).then(() => {
-					this.rootFolderFull = path;
-					resolve(this.rootFolderFull);
-				});
-			});
+					mkdirp(path)
+						.then(() => {
+							this.rootFolderFull = path;
+							resolve(this.rootFolderFull);
+						})
+						.catch((err) => reject(err));
+				})
+				.catch((err) => reject(err));
 		});
 	}
 
@@ -381,7 +387,7 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "customObjectsToIgnore", false).then((value: string) => {
 							this.customObjectsToIgnoreRaw = value;
-							this.customObjectsToIgnore = Util.mergeAndCleanArrays(this.customObjectsToIgnoreRaw as string, this.customObjectsToIgnoreRaw);
+							this.customObjectsToIgnore = Util.mergeAndCleanArrays(this.customObjectsToIgnoreRaw, this.customObjectsToIgnoreRaw);
 							msg = `Configuration value for [customObjectsToIgnore]: ${this.customObjectsToIgnoreRaw}`;
 							Util.writeLog(msg, LogLevel.INFO);
 						})
@@ -464,6 +470,7 @@ export class Settings implements ISettingsValues {
 				}
 				resolve(valueStr);
 			} else {
+				// eslint-disable-next-line no-lonely-if
 				if (isRequired) {
 					this.isValid = false;
 					reject("Config file does not have an entry for [" + entryName + "]");
@@ -500,6 +507,7 @@ export class Settings implements ISettingsValues {
 					resolve(null);
 				}
 			} else {
+				// eslint-disable-next-line no-lonely-if
 				if (isRequired) {
 					this.isValid = false;
 					reject("Config file does not have an entry for [" + entryName + "]");
@@ -515,12 +523,12 @@ export class Settings implements ISettingsValues {
 		const sObjName = sObject.name;
 
 		const newValue: ISettingsSObjectData = {
-			ignoreFields: null,
-			twoPassReferenceFields: null,
 			name: sObjName,
-			orderBy: null,
+			ignoreFields: null,
+			externalIdField: null,
+			twoPassReferenceFields: null,
 			where: null,
-			externalIdField: null
+			orderBy: null
 		};
 		// LEARNING: [OBJECT]: How to loop through the values of an JSON object, which is not a Typescript Map.
 		Object.keys(sObject).forEach((key) => {
@@ -533,15 +541,18 @@ export class Settings implements ISettingsValues {
 		const sObjName = sObject.name;
 
 		const newValue: ISettingsSObjectMetatada = {
-			fieldsToExport: null,
-			matchBy: null,
 			name: sObjName,
-			orderBy: null,
-			where: null
+			matchBy: null,
+			fieldsToExport: "",
+			where: null,
+			orderBy: null
 		};
 		Object.keys(sObject).forEach((key) => {
 			newValue[key] = sObject[key];
 		});
+		if (!newValue.matchBy) {
+			throw new Error(`'${sObject.name}' section must have a 'matchBy' for fields to match`);
+		}
 		this.sObjectsMetadataRaw.set(sObjName, newValue);
 	}
 
@@ -604,6 +615,7 @@ export class Settings implements ISettingsValues {
 					sObj = this.getSObjectData(sObjName);
 				}
 			} else {
+				// eslint-disable-next-line no-lonely-if
 				if (isMD) {
 					sObj = this.sObjectsMetadataRaw.get(sObjName);
 				} else {
@@ -612,32 +624,30 @@ export class Settings implements ISettingsValues {
 			}
 
 			outputOneSObject.name = sObjName;
-			Object.keys(sObj)
-				.sort()
-				.forEach((fieldName) => {
-					let isSkip = false;
-					let value = sObj[fieldName];
+			Object.keys(sObj).forEach((fieldName) => {
+				let isSkip = false;
+				let value = sObj[fieldName];
 
-					if (isVerbose) {
-						if (["ignoreFields", "twoPassReferenceFields", "fieldsToExport"].includes(fieldName)) {
-							value = value.toString();
-						}
-					} else {
-						// Only perform these checks if it's not verbose mode
-						isSkip = isSkip || value === null;
+				if (isVerbose) {
+					if (["ignoreFields", "twoPassReferenceFields", "fieldsToExport"].includes(fieldName)) {
+						value = value.toString();
 					}
+				} else {
+					// Only perform these checks if it's not verbose mode
+					isSkip = isSkip || value === null;
+				}
 
-					if (!isSkip) {
-						outputOneSObject[fieldName] = value;
-					}
-				});
+				if (!isSkip) {
+					outputOneSObject[fieldName] = value;
+				}
+			});
 
 			outputAllSObjects.push(outputOneSObject);
 		});
 		return outputAllSObjects;
 	}
 
-	private resetValues() {
+	private resetValues(): void {
 		this.isValid = false;
 
 		this.orgAliases = new Map<WhichOrg, string>();
@@ -663,12 +673,12 @@ export class Settings implements ISettingsValues {
 
 		if (output === null) {
 			output = {
-				ignoreFields: Util.mergeAndCleanArrays(this.ignoreFieldsRaw, ""),
-				twoPassReferenceFields: Util.mergeAndCleanArrays(this.twoPassReferenceFieldsRaw, ""),
 				name: null,
-				orderBy: null,
+				externalIdField: null,
+				twoPassReferenceFields: Util.mergeAndCleanArrays(this.twoPassReferenceFieldsRaw, ""),
+				ignoreFields: Util.mergeAndCleanArrays(this.ignoreFieldsRaw, ""),
 				where: null,
-				externalIdField: null
+				orderBy: null
 			};
 			this.blankSObjectData = output;
 		}
