@@ -36,13 +36,19 @@ export class ETCopyData {
 		})
 	};
 
-	public static setLogs(params: OutputFlags<any>, ux: UX, processName: string) {
+	public static setLogs(params: OutputFlags<any>, ux: UX, processName: string, config: any): void {
 		// Set log level based on parameters
 		if (!params.loglevel) {
 			params.loglevel = "TRACE";
 		}
 		Util.setLogLevel(params.loglevel);
 		Util.writeLog("Log level: " + params.loglevel, LogLevel.TRACE);
+
+		// Print who am i?
+		const me: any = config.plugins.filter((plugin) => plugin.name === "etcopydata")[0];
+		// Util.writeLog(`Plugin: ${me.name} (${me.type}) [${me.version}]`, LogLevel.INFO);
+		Util.writeLog(`Plugin: ETCopyData (${me.type}) [${me.version}]`, LogLevel.INFO);
+		Util.writeLog(`Plugin Root: ${me.root}`, LogLevel.TRACE);
 		if (Util.doesLogOutputsEachStep()) {
 			Util.writeLog(`${processName} Process Started`, LogLevel.INFO);
 		} else {

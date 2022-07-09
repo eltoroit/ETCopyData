@@ -13,10 +13,10 @@ export default class CompareOrgs extends SfdxCommand {
 
 	protected static flagsConfig = ETCopyData.flagsConfig;
 
-	public async run() {
+	public async run(): Promise<any> {
 		CompareOrgs.result = null;
 
-		ETCopyData.setLogs(this.flags, this.ux, "ETCopyData:compare");
+		ETCopyData.setLogs(this.flags, this.ux, "ETCopyData:compare", this.config);
 		const s: Settings = ETCopyData.readParameters(this.flags);
 
 		const ETCD = new ETCopyData();
