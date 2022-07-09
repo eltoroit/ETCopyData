@@ -72,7 +72,7 @@ Plugin can be found here: https://www.npmjs.com/package/etcopydata/
     -   `npm publish ./ --tag beta`
 -   Publish a production package
     -   `npm publish ./`
--   Commit to repo and puh to Github
+-   Commit to repo and push to Github
 
 # Compile
 
