@@ -1,4 +1,4 @@
-import BulkAPI from "./BulkAPI";
+import DataAPI from "./DataAPI";
 import { OrgManager } from "./OrgManager";
 import { ISchemaDataParent } from "./Interfaces";
 import { LogLevel, Util } from "./Util";
@@ -307,7 +307,7 @@ export class Importer {
 						this.matchingIds.set(sObjName, new Map<string, string>());
 						const operation = orgDestination.settings.getSObjectData(sObjName).externalIdField ? "upsert" : "insert";
 						const recordsProcessed = this.getRecordsForOperation(records, operation);
-						BulkAPI.upsert(orgDestination, operation, sObjName, recordsProcessed, this.matchingIds, orgDestination.settings.getSObjectData(sObjName).externalIdField || null)
+						DataAPI.upsert(orgDestination, operation, sObjName, recordsProcessed, this.matchingIds, orgDestination.settings.getSObjectData(sObjName).externalIdField || null)
 							.then((badCount) => {
 								this.countImportErrorsRecords += badCount;
 								resolve(badCount);
@@ -377,7 +377,7 @@ export class Importer {
 						records.push(record);
 					});
 
-					BulkAPI.update(orgDestination, sObjectName, records)
+					DataAPI.update(orgDestination, sObjectName, records)
 						.then((badCount) => {
 							this.countImportErrorsRecords += badCount;
 							resolveEach(badCount);
@@ -396,7 +396,7 @@ export class Importer {
 
 	private deleteOneBeforeLoading(org: OrgManager, sObjName: string): Promise<number> {
 		return new Promise((resolve, reject) => {
-			BulkAPI.delete(org, sObjName)
+			DataAPI.delete(org, sObjName)
 				.then((badCount) => {
 					this.countImportErrorsRecords += badCount;
 					resolve(badCount);

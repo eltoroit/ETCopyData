@@ -43,12 +43,13 @@ export interface ISettingsValues {
 	includeAllCustom: boolean;
 	stopOnErrors: boolean;
 	copyToProduction: boolean;
+	useBulkAPI: boolean;
 	customObjectsToIgnoreRaw: string;
 	ignoreFieldsRaw: string;
 	twoPassReferenceFieldsRaw: string;
 	deleteDestination: boolean;
 	// LEARNING: Salesforce default is 10,000
-	pollingTimeout: number;
+	bulkPollingTimeout: number;
 	rootFolderRaw: string;
 }
 
@@ -82,10 +83,11 @@ export class Settings implements ISettingsValues {
 	public includeAllCustom: boolean;
 	public stopOnErrors: boolean;
 	public copyToProduction: boolean;
+	public useBulkAPI: boolean;
 	public customObjectsToIgnoreRaw: string;
 	public customObjectsToIgnore: string[];
 	public deleteDestination: boolean;
-	public pollingTimeout: number;
+	public bulkPollingTimeout: number;
 	public rootFolderRaw: string;
 	public rootFolderFull: string;
 	public configfolder: string;
@@ -383,6 +385,15 @@ export class Settings implements ISettingsValues {
 						})
 					);
 
+					// useBulkAPI
+					promises.push(
+						this.processStringValues(resValues, "useBulkAPI", false).then((value: string) => {
+							this.useBulkAPI = value === "true";
+							msg = `Configuration value for [useBulkAPI]: ${this.useBulkAPI}`;
+							Util.writeLog(msg, LogLevel.INFO);
+						})
+					);
+
 					// customObjectsToIgnore
 					promises.push(
 						this.processStringValues(resValues, "customObjectsToIgnore", false).then((value: string) => {
@@ -432,13 +443,13 @@ export class Settings implements ISettingsValues {
 						})
 					);
 
-					// pollingTimeout
+					// bulkPollingTimeout
 					promises.push(
-						this.processStringValues(resValues, "pollingTimeout", false).then((value: string) => {
-							this.pollingTimeout = parseInt(value, 10);
-							const sec = this.pollingTimeout / 1000;
+						this.processStringValues(resValues, "bulkPollingTimeout", false).then((value: string) => {
+							this.bulkPollingTimeout = parseInt(value, 10);
+							const sec = this.bulkPollingTimeout / 1000;
 							const min = sec / 60;
-							msg = `Configuration value for [pollingTimeout]: ${this.pollingTimeout} milliseconds (${min} minutes)`;
+							msg = `Configuration value for [bulkPollingTimeout]: ${this.bulkPollingTimeout} milliseconds (${min} minutes)`;
 							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
@@ -594,7 +605,8 @@ export class Settings implements ISettingsValues {
 		output.copyToProduction = this.copyToProduction;
 		output.twoPassReferenceFields = this.twoPassReferenceFieldsRaw;
 		output.deleteDestination = this.deleteDestination;
-		output.pollingTimeout = this.pollingTimeout;
+		output.useBulkAPI = this.useBulkAPI;
+		output.bulkPollingTimeout = this.bulkPollingTimeout;
 
 		return output;
 	}
@@ -661,11 +673,12 @@ export class Settings implements ISettingsValues {
 		this.includeAllCustom = false;
 		this.stopOnErrors = true;
 		this.copyToProduction = false;
+		this.useBulkAPI = false;
 		this.customObjectsToIgnoreRaw = null;
 		this.ignoreFieldsRaw = null;
 		this.twoPassReferenceFieldsRaw = null;
 		this.deleteDestination = false;
-		this.pollingTimeout = 100000;
+		this.bulkPollingTimeout = 1800000;
 	}
 
 	private getBlankSObjectData(sObjName: string): ISettingsSObjectData {

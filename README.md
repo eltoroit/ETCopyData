@@ -6,12 +6,13 @@ SFDX Plugin to populate your scratch org and/or developer sandbox with data extr
 
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- toc -->
-* [ETCopyData](#etcopydata)
-* [Install](#install)
-* [Documentation](#documentation)
-* [Commands](#commands)
-<!-- tocstop -->
-    <!-- ET-AUTO-STOP: This section is auto-updated... -->
+
+-   [ETCopyData](#etcopydata)
+-   [Install](#install)
+-   [Documentation](#documentation)
+-   [Commands](#commands)
+    <!-- tocstop -->
+        <!-- ET-AUTO-STOP: This section is auto-updated... -->
 
 # Install
 
@@ -68,7 +69,8 @@ This plugin is highly configurable with a JSON file named `ETCopyData.json` loca
 	"copyToProduction": false,
 	"twoPassReferenceFields": "LinkedA__c,LinkedB__c,LinkedC__c",
 	"deleteDestination": true,
-	"pollingTimeout": 1800000
+  "useBulkAPI": true,
+	"bulkPollingTimeout": 1800000
 }
 ```
 
@@ -88,7 +90,8 @@ This plugin is highly configurable with a JSON file named `ETCopyData.json` loca
 | **copyToProduction<sup>5</sup>**       | false   | Boolean            | True if you want to load data to a production org, false to load into sandboxes and scratch orgs                                                         |
 | **twoPassReferenceFields<sup>6</sup>** | null    | String             | List of fields that need to be updated in a second pass                                                                                                  |
 | **deleteDestination<sup>7</sup>**      | false   | Boolean            | True if you want to delete the existing records in the destination org before you load the new records.                                                  |
-| **pollingTimeout<sup>8<sup>**          | 1800000 | Integer            | Timeout in milliseconds that Bulk API operations will timeout.                                                                                           |
+| **useBulkAPI**                         | false   | Boolean            | True if you prefer to use Bulk API (large data loads), false if you prefer to use Soap API (small data loads). Minimizes the number of API calls.        |
+| **bulkPollingTimeout<sup>8<sup>**      | 1800000 | Integer            | Timeout in milliseconds that Bulk API operations will timeout.                                                                                           |
 
 ## sObjectsData
 
@@ -221,11 +224,12 @@ Since the idea of this tool is to copy data between orgs, it could be possible t
 
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- commands -->
-* [`sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatacompare--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatadelete--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataexport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatafull--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataimport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+
+-   [`sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatacompare--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+-   [`sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatadelete--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+-   [`sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataexport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+-   [`sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatafull--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+-   [`sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataimport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
 ## `sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -233,7 +237,7 @@ Checks the source and destination org for any differences in the sObject's metad
 
 ```
 USAGE
-  $ sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:Compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -260,7 +264,7 @@ Deletes data from destination org, preparing for the new data that will be uploa
 
 ```
 USAGE
-  $ sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -287,7 +291,7 @@ Exports the data from the source org, and saves it in the destination folder so 
 
 ```
 USAGE
-  $ sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -314,7 +318,7 @@ Performs all the steps, including comparing schemas, exporting data from the sou
 
 ```
 USAGE
-  $ sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -341,7 +345,7 @@ Imports data into destination org, you can control if the data in the destinatio
 
 ```
 USAGE
-  $ sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
+  $ sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -361,5 +365,6 @@ OPTIONS
 ```
 
 _See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v2.0.1-Beta/src/commands/ETCopyData/import.ts)_
+
 <!-- commandsstop -->
 <!-- ET-AUTO-STOP: This section is auto-updated... -->

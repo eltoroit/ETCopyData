@@ -1,4 +1,4 @@
-import BulkAPI from "./BulkAPI";
+import DataAPI from "./DataAPI";
 import { IExportData } from "./Interfaces";
 import { OrgManager } from "./OrgManager";
 import { LogLevel, Util } from "./Util";
@@ -87,7 +87,7 @@ export class Exporter {
 				folder: org.alias + folderCode,
 				file: sObjName + ".json"
 			};
-			BulkAPI.export(org, sObjName, SOQL, this.mapRecordsFetched, fileName)
+			DataAPI.export(org, sObjName, SOQL, this.mapRecordsFetched, fileName)
 				.then(() => resolve())
 				.catch((err) => reject(err));
 		});
