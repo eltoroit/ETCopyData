@@ -1,6 +1,7 @@
+import BulkAPI from "./BulkAPI";
 import { IExportData } from "./Interfaces";
 import { OrgManager } from "./OrgManager";
-import { LogLevel, ResultOperation, Util } from "./Util";
+import { LogLevel, Util } from "./Util";
 
 export class Exporter {
 	public static all(org: OrgManager, folderCode: string): Promise<void> {
@@ -32,6 +33,7 @@ export class Exporter {
 		return exporter.privExportMetadata(org, folderCode);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/member-ordering
 	private mapRecordsFetched: Map<string, IExportData> = new Map<string, IExportData>();
 
 	private privExportData(org: OrgManager, folderCode: string): Promise<void> {
@@ -80,47 +82,14 @@ export class Exporter {
 		});
 
 		return new Promise((resolve, reject) => {
-			// ELTOROIT: Bulk or SOAP?
-			let records = [];
-			let query = org.conn
-				.query(this.makeSOQL(org, sObjName))
-				.on("record", (record) => {
-					records.push(record);
-				})
-				.on("end", () => {
-					const msg = `[${org.alias}] Queried [${sObjName}], retrieved ${records.length} records `;
-					Util.writeLog(msg, LogLevel.INFO);
-					Util.logResultsAdd(org, ResultOperation.EXPORT, sObjName, records.length, 0);
-
-					const data: IExportData = this.mapRecordsFetched.get(sObjName);
-					data.total = query.totalSize;
-					data.fetched = records.length;
-					data.records = records;
-
-					// Checks....
-					Util.assertEquals(data.fetched, data.total, "Not all the records were fetched [1].");
-					Util.assertEquals(data.total, data.records.length, "Not all the records were fetched [2].");
-
-					if (data.total >= 0) {
-						org.settings
-							.writeToFile(org.alias + folderCode, sObjName + ".json", data)
-							.then(() => {
-								// NOTE: Clean memory, and avoid heap overflow.
-								data.records = [];
-								// Now, resolve it.
-								resolve();
-							})
-							.catch((err) => {
-								reject(err);
-							});
-					} else {
-						resolve();
-					}
-				})
-				.on("error", (err) => {
-					reject(err);
-				})
-				.run({ autoFetch: true, maxFetch: 4000 });
+			const SOQL = this.makeSOQL(org, sObjName);
+			const fileName = {
+				folder: org.alias + folderCode,
+				file: sObjName + ".json"
+			};
+			BulkAPI.export(org, sObjName, SOQL, this.mapRecordsFetched, fileName)
+				.then(() => resolve())
+				.catch((err) => reject(err));
 		});
 	}
 
@@ -139,9 +108,6 @@ export class Exporter {
 			}
 			if (sObjSettings.orderBy != null) {
 				soql += "ORDER BY " + sObjSettings.orderBy + " ";
-			}
-			if (sObjSettings.maxRecords > 0) {
-				soql += "LIMIT " + sObjSettings.maxRecords + " ";
 			}
 		}
 		Util.writeLog(`[${org.alias}] Querying [${sObjName}] with SOQL: [${soql}]`, LogLevel.TRACE);

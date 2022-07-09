@@ -1,5 +1,5 @@
-import mkdirp from "mkdirp";
 import * as fsPromises from "fs/promises";
+import mkdirp from "mkdirp";
 import { ConfigContents, ConfigFile } from "@salesforce/core";
 import { AnyJson, Dictionary } from "@salesforce/ts-types";
 import { WhichOrg } from "./OrgManager";
@@ -25,7 +25,6 @@ interface ISettingsSObjectBase {
 export interface ISettingsSObjectData extends ISettingsSObjectBase {
 	ignoreFields: string | string[];
 	twoPassReferenceFields: string | string[];
-	maxRecords: number;
 	externalIdField: string;
 }
 
@@ -44,11 +43,9 @@ export interface ISettingsValues {
 	includeAllCustom: boolean;
 	stopOnErrors: boolean;
 	copyToProduction: boolean;
-	useBulkAPI: boolean;
 	customObjectsToIgnoreRaw: string;
 	ignoreFieldsRaw: string;
 	twoPassReferenceFieldsRaw: string;
-	maxRecordsEachRaw: number;
 	deleteDestination: boolean;
 	// LEARNING: Salesforce default is 10,000
 	pollingTimeout: number;
@@ -85,10 +82,8 @@ export class Settings implements ISettingsValues {
 	public includeAllCustom: boolean;
 	public stopOnErrors: boolean;
 	public copyToProduction: boolean;
-	public useBulkAPI: boolean;
 	public customObjectsToIgnoreRaw: string;
 	public customObjectsToIgnore: string[];
-	public maxRecordsEachRaw: number;
 	public deleteDestination: boolean;
 	public pollingTimeout: number;
 	public rootFolderRaw: string;
@@ -147,9 +142,6 @@ export class Settings implements ISettingsValues {
 			// Fix fields
 			output.ignoreFields = Util.mergeAndCleanArrays(output.ignoreFields as string, this.ignoreFieldsRaw);
 			output.twoPassReferenceFields = Util.mergeAndCleanArrays(output.twoPassReferenceFields as string, this.twoPassReferenceFieldsRaw);
-			if (this.maxRecordsEachRaw > 0 && output.maxRecords === -1) {
-				output.maxRecords = this.maxRecordsEachRaw;
-			}
 		} else {
 			output = this.getBlankSObjectData(sObjName);
 		}
@@ -188,24 +180,26 @@ export class Settings implements ISettingsValues {
 
 		return new Promise((resolve, reject) => {
 			const fullPath = this.rootFolderFull + `/${path}`;
-			mkdirp(fullPath).then(() => {
-				let strData = "";
-				if (isVerbose) {
-					// LEARNING: [JSON]: Prettyfy JSON.
-					strData = JSON.stringify(data, null, "	");
-				} else {
-					strData = JSON.stringify(data);
-				}
+			mkdirp(fullPath)
+				.then(() => {
+					let strData = "";
+					if (isVerbose) {
+						// LEARNING: [JSON]: Prettyfy JSON.
+						strData = JSON.stringify(data, null, "	");
+					} else {
+						strData = JSON.stringify(data);
+					}
 
-				fsPromises
-					.writeFile(fullPath + `/${fileName}`, strData)
-					.then(() => {
-						resolve();
-					})
-					.catch((err) => {
-						reject(err);
-					});
-			});
+					fsPromises
+						.writeFile(fullPath + `/${fileName}`, strData)
+						.then(() => {
+							resolve();
+						})
+						.catch((err) => {
+							reject(err);
+						});
+				})
+				.catch((err) => reject(err));
 		});
 	}
 
@@ -277,23 +271,27 @@ export class Settings implements ISettingsValues {
 			this.rootFolderFull = this.rootFolderRaw;
 
 			if (overrideFolder) {
-				if (readFolder.indexOf(overrideFolder) !== 0) {
+				if (!readFolder.startsWith(overrideFolder)) {
 					this.rootFolderFull = overrideFolder + "/" + readFolder;
 				}
 			}
 
-			mkdirp(this.rootFolderFull).then(() => {
-				let path: string = "";
-				path = this.rootFolderFull;
+			mkdirp(this.rootFolderFull)
+				.then((value) => {
+					let path: string = "";
+					path = this.rootFolderFull;
 
-				// VERBOSE: Create sub-folders based on time so files do not override
-				// path += `/${Util.getWallTime(true)}`;
+					// VERBOSE: Create sub-folders based on time so files do not override
+					// path += `/${Util.getWallTime(true)}`;
 
-				mkdirp(path).then(() => {
-					this.rootFolderFull = path;
-					resolve(this.rootFolderFull);
-				});
-			});
+					mkdirp(path)
+						.then(() => {
+							this.rootFolderFull = path;
+							resolve(this.rootFolderFull);
+						})
+						.catch((err) => reject(err));
+				})
+				.catch((err) => reject(err));
 		});
 	}
 
@@ -385,20 +383,11 @@ export class Settings implements ISettingsValues {
 						})
 					);
 
-					// useBulkAPI
-					promises.push(
-						this.processStringValues(resValues, "useBulkAPI", false).then((value: string) => {
-							this.useBulkAPI = value === "true";
-							msg = `Configuration value for [useBulkAPI]: ${this.useBulkAPI}`;
-							Util.writeLog(msg, LogLevel.INFO);
-						})
-					);
-
 					// customObjectsToIgnore
 					promises.push(
 						this.processStringValues(resValues, "customObjectsToIgnore", false).then((value: string) => {
 							this.customObjectsToIgnoreRaw = value;
-							this.customObjectsToIgnore = Util.mergeAndCleanArrays(this.customObjectsToIgnoreRaw as string, this.customObjectsToIgnoreRaw);
+							this.customObjectsToIgnore = Util.mergeAndCleanArrays(this.customObjectsToIgnoreRaw, this.customObjectsToIgnoreRaw);
 							msg = `Configuration value for [customObjectsToIgnore]: ${this.customObjectsToIgnoreRaw}`;
 							Util.writeLog(msg, LogLevel.INFO);
 						})
@@ -434,17 +423,6 @@ export class Settings implements ISettingsValues {
 						})
 					);
 
-					// maxRecordsEach
-					promises.push(
-						this.processStringValues(resValues, "maxRecordsEach", false)
-							// LEARNING: Parsing a string into a number, 10 is for the base (16 for hex)
-							.then((value: string) => {
-								this.maxRecordsEachRaw = parseInt(value, 10);
-								msg = `Configuration value for [maxRecordsEach]: ${this.maxRecordsEachRaw}`;
-								Util.writeLog(msg, LogLevel.INFO);
-							})
-					);
-
 					// deleteDestination
 					promises.push(
 						this.processStringValues(resValues, "deleteDestination", false).then((value: string) => {
@@ -458,7 +436,9 @@ export class Settings implements ISettingsValues {
 					promises.push(
 						this.processStringValues(resValues, "pollingTimeout", false).then((value: string) => {
 							this.pollingTimeout = parseInt(value, 10);
-							msg = `Configuration value for [pollingTimeout]: ${this.pollingTimeout}`;
+							const sec = this.pollingTimeout / 1000;
+							const min = sec / 60;
+							msg = `Configuration value for [pollingTimeout]: ${this.pollingTimeout} milliseconds (${min} minutes)`;
 							Util.writeLog(msg, LogLevel.INFO);
 						})
 					);
@@ -490,6 +470,7 @@ export class Settings implements ISettingsValues {
 				}
 				resolve(valueStr);
 			} else {
+				// eslint-disable-next-line no-lonely-if
 				if (isRequired) {
 					this.isValid = false;
 					reject("Config file does not have an entry for [" + entryName + "]");
@@ -526,6 +507,7 @@ export class Settings implements ISettingsValues {
 					resolve(null);
 				}
 			} else {
+				// eslint-disable-next-line no-lonely-if
 				if (isRequired) {
 					this.isValid = false;
 					reject("Config file does not have an entry for [" + entryName + "]");
@@ -541,13 +523,12 @@ export class Settings implements ISettingsValues {
 		const sObjName = sObject.name;
 
 		const newValue: ISettingsSObjectData = {
-			ignoreFields: null,
-			twoPassReferenceFields: null,
-			maxRecords: -1,
 			name: sObjName,
-			orderBy: null,
+			ignoreFields: null,
+			externalIdField: null,
+			twoPassReferenceFields: null,
 			where: null,
-			externalIdField: null
+			orderBy: null
 		};
 		// LEARNING: [OBJECT]: How to loop through the values of an JSON object, which is not a Typescript Map.
 		Object.keys(sObject).forEach((key) => {
@@ -560,15 +541,18 @@ export class Settings implements ISettingsValues {
 		const sObjName = sObject.name;
 
 		const newValue: ISettingsSObjectMetatada = {
-			fieldsToExport: null,
-			matchBy: null,
 			name: sObjName,
-			orderBy: null,
-			where: null
+			matchBy: null,
+			fieldsToExport: "",
+			where: null,
+			orderBy: null
 		};
 		Object.keys(sObject).forEach((key) => {
 			newValue[key] = sObject[key];
 		});
+		if (!newValue.matchBy) {
+			throw new Error(`'${sObject.name}' section must have a 'matchBy' for fields to match`);
+		}
 		this.sObjectsMetadataRaw.set(sObjName, newValue);
 	}
 
@@ -609,9 +593,7 @@ export class Settings implements ISettingsValues {
 		output.ignoreFields = this.ignoreFieldsRaw;
 		output.copyToProduction = this.copyToProduction;
 		output.twoPassReferenceFields = this.twoPassReferenceFieldsRaw;
-		output.maxRecordsEach = this.maxRecordsEachRaw;
 		output.deleteDestination = this.deleteDestination;
-		output.useBulkAPI = this.useBulkAPI;
 		output.pollingTimeout = this.pollingTimeout;
 
 		return output;
@@ -633,6 +615,7 @@ export class Settings implements ISettingsValues {
 					sObj = this.getSObjectData(sObjName);
 				}
 			} else {
+				// eslint-disable-next-line no-lonely-if
 				if (isMD) {
 					sObj = this.sObjectsMetadataRaw.get(sObjName);
 				} else {
@@ -641,33 +624,30 @@ export class Settings implements ISettingsValues {
 			}
 
 			outputOneSObject.name = sObjName;
-			Object.keys(sObj)
-				.sort()
-				.forEach((fieldName) => {
-					let isSkip = false;
-					let value = sObj[fieldName];
+			Object.keys(sObj).forEach((fieldName) => {
+				let isSkip = false;
+				let value = sObj[fieldName];
 
-					if (isVerbose) {
-						if (["ignoreFields", "twoPassReferenceFields", "fieldsToExport"].includes(fieldName)) {
-							value = value.toString();
-						}
-					} else {
-						// Only perform these checks if it's not verbose mode
-						isSkip = isSkip || value === null;
-						isSkip = isSkip || (fieldName === "maxRecords" ? value === -1 : false);
+				if (isVerbose) {
+					if (["ignoreFields", "twoPassReferenceFields", "fieldsToExport"].includes(fieldName)) {
+						value = value.toString();
 					}
+				} else {
+					// Only perform these checks if it's not verbose mode
+					isSkip = isSkip || value === null;
+				}
 
-					if (!isSkip) {
-						outputOneSObject[fieldName] = value;
-					}
-				});
+				if (!isSkip) {
+					outputOneSObject[fieldName] = value;
+				}
+			});
 
 			outputAllSObjects.push(outputOneSObject);
 		});
 		return outputAllSObjects;
 	}
 
-	private resetValues() {
+	private resetValues(): void {
 		this.isValid = false;
 
 		this.orgAliases = new Map<WhichOrg, string>();
@@ -681,11 +661,9 @@ export class Settings implements ISettingsValues {
 		this.includeAllCustom = false;
 		this.stopOnErrors = true;
 		this.copyToProduction = false;
-		this.useBulkAPI = false;
 		this.customObjectsToIgnoreRaw = null;
 		this.ignoreFieldsRaw = null;
 		this.twoPassReferenceFieldsRaw = null;
-		this.maxRecordsEachRaw = -1;
 		this.deleteDestination = false;
 		this.pollingTimeout = 100000;
 	}
@@ -695,13 +673,12 @@ export class Settings implements ISettingsValues {
 
 		if (output === null) {
 			output = {
-				ignoreFields: Util.mergeAndCleanArrays(this.ignoreFieldsRaw, ""),
-				twoPassReferenceFields: Util.mergeAndCleanArrays(this.twoPassReferenceFieldsRaw, ""),
-				maxRecords: this.maxRecordsEachRaw,
 				name: null,
-				orderBy: null,
+				externalIdField: null,
+				twoPassReferenceFields: Util.mergeAndCleanArrays(this.twoPassReferenceFieldsRaw, ""),
+				ignoreFields: Util.mergeAndCleanArrays(this.ignoreFieldsRaw, ""),
 				where: null,
-				externalIdField: null
+				orderBy: null
 			};
 			this.blankSObjectData = output;
 		}

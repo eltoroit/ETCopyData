@@ -1,15 +1,12 @@
 {
-  "extends": "./node_modules/@salesforce/dev-config/tsconfig",
+  "extends": "@salesforce/dev-config/tsconfig",
   "compilerOptions": {
-    "target": "es2015",
-    "module": "commonjs",
+    "outDir": "lib",
+    "rootDir": "src",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "allowJs": true,
-    "outDir": "./lib",
-    "rootDir": "./src"
   },
   "include": [
-    "./src/**/*"
+    "./src/**/*.ts"
   ]
 }

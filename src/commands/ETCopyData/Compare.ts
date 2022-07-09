@@ -7,8 +7,7 @@ import { ResultOperation, Util } from "../../@ELTOROIT/Util";
 // TODO: Read the settings, and then override them with any parameters
 export default class CompareOrgs extends SfdxCommand {
 	public static result: Partial<Result> = Util.getLogsTable();
-	public static description = "Checks the source and destination org for any differences in the sObject's metadata, " +
-		"this helps determine what data can be properly exported/imported.";
+	public static description = "Checks the source and destination org for any differences in the sObject's metadata, " + "this helps determine what data can be properly exported/imported.";
 	//
 	//
 
@@ -17,7 +16,7 @@ export default class CompareOrgs extends SfdxCommand {
 	public async run() {
 		CompareOrgs.result = null;
 
-		ETCopyData.setLogs(this.flags, this.ux, "ETCopyData:Compare");
+		ETCopyData.setLogs(this.flags, this.ux, "ETCopyData:compare");
 		const s: Settings = ETCopyData.readParameters(this.flags);
 
 		const ETCD = new ETCopyData();

@@ -1,12 +1,12 @@
-import { Date } from "jsforce";
-import { ISchemaDataParent } from "./Interfaces";
+import BulkAPI from "./BulkAPI";
 import { OrgManager } from "./OrgManager";
-import { LogLevel, ResultOperation, Util } from "./Util";
+import { ISchemaDataParent } from "./Interfaces";
+import { LogLevel, Util } from "./Util";
 
 class ReferenceFieldMapping {
 	public fieldName: string;
 	public sourceId: string;
-	constructor(fieldName: string, sourceId: string) {
+	public constructor(fieldName: string, sourceId: string) {
 		this.fieldName = fieldName;
 		this.sourceId = sourceId;
 	}
@@ -26,7 +26,7 @@ export class Importer {
 				const sObjectsToLoad: string[] = orgDestination.order.findImportOrder();
 				const sObjectsToLoadReversed: string[] = sObjectsToLoad.slice(0).reverse();
 
-				Util.writeLog("sObjects should be deleted in this order: " + sObjectsToLoadReversed.join(", "), LogLevel.TRACE);
+				Util.writeLog(`[${orgDestination.alias}] sObjects should be deleted in this order: ${sObjectsToLoadReversed.join(", ")}`, LogLevel.TRACE);
 				Util.serialize(this, sObjectsToLoadReversed, (index): Promise<void> => {
 					return new Promise((resolveEach, rejectEach) => {
 						const sObjName = sObjectsToLoadReversed[index];
@@ -79,15 +79,15 @@ export class Importer {
 
 			this.twoPassReferenceFieldData = new Map<string, Map<string, Array<ReferenceFieldMapping>>>();
 
+			this.countImportErrorsRecords = 0;
+			this.countImportErrorsSObjects = 0;
 			this.deleteAll(orgDestination)
 				.then((numberErrors: number) => {
 					return this.findMatchingMetadataIds(orgSource, orgDestination);
 				})
 				.then(() => {
-					this.countImportErrorsRecords = 0;
-					this.countImportErrorsSObjects = 0;
 					const sObjectsToLoad: string[] = orgDestination.order.findImportOrder();
-					Util.writeLog("sObjects should be processed in this order: " + sObjectsToLoad.join(", "), LogLevel.TRACE);
+					Util.writeLog(`[${orgDestination.alias}] sObjects should be imported in this order: ${sObjectsToLoad.join(", ")}`, LogLevel.TRACE);
 					return this.loadAllSObjectData(orgSource, orgDestination, sObjectsToLoad, 0);
 				})
 				.then(() => {
@@ -116,10 +116,8 @@ export class Importer {
 	private findMatchingMetadataIds(orgSource: OrgManager, orgDestination: OrgManager): Promise<void> {
 		return new Promise((resolve, reject) => {
 			// Map<sObjName, Map<string (SRC, DST), Map<Key, Id>>>>
-			let tempMD: Map<string, Map<string, Map<string, string>>>;
-
 			this.matchingIds = new Map<string, Map<string, string>>();
-			tempMD = new Map<string, Map<string, Map<string, string>>>();
+			const tempMD: Map<string, Map<string, Map<string, string>>> = new Map<string, Map<string, Map<string, string>>>();
 
 			// Same org alias?
 			const sameOrg: Boolean = orgSource.alias === orgDestination.alias;
@@ -177,7 +175,7 @@ export class Importer {
 							if (key !== "") {
 								key += "|";
 							}
-							let v = record[part.trim()];
+							const v = record[part.trim()];
 							key += v;
 							if (v === undefined) {
 								reject(`Value for field [${part.trim()}] was not found in [${org.alias}] for [${sObjName}]. Check spelling.`);
@@ -212,7 +210,6 @@ export class Importer {
 				Util.writeLog(msg, LogLevel.TRACE);
 				this.loadOneSObjectData(orgSource, orgDestination, sObjName)
 					.then((value: number) => {
-						this.countImportErrorsRecords += value;
 						if (value > 0) {
 							this.countImportErrorsSObjects++;
 						}
@@ -232,157 +229,93 @@ export class Importer {
 	}
 
 	private loadOneSObjectData(orgSource: OrgManager, orgDestination: OrgManager, sObjName: string): Promise<number> {
-		return new Promise((resolve, reject) => {
-			// Read file from JSON into usable structure
-			let msg = "";
+		// Read file from JSON into usable structure
+		let msg = "";
+		let hasNotified: boolean = false;
+
+		const readFileAndUpdateIds = (): any => {
 			let records: any[];
-			let hasNotified: boolean = false;
-			orgSource.settings
-				.readFromFile(orgSource.alias, sObjName + ".json")
-				.then((jsonSource: any) => {
-					records = jsonSource.records;
-					records.forEach((record: any) => {
-						// Update parent IDs.
-						orgDestination.discovery
-							.getSObjects()
-							.get(sObjName)
-							.parents.forEach((parent: ISchemaDataParent) => {
-								const sourceParentId = record[parent.parentId];
-								// Issue #003: Null pointer if there was no data, so split and check for null
-								const destinationParentMap = this.matchingIds.get(parent.sObj);
-								const destinationParentId = destinationParentMap ? destinationParentMap.get(sourceParentId) : null;
-								record[parent.parentId] = destinationParentId;
+			return new Promise((resolve, reject) => {
+				orgSource.settings
+					.readFromFile(orgSource.alias, sObjName + ".json")
+					.then((jsonSource: any) => {
+						records = jsonSource.records;
+						records.forEach((record: any) => {
+							// Update parent IDs.
+							orgDestination.discovery
+								.getSObjects()
+								.get(sObjName)
+								.parents.forEach((parent: ISchemaDataParent) => {
+									const sourceParentId = record[parent.parentId];
+									// Issue #003: Null pointer if there was no data, so split and check for null
+									const destinationParentMap = this.matchingIds.get(parent.sObj);
+									const destinationParentId = destinationParentMap ? destinationParentMap.get(sourceParentId) : null;
+									record[parent.parentId] = destinationParentId;
 
-								if (destinationParentId === null) {
-									// Do not include fields that are blank, so default values can be used.
-									delete record[parent.parentId];
+									if (destinationParentId === null) {
+										// Do not include fields that are blank, so default values can be used.
+										delete record[parent.parentId];
 
-									// VERBOSE: This may blank a field if there is no corresponding parent in the destination
-									if (!hasNotified) {
-										msg = `Default fields values are being used because no parents were found`;
-										Util.writeLog(msg, LogLevel.WARN);
-										hasNotified = true;
+										// VERBOSE: This may blank a field if there is no corresponding parent in the destination
+										if (!hasNotified) {
+											msg = `Default fields values are being used because no parents were found`;
+											Util.writeLog(msg, LogLevel.WARN);
+											hasNotified = true;
+										}
+
+										msg = ``;
+										msg += `[${orgDestination.alias}] [${sObjName + "." + parent.parentId}] `;
+										msg += `for source [${record.Id}] cleared, because `;
+										msg += `no [${parent.sObj}] matched source [${sourceParentId}] `;
+										Util.writeLog(msg, LogLevel.INFO);
 									}
+								});
 
-									msg = ``;
-									msg += `[${orgDestination.alias}] [${sObjName + "." + parent.parentId}] `;
-									msg += `for source [${record.Id}] cleared, because `;
-									msg += `no [${parent.sObj}] matched source [${sourceParentId}] `;
-									Util.writeLog(msg, LogLevel.INFO);
+							// Clear reference fields that will be set in second pass
+							const asArray = (param: string | string[]): string[] => {
+								return typeof param === "string" ? [param] : param;
+							};
+							asArray(orgDestination.settings.getSObjectData(sObjName).twoPassReferenceFields).forEach((fieldName: string) => {
+								if (record[fieldName] !== null && record[fieldName] !== undefined) {
+									let sObjectData = this.twoPassReferenceFieldData.get(sObjName);
+									if (sObjectData === undefined) {
+										sObjectData = new Map<string, Array<ReferenceFieldMapping>>();
+										this.twoPassReferenceFieldData.set(sObjName, sObjectData);
+									}
+									let mappings = sObjectData.get(record.Id);
+									if (mappings === undefined) {
+										mappings = new Array<ReferenceFieldMapping>();
+										sObjectData.set(record.Id, mappings);
+									}
+									mappings.push(new ReferenceFieldMapping(fieldName, record[fieldName]));
+									delete record[fieldName];
 								}
 							});
-
-						// Clear reference fields that will be set in second pass
-						const asArray = (param: string | string[]) => {
-							return typeof param === "string" ? [param] : param;
-						};
-						asArray(orgDestination.settings.getSObjectData(sObjName).twoPassReferenceFields).forEach((fieldName: string) => {
-							if (record[fieldName] !== null && record[fieldName] !== undefined) {
-								let sObjectData = this.twoPassReferenceFieldData.get(sObjName);
-								if (sObjectData === undefined) {
-									sObjectData = new Map<string, Array<ReferenceFieldMapping>>();
-									this.twoPassReferenceFieldData.set(sObjName, sObjectData);
-								}
-								let mappings = sObjectData.get(record.Id);
-								if (mappings === undefined) {
-									mappings = new Array<ReferenceFieldMapping>();
-									sObjectData.set(record.Id, mappings);
-								}
-								mappings.push(new ReferenceFieldMapping(fieldName, record[fieldName]));
-								delete record[fieldName];
-							}
 						});
-					});
+						resolve(records);
+					})
+					.catch((err) => reject(err));
+			});
+		};
 
-					if (records.length > 0) {
-						const processResults = (error, results: any[]) => {
-							let badCount: number = 0;
-							let goodCount: number = 0;
-
-							if (error) {
-								reject(error);
-							}
-
-							// NOTE: I need a traditional loop because the index (i) will be used in two lists of same size and same order.
-							for (let i = 0; i < results.length; i++) {
-								msg = "";
-								if (results[i].success) {
-									goodCount++;
-									this.matchingIds.get(sObjName).set(records[i].Id, results[i].id);
-
-									// VERBOSE: Show record was added succesfully
-									msg += `[${orgDestination.alias}] Successfully imported [${sObjName}] record #${i + 1}. `;
-									msg += `Ids mapped: [${records[i].Id}] => [${results[i].id}]`;
-									Util.writeLog(msg, LogLevel.TRACE);
-								} else {
-									badCount++;
-									msg += `*** [${orgDestination.alias}] Error importing [${sObjName}] record #${i + 1}. `;
-									msg += JSON.stringify(results[i].errors);
-									Util.writeLog(msg, LogLevel.ERROR);
-								}
-							}
-
-							msg = "";
-							msg += `[${orgDestination.alias}] Imported [${sObjName}]. `;
-							msg += `Record count: [Good = ${goodCount}, Bad = ${badCount}]`;
-							Util.writeLog(msg, LogLevel.INFO);
-							Util.logResultsAdd(orgDestination, ResultOperation.IMPORT, sObjName, goodCount, badCount);
-
-							resolve(badCount);
-						};
-
-						// LOADING
-						this.matchingIds.set(sObjName, new Map<string, string>());
-						// ELTOROIT: Bulk or SOAP?
-
-						const operation = orgDestination.settings.getSObjectData(sObjName).externalIdField ? "upsert" : "insert";
-						if (orgDestination.settings.useBulkAPI) {
-							// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
-							// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
-							orgDestination.conn.bulk.pollTimeout = orgDestination.settings.pollingTimeout;
-							const options: any = { concurrencyMode: "Parallel", extIdField: orgDestination.settings.getSObjectData(sObjName).externalIdField || null };
-
-							Util.writeLog(`Importing [${sObjName}] using [${operation}] with options [${JSON.stringify(options)}]`, LogLevel.DEBUG);
-
-							// LEARNING: Inserting sObject records in bulk
-							let job = orgDestination.conn.bulk.createJob(sObjName, operation, options);
-							let batch = job.createBatch();
-							batch.execute(this.getRecordsForOperation(records, operation));
-							batch.on("error", (batchError) => {
-								processResults(batchError, null);
-							});
-							batch.on("queue", (batchInfo) => {
-								// Fired when batch request is queued in server.
-								// Start polling - Do not poll until the batch has started
-								batch.poll(1000 /* interval(ms) */, 20000 /* timeout(ms) */);
-							});
-							batch.on("response", (results) => {
-								// Fired when batch finished and result retrieved
-								processResults(null, results);
-							});
-						} else {
-							const options: any = { allOrNone: true, allowRecursive: true };
-							if (operation === "insert") {
-								orgDestination.conn
-									.sobject(sObjName)
-									.create(records, options)
-									.then((results) => processResults(null, results))
-									.catch((error) => processResults(error, null));
-							} else {
-								orgDestination.conn
-									.sobject(sObjName)
-									.upsert(records, orgDestination.settings.getSObjectData(sObjName).externalIdField, options)
-									.then((results) => processResults(null, results))
-									.catch((error) => processResults(error, null));
-							}
-						}
-					} else {
+		return new Promise((resolve, reject) => {
+			readFileAndUpdateIds()
+				.then((records) => {
+					if (records.length === 0) {
 						resolve(0);
+					} else {
+						this.matchingIds.set(sObjName, new Map<string, string>());
+						const operation = orgDestination.settings.getSObjectData(sObjName).externalIdField ? "upsert" : "insert";
+						const recordsProcessed = this.getRecordsForOperation(records, operation);
+						BulkAPI.upsert(orgDestination, operation, sObjName, recordsProcessed, this.matchingIds, orgDestination.settings.getSObjectData(sObjName).externalIdField || null)
+							.then((badCount) => {
+								this.countImportErrorsRecords += badCount;
+								resolve(badCount);
+							})
+							.catch((err) => reject(err));
 					}
 				})
-				.catch((err) => {
-					reject(err);
-				});
+				.catch((err) => reject(err));
 		});
 	}
 
@@ -392,17 +325,16 @@ export class Importer {
 		}
 
 		// Must remove the ID field without impacting the mapping
-		let result = JSON.parse(JSON.stringify(records));
-		for (let i = 0; i < result.length; i++) {
-			delete result[i].Id;
-		}
-		return result;
+		let newRecords = JSON.parse(JSON.stringify(records));
+		newRecords = newRecords.map((record) => {
+			delete record.Id;
+			return record;
+		});
+		return newRecords;
 	}
 
 	private setTwoPassReferences(orgSource: OrgManager, orgDestination: OrgManager): Promise<void> {
 		return new Promise((resolve, reject) => {
-			// WARNING: Salesforce Bulk has a weird behavior that if the options are not given,
-			// WARNING: then the rest of the parameters are shifted to the left rather than taking null as a placeholder.
 			const keys: Array<string> = Array.from(this.twoPassReferenceFieldData.keys());
 
 			Util.serialize(this, keys, (index): Promise<void> => {
@@ -411,93 +343,46 @@ export class Importer {
 					Util.writeLog(`[${orgDestination.alias}] Updating references for [${sObjectName}] (${index + 1} of ${keys.length})`, LogLevel.TRACE);
 
 					const schemaData = orgDestination.discovery.getSObjects().get(sObjectName);
-					let records = [];
+					const records = [];
 
-					let baseRecord = {};
+					const baseRecord = {};
 					schemaData.twoPassParents.forEach((parent) => {
 						baseRecord[parent.parentId] = null;
 					});
 
-					let availableMatchingIds = new Map<string, Map<string, string>>(); // field name => id mapping data (old => new)
-					schemaData.twoPassParents.forEach((parent) => {
+					const availableMatchingIds = new Map<string, Map<string, string>>(); // field name => id mapping data (old => new)
+					schemaData.twoPassParents.forEach((parent, tmpIndex) => {
 						if (this.matchingIds.has(parent.sObj)) {
 							availableMatchingIds.set(parent.parentId, this.matchingIds.get(parent.sObj));
-							Util.writeLog(`[${orgDestination.alias}] mapping field [${parent.parentId}] to SObject [${parent.sObj}]`, LogLevel.TRACE);
+							Util.writeLog(`[${orgDestination.alias}] mapping field [${parent.parentId}] (#${tmpIndex}) to SObject [${parent.sObj}]`, LogLevel.TRACE);
 						} else {
-							Util.writeLog(`[${orgDestination.alias}] data not available for mapping field [${parent.parentId}] to SObject [${parent.sObj}]`, LogLevel.WARN);
+							Util.writeLog(`[${orgDestination.alias}] data not available for mapping field [${parent.parentId}] (#${tmpIndex}) to SObject [${parent.sObj}]`, LogLevel.WARN);
 						}
 					});
 
 					// Create an object for each record that has one or more fields that need to be updated
+					let tmpIndex = 0;
 					this.twoPassReferenceFieldData.get(sObjectName).forEach((mappings: Array<ReferenceFieldMapping>, id: string) => {
-						let record = Object.assign({ Id: this.matchingIds.get(sObjectName).get(id) }, baseRecord);
+						tmpIndex++;
+						const record = Object.assign({ Id: this.matchingIds.get(sObjectName).get(id) }, baseRecord);
 						mappings.forEach((mapping: ReferenceFieldMapping) => {
 							const destinationId = availableMatchingIds.get(mapping.fieldName).get(mapping.sourceId);
 							if (destinationId !== undefined) {
 								record[mapping.fieldName] = destinationId;
-								Util.writeLog(`[${orgDestination.alias}] mapping field [${mapping.fieldName}] for [${id}]:[ ${mapping.sourceId}] => [${destinationId}]`, LogLevel.TRACE);
+								Util.writeLog(`[${orgDestination.alias}] mapping field [${mapping.fieldName}] for (#${tmpIndex}) [${id}]:[ ${mapping.sourceId}] => [${destinationId}]`, LogLevel.TRACE);
 							} else {
-								Util.writeLog(`[${orgDestination.alias}] mapping data for [${mapping.fieldName}] did not include mapping for [${mapping.sourceId}]`, LogLevel.INFO);
+								Util.writeLog(`[${orgDestination.alias}] mapping data for [${mapping.fieldName}] did not include mapping for [${mapping.sourceId}] (#${tmpIndex}) `, LogLevel.INFO);
 							}
 						});
 						records.push(record);
 					});
 
-					// UPDATING the records
-					const processResults = (error, results: any[]) => {
-						let badCount: number = 0;
-						let goodCount: number = 0;
-
-						if (error) {
-							rejectEach(error);
-						}
-
-						for (let i = 0; i < results.length; i++) {
-							if (results[i].success) {
-								goodCount++;
-								Util.writeLog(`[${orgDestination.alias}] Successfully updated references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]`, LogLevel.TRACE);
-							} else {
-								badCount++;
-								Util.writeLog(
-									`[${orgDestination.alias}] Error updating references in [${sObjectName}] record #${i + 1}, old Id [${records[i].Id}]` + JSON.stringify(results[i].errors),
-									LogLevel.TRACE
-								);
-							}
-						}
-
-						Util.writeLog(`[${orgDestination.alias}] Updated references for [${sObjectName}]. Record count: [Good = ${goodCount}, Bad = ${badCount}]`, LogLevel.INFO);
-						Util.logResultsAdd(orgDestination, ResultOperation.IMPORT, sObjectName, goodCount, badCount);
-
-						resolveEach();
-					};
-
-					// ELTOROIT: Bulk or SOAP?
-					if (orgDestination.settings.useBulkAPI) {
-						const bulkOptions: any = { concurrencyMode: "Parallel", extIdField: null };
-						// orgDestination.conn.bulk.load(sObjectName, "update", bulkOptions, records, processResults);
-						let job = orgDestination.conn.bulk.createJob(sObjectName, "update", bulkOptions);
-						let batch = job.createBatch();
-						batch.execute(records);
-						batch.on("error", (batchError) => {
-							processResults(batchError, null);
-						});
-						batch.on("queue", (batchInfo) => {
-							// Fired when batch request is queued in server.
-							// Start polling - Do not poll until the batch has started
-							batch.poll(1000 /* interval(ms) */, 20000 /* timeout(ms) */);
-						});
-						batch.on("response", (results) => {
-							// Fired when batch finished and result retrieved
-							processResults(null, results);
-						});
-					} else {
-						const options: any = { allOrNone: true, allowRecursive: true };
-						orgDestination.conn
-							.sobject(sObjectName)
-							.update(records, options)
-							.then((results) => processResults(null, results))
-							.catch((error) => processResults(error, null));
-					}
+					BulkAPI.update(orgDestination, sObjectName, records)
+						.then((badCount) => {
+							this.countImportErrorsRecords += badCount;
+							resolveEach(badCount);
+						})
+						.catch((err) => rejectEach(err));
 				});
 			})
 				.then(() => {
@@ -510,41 +395,13 @@ export class Importer {
 	}
 
 	private deleteOneBeforeLoading(org: OrgManager, sObjName: string): Promise<number> {
-		let msg = "";
 		return new Promise((resolve, reject) => {
-			// DELETING
-			Util.writeLog(`[${org.alias}] Deleting records from [${sObjName}]`, LogLevel.TRACE);
-			org.conn.bulk.pollTimeout = org.settings.pollingTimeout;
-			// LEARNING: Deleting sObject records in bulk
-			org.conn
-				.sobject(sObjName)
-				.find({ CreatedDate: { $lte: Date.TOMORROW } })
-				.destroy(sObjName)
-				.then((results: any[]) => {
-					let totalSuccess: number = 0;
-					let totalFailures: number = 0;
-					results.forEach((result: any) => {
-						if (result.success) {
-							totalSuccess++;
-						} else {
-							if (result.errors.length === 1 && result.errors[0] === "ENTITY_IS_DELETED:entity is deleted:--") {
-								// Ignore error
-							} else {
-								totalFailures++;
-								msg = `*** [${org.alias}] Error deleting [${sObjName}] records. ${JSON.stringify(result)}`;
-								Util.writeLog(msg, LogLevel.ERROR);
-							}
-						}
-					});
-					Util.logResultsAdd(org, ResultOperation.DELETE, sObjName, totalSuccess, totalFailures);
-					msg = `[${org.alias}] Deleted ${totalSuccess} records from [${sObjName}]`;
-					Util.writeLog(msg, LogLevel.INFO);
-
-					resolve(totalFailures);
+			BulkAPI.delete(org, sObjName)
+				.then((badCount) => {
+					this.countImportErrorsRecords += badCount;
+					resolve(badCount);
 				})
-				.catch((err) => {
-					reject(err);
-				});
+				.catch((err) => reject(err));
 		});
 	}
 }

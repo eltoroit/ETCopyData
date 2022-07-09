@@ -5,6 +5,9 @@
 /dist
 /lib
 /tmp
+/package-lock.json
 /node_modules
 @ELTOROIT/data
-sfdx-project.json
+ETCopyData.json
+# "Tab separated values" files
+*.tsv

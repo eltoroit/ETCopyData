@@ -1,23 +1,57 @@
 {
-	// See https://go.microsoft.com/fwlink/?LinkId=733558
-	// for the documentation about the tasks.json format
-	"version": "2.0.0",
-	"tasks": [{
-		"type": "typescript",
-		"tsconfig": "tsconfig.json",
-		"problemMatcher": [
-			"$tsc"
-		],
-		"group": {
-			"kind": "build",
-			"isDefault": true
-		},
-		"presentation": {
-			"reveal": "silent",
-			"panel": "shared",
-			"clear": true,
-			"focus": false,
-			"showReuseMessage": true
-		}
-	}]
+  "version": "2.0.0",
+  "problemMatcher": "$tsc-watch",
+  "tasks": [
+    {
+      "label": "Compile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "command": "yarn",
+      "type": "shell",
+      "presentation": {
+        "focus": false,
+        "panel": "dedicated"
+      },
+      "args": ["run", "prepack"],
+      "isBackground": false,
+      "problemMatcher": {
+        "owner": "typescript",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^(.*\\.ts):(\\d*):(\\d*)(\\s*-\\s*)(error|warning|info)\\s*(TS\\d*):\\s*(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 5,
+          "code": 6,
+          "message": 7
+        }
+      }
+    },
+    {
+      "label": "Lint",
+      "command": "yarn",
+      "type": "shell",
+      "presentation": {
+        "focus": false,
+        "panel": "dedicated"
+      },
+      "args": ["run", "lint"],
+      "isBackground": false,
+      "problemMatcher": {
+        "owner": "typescript",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^(ERROR|WARNING|INFO):\\s*(.*\\.ts):(\\d*):(\\d*)(\\s*-\\s*)(.*)$",
+          "file": 2,
+          "line": 3,
+          "column": 4,
+          "severity": 1,
+          "message": 6
+        }
+      }
+    }
+  ]
 }
