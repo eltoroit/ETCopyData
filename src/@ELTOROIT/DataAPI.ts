@@ -16,10 +16,16 @@ function splitIntoChunks(records: any[]): any[] {
 function countRecords(org: OrgManager, sObjName: string, operation: string, SOQL?: string): Promise<number> {
 	// Uses SOAP, no need to use BULK for this simple count
 	return new Promise((resolve, reject) => {
-		debugger;
-		const tmpSOQL = `SELECT count() FROM ${sObjName}`;
+		let tmpSOQL: string = `SELECT count() FROM ${sObjName}`;
 		if (SOQL) {
-			debugger;
+			// Add the filter criteria to count only specific records
+			let a;
+			a = `FROM ${sObjName}`;
+			tmpSOQL = `${tmpSOQL.trim()} ${SOQL.substring(SOQL.indexOf(a) + a.length).trim()}`.trim();
+			a = tmpSOQL.toUpperCase().indexOf("ORDER BY");
+			if (a > 0) {
+				tmpSOQL = tmpSOQL.substring(0, a).trim();
+			}
 		}
 		const query = org.conn
 			.query(tmpSOQL)
@@ -465,7 +471,7 @@ class JsSoap {
 							if (chunks.length >= chunkSize) {
 								allChunks.push(chunks);
 								msg = `[${org.alias}] Querying [${sObjName}] records to be deleted. [${allChunks.length * chunkSize}] ${progress(allChunks.length * chunkSize, totalSize)}`;
-								Util.writeLog(msg, LogLevel.TRACE);
+								Util.writeLog(msg, LogLevel.INFO);
 								chunks = [];
 							}
 						})
@@ -479,7 +485,8 @@ class JsSoap {
 							msg = `[${org.alias}] Error querying [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
 							Util.writeLog(msg, LogLevel.ERROR);
 							reject(err);
-						});
+						})
+						.run({ autoFetch: true, maxFetch: totalSize });
 				}
 			});
 		};
@@ -646,7 +653,7 @@ class JsSoap {
 	}
 	public static export(org: any, sObjName: string, SOQL: string, mapRecordsFetched: any, fileName: any): Promise<void> {
 		return new Promise((resolve, reject) => {
-			countRecords(org, sObjName, "Exporting")
+			countRecords(org, sObjName, "Exporting", SOQL)
 				.then((maxFetch) => {
 					const records = [];
 					const query: any = org.conn
