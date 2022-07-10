@@ -224,7 +224,7 @@ class JsBulk {
 
 					// VERBOSE: Show record was added succesfully
 					msg += `[${org.alias}] Successfully imported [${sObjName}] record #${offset + i + 1}. `;
-					msg += `Ids mapped: [${chunk[i].Id}] => [${results[i].id}]`;
+					msg += `Ids mapped: [${chunk[i].Id}] => [${results[i].id}] ${progress(total.good + total.bad, allRecords.length)}`;
 					Util.writeLog(msg, LogLevel.TRACE);
 				} else {
 					total.bad++;
@@ -241,7 +241,13 @@ class JsBulk {
 			return new Promise((resolve, reject) => {
 				org.conn.bulk.pollTimeout = org.settings.bulkPollingTimeout;
 				const options: any = { concurrencyMode: "Parallel", extIdField };
-				Util.writeLog(`[${org.alias}] Importing [${chunk.length}] [${sObjName}] records using [${operation}] with external Id [${options.extIdField}]`, LogLevel.TRACE);
+				Util.writeLog(
+					`[${org.alias}] Importing [${total.good + total.bad + chunk.length}] [${sObjName}] records using [${operation}] with external Id [${options.extIdField}] ${progress(
+						total.good + total.bad + chunk.length,
+						allRecords.length
+					)}`,
+					LogLevel.TRACE
+				);
 				const job = org.conn.bulk.createJob(sObjName, operation, options);
 				const batch = job.createBatch();
 				batch.execute(chunk);
@@ -299,7 +305,10 @@ class JsBulk {
 			for (let i = 0; i < results.length; i++) {
 				if (results[i].success) {
 					total.good++;
-					Util.writeLog(`[${org.alias}] Successfully updated references in [${sObjName}] record #${i + 1}, old Id [${chunk[i].Id}]`, LogLevel.TRACE);
+					Util.writeLog(
+						`[${org.alias}] Successfully updated references in [${sObjName}] record #${i + 1}, old Id [${chunk[i].Id}] ${progress(total.good + total.bad, allRecords.length)}`,
+						LogLevel.TRACE
+					);
 				} else {
 					total.bad++;
 					Util.writeLog(`[${org.alias}] Error updating references in [${sObjName}] record #${i + 1}, old Id [${chunk[i].Id}]` + JSON.stringify(results[i].errors), LogLevel.TRACE);
@@ -497,12 +506,22 @@ class JsSoap {
 					total.totalSize = totalSize;
 					return queryRecords(totalSize);
 				})
-				.then(async (allChunks) => {
-					for (const chunk of allChunks) {
-						// eslint-disable-next-line no-await-in-loop
-						await deleteChunk(chunk);
-					}
-					return Promise.resolve();
+				.then((allChunks) => {
+					// SERIES
+					const processData = async (chunks): Promise<void> => {
+						for (const chunk of chunks) {
+							// eslint-disable-next-line no-await-in-loop
+							await deleteChunk(chunk);
+						}
+					};
+					return processData(allChunks);
+
+					// PARALLEL
+					// for (const chunk of allChunks) {
+					// 	// eslint-disable-next-line no-await-in-loop
+					// 	await deleteChunk(chunk);
+					// }
+					// return Promise.resolve();
 				})
 				.then((promisesResult) => {
 					if (total.good + total.bad > 0) {
@@ -536,7 +555,7 @@ class JsSoap {
 
 					// VERBOSE: Show record was added succesfully
 					msg += `[${org.alias}] Successfully imported [${sObjName}] record #${offset + i + 1}. `;
-					msg += `Ids mapped: [${chunk[i].Id}] => [${results[i].id}]`;
+					msg += `Ids mapped: [${chunk[i].Id}] => [${results[i].id}] ${progress(total.good + total.bad, allRecords.length)}`;
 					Util.writeLog(msg, LogLevel.TRACE);
 				} else {
 					total.bad++;
@@ -571,13 +590,25 @@ class JsSoap {
 		};
 
 		return new Promise((resolve, reject) => {
-			const chunks = splitIntoChunks(allRecords);
-			const promises = chunks.map((chunk) => {
-				return upsertChunk(chunk);
-			});
+			Promise.resolve()
+				.then(() => {
+					// SERIES
+					const processData = async (chunks): Promise<void> => {
+						for (const chunk of chunks) {
+							// eslint-disable-next-line no-await-in-loop
+							await upsertChunk(chunk);
+						}
+					};
+					return processData(splitIntoChunks(allRecords));
 
-			Promise.allSettled(promises)
-				.then((promisesResult) => {
+					// PARALLEL
+					// const chunks = splitIntoChunks(allRecords);
+					// const promises = chunks.map((chunk) => {
+					// 	return upsertChunk(chunk);
+					// });
+					// return Promise.allSettled(promises)
+				})
+				.then(() => {
 					msg = "";
 					msg += `[${org.alias}] Imported [${sObjName}]. `;
 					msg += `Record count: [Good = ${total.good}, Bad = ${total.bad}]`;
@@ -585,9 +616,7 @@ class JsSoap {
 					Util.logResultsAdd(org, ResultOperation.IMPORT, sObjName, total.good, total.bad);
 					resolve(total.bad);
 				})
-				.catch((err) => {
-					reject(err);
-				});
+				.catch((err) => reject(err));
 		});
 	}
 	public static update(org: any, sObjName: string, allRecords: any[]): Promise<any> {
@@ -601,7 +630,10 @@ class JsSoap {
 			for (let i = 0; i < results.length; i++) {
 				if (results[i].success) {
 					total.good++;
-					Util.writeLog(`[${org.alias}] Successfully updated references in [${sObjName}] record #${i + 1}, old Id [${chunk[i].Id}]`, LogLevel.TRACE);
+					Util.writeLog(
+						`[${org.alias}] Successfully updated references in [${sObjName}] record #${i + 1}, old Id [${chunk[i].Id}] ${progress(total.good + total.bad, allRecords.length)}`,
+						LogLevel.TRACE
+					);
 				} else {
 					total.bad++;
 					Util.writeLog(`[${org.alias}] Error updating references in [${sObjName}] record #${i + 1}, old Id [${chunk[i].Id}]` + JSON.stringify(results[i].errors), LogLevel.TRACE);
