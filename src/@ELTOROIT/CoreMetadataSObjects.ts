@@ -25,10 +25,10 @@ export class CoreMetadataSObjects {
 
 		soql += "SELECT " + sObj.fields + " ";
 		soql += "FROM " + sObjName + " ";
-		if (sObj.where != null) {
+		if (sObj.where != null && sObj.where !== "") {
 			soql += "WHERE " + sObj.where + " ";
 		}
-		if (sObj.orderBy != null) {
+		if (sObj.orderBy != null && sObj.orderBy !== "") {
 			soql += "ORDER BY " + sObj.orderBy + " ";
 		}
 
