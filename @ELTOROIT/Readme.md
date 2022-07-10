@@ -81,3 +81,16 @@ Plugin can be found here: https://www.npmjs.com/package/etcopydata/
 -   clear && npm run prepare && yarn run prepare
 -   clear && sfdx plugins:link -v
 -   clear && npm publish ./ --tag beta
+
+# Proxy (Charles)
+
+-   Setting up charles
+    -   Help > SSL Proxying > Install Charles Root Certificate
+    -   Proxy > SSL Proxying Settings > SSL Proxying > include
+        -   \*.salesforce.com
+    -   Proxy > Proxy Settings > HTTP Proxy > Port: 8888
+-   Setting the proxy
+    -   `HTTP_PROXY=http://127.0.0.1:8888 NODE_TLS_REJECT_UNAUTHORIZED=0 bin/run ETCopyData:delete -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json`
+        -   NODE_TLS_REJECT_UNAUTHORIZED=0
+            -   Avoids this error: Error: self signed certificate in certificate chain
+-   x

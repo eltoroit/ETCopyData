@@ -82,8 +82,8 @@
 		"prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
 		"test": "nyc --extension .ts --require ts-node/register mocha --forbid-only \"test/**/*.test.ts\"",
 		"version": "oclif-dev readme && git add README.md",
-		"TEST_EXPORT": "bin/run ETCopyData:export -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json",
-		"TEST_IMPORT": "bin/run ETCopyData:import -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json",
-		"TEST_DELETE": "bin/run ETCopyData:delete -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json"
+		"TEST_EXPORT": "HTTP_PROXY=http://127.0.0.1:8888 NODE_TLS_REJECT_UNAUTHORIZED=0 bin/run ETCopyData:export -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json",
+		"TEST_IMPORT": "HTTP_PROXY=http://127.0.0.1:8888 NODE_TLS_REJECT_UNAUTHORIZED=0 bin/run ETCopyData:import -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json",
+		"TEST_DELETE": "HTTP_PROXY=http://127.0.0.1:8888 NODE_TLS_REJECT_UNAUTHORIZED=0 bin/run ETCopyData:delete -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json"
 	}
 }

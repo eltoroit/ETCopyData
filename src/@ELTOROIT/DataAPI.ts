@@ -14,7 +14,7 @@ function splitIntoChunks(records: any[]): any[] {
 }
 
 function countRecords(org: OrgManager, sObjName: string, operation: string, SOQL?: string): Promise<number> {
-	// Uses SOAP, no need to use BULK for this simple count
+	// Uses Rest API, no need to use Bulk API for this simple count
 	return new Promise((resolve, reject) => {
 		let tmpSOQL: string = `SELECT count() FROM ${sObjName}`;
 		if (SOQL) {
@@ -60,7 +60,7 @@ export default class Data {
 		if (org.settings.useBulkAPI) {
 			return JsBulk.delete(org, sObjName);
 		} else {
-			return JsSoap.delete(org, sObjName);
+			return JsRest.delete(org, sObjName);
 		}
 	}
 	public static upsert(org: any, operation: string, sObjName: string, allRecords: any[], matchingIds: any, extIdField): Promise<any> {
@@ -70,7 +70,7 @@ export default class Data {
 		if (org.settings.useBulkAPI) {
 			return JsBulk.upsert(org, operation, sObjName, allRecords, matchingIds, extIdField);
 		} else {
-			return JsSoap.upsert(org, operation, sObjName, allRecords, matchingIds, extIdField);
+			return JsRest.upsert(org, operation, sObjName, allRecords, matchingIds, extIdField);
 		}
 	}
 	public static update(org: any, sObjName: string, allRecords: any[]): Promise<any> {
@@ -80,7 +80,7 @@ export default class Data {
 		if (org.settings.useBulkAPI) {
 			return JsBulk.update(org, sObjName, allRecords);
 		} else {
-			return JsSoap.update(org, sObjName, allRecords);
+			return JsRest.update(org, sObjName, allRecords);
 		}
 	}
 	public static export(org: any, sObjName: string, SOQL: string, mapRecordsFetched: any, fileName: any): Promise<void> {
@@ -90,7 +90,7 @@ export default class Data {
 		if (org.settings.useBulkAPI) {
 			return JsBulk.export(org, sObjName, SOQL, mapRecordsFetched, fileName);
 		} else {
-			return JsSoap.export(org, sObjName, SOQL, mapRecordsFetched, fileName);
+			return JsRest.export(org, sObjName, SOQL, mapRecordsFetched, fileName);
 		}
 	}
 }
@@ -433,7 +433,7 @@ class JsBulk {
 	}
 }
 
-class JsSoap {
+class JsRest {
 	public static delete(org: OrgManager, sObjName: string): Promise<number> {
 		const total = { bad: 0, good: 0, totalSize: 0 };
 

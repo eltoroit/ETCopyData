@@ -90,7 +90,7 @@ This plugin is highly configurable with a JSON file named `ETCopyData.json` loca
 | **copyToProduction<sup>5</sup>**       | false   | Boolean            | True if you want to load data to a production org, false to load into sandboxes and scratch orgs                                                         |
 | **twoPassReferenceFields<sup>6</sup>** | null    | String             | List of fields that need to be updated in a second pass                                                                                                  |
 | **deleteDestination<sup>7</sup>**      | false   | Boolean            | True if you want to delete the existing records in the destination org before you load the new records.                                                  |
-| **useBulkAPI**                         | false   | Boolean            | True if you prefer to use Bulk API (large data loads), false if you prefer to use Soap API (small data loads). Minimizes the number of API calls.        |
+| **useBulkAPI<sup>11</sup>**            | false   | Boolean            | True if you prefer to use Bulk API, false if you prefer to use REST API. API.                                                                            |
 | **bulkPollingTimeout<sup>8<sup>**      | 1800000 | Integer            | Timeout in milliseconds that Bulk API operations will timeout.                                                                                           |
 
 ## sObjectsData
@@ -219,6 +219,7 @@ Since the idea of this tool is to copy data between orgs, it could be possible t
 8. If you are getting timeout errors while records are being deleted, or imported, you could increase the polling timeout. A good value is `1800000` milliseconds which corresponds to 30 minutes.
 9. If you are getting out-of-memory errors, you can increase the amount of memory used by NodeJS (the engine used to run SFDX plugins) by setting the environment variable `NODE_OPTIONS` to `--max-old-space-size=8192` to reserve 8GB memory.
 10. The metadata records in the source org and the destination org will have different IDs, but they should have similar characteristic that can be used for mapping. For example, for users, you can use the email, for profiles use their names, for record types use their developer name, etc. When dealing with Recordtypes that have same DeveloperName for different sObjects, the matchBy entry can be set as "SobjectType, DeveloperName".
+11. Using Bulk API is better for large data loads because it minimizes the number of API calls, Salesforce has a limit of calls per 24 hours. Also doing the Bulk API the batches are 10K records rather than just 200, that's why there are more calls for Rest API. But Bulk API is asynchronous, Salesforce may be busy and take more than to process those requests than synchronous calls.
 
 # Commands
 
