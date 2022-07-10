@@ -103,10 +103,10 @@ export class Exporter {
 
 			soql += "SELECT " + org.discovery.getFields(sObjName) + " ";
 			soql += "FROM " + sObjName + " ";
-			if (sObjSettings.where != null) {
+			if (sObjSettings.where != null && sObjSettings.where !== "") {
 				soql += "WHERE " + sObjSettings.where + " ";
 			}
-			if (sObjSettings.orderBy != null) {
+			if (sObjSettings.orderBy != null && sObjSettings.orderBy !== "") {
 				soql += "ORDER BY " + sObjSettings.orderBy + " ";
 			}
 		}
