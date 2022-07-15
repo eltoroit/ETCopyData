@@ -20,7 +20,11 @@ export default class Export extends SfdxCommand {
 		const s: Settings = ETCopyData.readParameters(this.flags);
 
 		const ETCD = new ETCopyData();
-		await ETCD.exportData(s, null);
+		try {
+			await ETCD.exportData(s, null);
+		} catch (ex) {
+			throw new Error(ex);
+		}
 
 		return Util.getMyResults()[ResultOperation[ResultOperation.EXPORT]];
 	}

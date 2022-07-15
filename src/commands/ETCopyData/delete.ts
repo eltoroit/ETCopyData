@@ -22,7 +22,11 @@ export default class Delete extends SfdxCommand {
 		const s: Settings = ETCopyData.readParameters(this.flags);
 
 		const ETCD = new ETCopyData();
-		await ETCD.deleteData(s, null);
+		try {
+			await ETCD.deleteData(s, null);
+		} catch (ex) {
+			throw new Error(ex);
+		}
 
 		return Util.getMyResults()[ResultOperation[ResultOperation.DELETE]];
 	}

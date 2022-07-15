@@ -22,7 +22,11 @@ export default class Full extends SfdxCommand {
 		const s: Settings = ETCopyData.readParameters(this.flags);
 
 		const ETCD = new ETCopyData();
-		await ETCD.processAll(s);
+		try {
+			await ETCD.processAll(s);
+		} catch (ex) {
+			throw new Error(ex);
+		}
 
 		return Util.getMyResults();
 	}

@@ -20,7 +20,11 @@ export default class CompareOrgs extends SfdxCommand {
 		const s: Settings = ETCopyData.readParameters(this.flags);
 
 		const ETCD = new ETCopyData();
-		await ETCD.compareSchemas(s, null);
+		try {
+			await ETCD.compareSchemas(s, null);
+		} catch (ex) {
+			throw new Error(ex);
+		}
 
 		return Util.getMyResults()[ResultOperation[ResultOperation.SCHEMA]];
 	}

@@ -22,7 +22,11 @@ export default class Import extends SfdxCommand {
 		const s: Settings = ETCopyData.readParameters(this.flags);
 
 		const ETCD = new ETCopyData();
-		await ETCD.importData(s, null);
+		try {
+			await ETCD.importData(s, null);
+		} catch (ex) {
+			throw new Error(ex);
+		}
 
 		return Util.getMyResults()[ResultOperation[ResultOperation.IMPORT]];
 	}
