@@ -328,6 +328,9 @@ export class SchemaDiscovery {
 				}
 				if (sObjName === field.referenceTo[0] && !sObjectData.twoPassReferenceFields.includes(field.name)) {
 					localRejects.push("Recursive parenting for field references is supported, but requires the field to be configured as twoPassReferenceField");
+					if (!sObjectData.ignoreFields.includes(field.name)) {
+						Util.writeLog(`${sObj.name}.${field.name} Self-relationships are supported, but require [twoPassReferenceField]`, LogLevel.WARN);
+					}
 				}
 			} else {
 				let msg: string = "Reference, but it points to 0 or more than 1 sObject: | ";
@@ -336,10 +339,8 @@ export class SchemaDiscovery {
 				});
 				localRejects.push(msg);
 			}
-		} else {
-			if (sObjectData.twoPassReferenceFields.includes(field.name)) {
-				localRejects.push("Field [" + field.referenceTo[0] + "] is configured as twoPassReferenceField but is not a reference");
-			}
+		} else if (sObjectData.twoPassReferenceFields.includes(field.name)) {
+			localRejects.push("Field [" + field.referenceTo[0] + "] is configured as twoPassReferenceField but is not a reference");
 		}
 
 		if (this.overrideIncludeField(field.name) || localRejects.length === 0) {
