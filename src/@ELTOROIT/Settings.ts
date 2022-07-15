@@ -127,19 +127,7 @@ export class Settings implements ISettingsValues {
 		let output: ISettingsSObjectData;
 
 		if (this.getRequestedSObjectNames(false).includes(sObjName)) {
-			output = this.sObjectsDataRaw.get(sObjName);
-
-			/* HACK: START
-			Since the (ignoreFields, fieldsToExport) fields can have multiple interpretations
-			... string is written to the file
-			... string[] is used internally
-			I want to handle clone it, to avoid overriding by reference
-			Possible solutions to avoid hack:
-			- Use different variable names, but since I want to implement an interface it can't be private
-			- Have the interface be the array and then a *Raw to be the string
-			*/
-			output = JSON.parse(JSON.stringify(output));
-			// HACK: END
+			output = { ...this.sObjectsDataRaw.get(sObjName) };
 
 			// Fix fields
 			output.ignoreFields = Util.mergeAndCleanArrays(output.ignoreFields as string, this.ignoreFieldsRaw);
@@ -642,6 +630,11 @@ export class Settings implements ISettingsValues {
 
 				if (isVerbose) {
 					if (["ignoreFields", "twoPassReferenceFields", "fieldsToExport"].includes(fieldName)) {
+						// Remove global fields so they do not get written
+						if (["ignoreFields", "twoPassReferenceFields"].includes(fieldName)) {
+							const raw: string[] = Util.mergeAndCleanArrays(this[`${fieldName}Raw`], "");
+							value = value.filter((each) => !raw.includes(each));
+						}
 						value = value.toString();
 					}
 				} else {
