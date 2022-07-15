@@ -70,7 +70,9 @@ export class SchemaDiscovery {
 					// Report on any sObject requested which is not in the Org.
 					this.orgManager.settings.getRequestedSObjectNames(false).forEach((requestedObject: string) => {
 						if (!allSObjectNames.includes(requestedObject)) {
-							reject("Requested sObject [" + requestedObject + "] was not found in the Org");
+							const msg = `Requested sObject ${requestedObject} was not found in the Org`;
+							Util.writeLog(msg, LogLevel.FATAL);
+							reject(msg);
 						}
 					});
 
