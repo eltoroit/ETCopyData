@@ -111,6 +111,7 @@ export class SchemaDiscovery {
 			const sObj: ISchemaData = this.privSObjects.get(sObjName);
 
 			const msgs = [];
+			sObj.rejectedFields = [];
 			sObj.fields = sObj.fields.filter((fieldName: string) => {
 				const isGood = !fieldNamesToRemove.includes(fieldName);
 				if (!isGood) {
@@ -118,6 +119,7 @@ export class SchemaDiscovery {
 					msg = `[${this.orgManager.alias}] Field [${sObjName + "." + fieldName}] ignored because Org mismatch`;
 					msgs.push(msg);
 					Util.writeLog(msg, LogLevel.TRACE);
+					sObj.rejectedFields.push(fieldName);
 				}
 				return isGood;
 			});

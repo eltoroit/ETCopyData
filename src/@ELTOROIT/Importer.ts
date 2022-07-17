@@ -298,6 +298,39 @@ export class Importer {
 			});
 		};
 
+		const cleanData = (recordsToProcess): any[] => {
+			let cleaned = recordsToProcess;
+			const sObjSource = orgSource.discovery.privSObjects.get(sObjName);
+			const sObjDestination = orgDestination.discovery.privSObjects.get(sObjName);
+			const sObjSourceRejects = sObjSource.rejectedFields ? sObjSource.rejectedFields : [];
+			const sObjDestinationRejects = sObjDestination.rejectedFields ? sObjDestination.rejectedFields : [];
+			const allRejects: Set<string> = new Set(sObjSourceRejects.concat(sObjDestinationRejects));
+			if (allRejects.size > 0) {
+				const fieldsCleaned: Map<String, number> = new Map();
+				cleaned = recordsToProcess.map((record) => {
+					const newRecord = {};
+					// eslint-disable-next-line guard-for-in
+					for (const field in record) {
+						if (record[field]) {
+							if (allRejects.has(field)) {
+								let count = 0;
+								if (fieldsCleaned.has(field)) count = fieldsCleaned.get(field);
+								fieldsCleaned.set(field, count + 1);
+								// console.log(`Skipped ${sObjName}.${field}`);
+							} else {
+								newRecord[field] = record[field];
+							}
+						}
+					}
+					return newRecord;
+				});
+				for (const [field, count] of fieldsCleaned) {
+					Util.writeLog(`[${orgDestination.alias}] Field [${sObjName}.${field}] has been removed from [${count}] records because they can't be loaded`, LogLevel.WARN);
+				}
+			}
+			return cleaned;
+		};
+
 		return new Promise((resolve, reject) => {
 			readFileAndUpdateIds()
 				.then((records) => {
@@ -306,8 +339,8 @@ export class Importer {
 					} else {
 						this.matchingIds.set(sObjName, new Map<string, string>());
 						const operation = orgDestination.settings.getSObjectData(sObjName).externalIdField ? "upsert" : "insert";
-						const recordsProcessed = this.getRecordsForOperation(records, operation);
-						DataAPI.upsert(orgDestination, operation, sObjName, recordsProcessed, this.matchingIds, orgDestination.settings.getSObjectData(sObjName).externalIdField || null)
+						const recordsToProcess = cleanData(this.getRecordsForOperation(records, operation));
+						DataAPI.upsert(orgDestination, operation, sObjName, recordsToProcess, this.matchingIds, orgDestination.settings.getSObjectData(sObjName).externalIdField || null)
 							.then((badCount) => {
 								this.countImportErrorsRecords += badCount;
 								resolve(badCount);

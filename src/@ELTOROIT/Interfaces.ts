@@ -3,6 +3,7 @@ interface ISchemaBase2 {
 	name: string;
 	label: string;
 	fields: string[];
+	rejectedFields: string[];
 	describeUrl: string;
 	keyPrefix: string;
 	orderBy: string;
