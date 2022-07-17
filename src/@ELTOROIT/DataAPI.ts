@@ -36,7 +36,7 @@ function countRecords(org: OrgManager, sObjName: string, operation: string, SOQL
 			.on("end", () => {
 				const data: any = query;
 				msg = `[${org.alias}] Counted [${data.totalSize}] [${sObjName}] records (${operation})`;
-				Util.writeLog(msg, LogLevel.INFO);
+				Util.writeLog(msg, LogLevel.DEBUG);
 				resolve(data.totalSize);
 			})
 			.on("error", (err) => {
@@ -454,7 +454,7 @@ class JsRest {
 								}
 							});
 							msg = `[${org.alias}] Deleting records from [${sObjName}] [Good: ${total.good}, bad: ${total.bad}] ${progress(total.good + total.bad, total.totalSize)}`;
-							Util.writeLog(msg, LogLevel.INFO);
+							Util.writeLog(msg, LogLevel.DEBUG);
 							resolve(chunk);
 						})
 						.catch((err) => {
@@ -480,14 +480,14 @@ class JsRest {
 							if (chunks.length >= chunkSize) {
 								allChunks.push(chunks);
 								msg = `[${org.alias}] Querying [${sObjName}] records to be deleted. [${allChunks.length * chunkSize}] ${progress(allChunks.length * chunkSize, totalSize)}`;
-								Util.writeLog(msg, LogLevel.INFO);
+								Util.writeLog(msg, LogLevel.DEBUG);
 								chunks = [];
 							}
 						})
 						.on("end", () => {
 							msg = `[${org.alias}] Queried [${allChunks.length * chunkSize + chunks.length}] [${sObjName}] records to be deleted.`;
 							allChunks.push(chunks);
-							Util.writeLog(msg, LogLevel.INFO);
+							Util.writeLog(msg, LogLevel.DEBUG);
 							resolve(allChunks);
 						})
 						.on("error", (err) => {
@@ -565,7 +565,7 @@ class JsRest {
 				}
 			}
 			msg = `[${org.alias}] Importing [${sObjName}] records ${progress(total.good + total.bad, allRecords.length)}`;
-			Util.writeLog(msg, LogLevel.INFO);
+			Util.writeLog(msg, LogLevel.DEBUG);
 		};
 
 		const upsertChunk = (chunk: any[]): Promise<any> => {
@@ -700,7 +700,7 @@ class JsRest {
 						})
 						.on("end", () => {
 							msg = `[${org.alias}] Queried [${sObjName}], retrieved ${records.length} records `;
-							Util.writeLog(msg, LogLevel.INFO);
+							Util.writeLog(msg, LogLevel.DEBUG);
 							Util.logResultsAdd(org, ResultOperation.EXPORT, sObjName, records.length, 0);
 							const data: IExportData = mapRecordsFetched.get(sObjName);
 							data.total = query.totalSize;

@@ -331,7 +331,7 @@ export class SchemaDiscovery {
 				if (sObjName === field.referenceTo[0] && !sObjectData.twoPassReferenceFields.includes(field.name)) {
 					localRejects.push("Recursive parenting for field references is supported, but requires the field to be configured as twoPassReferenceField");
 					if (!sObjectData.ignoreFields.includes(field.name)) {
-						Util.writeLog(`${sObj.name}.${field.name} Self-relationships are supported, but require [twoPassReferenceField]`, LogLevel.WARN);
+						Util.writeLog(`${sObj.name}.${field.name} Self-relationships are supported, but require [twoPassReferenceField]`, LogLevel.INFO);
 					}
 				}
 			} else {
