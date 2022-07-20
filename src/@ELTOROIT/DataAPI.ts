@@ -442,10 +442,11 @@ class JsRest {
 				if (chunk.length === 0) {
 					resolve(chunk);
 				} else {
-					org.conn
+					const orgConn: any = org.conn;
+					orgConn
 						.sobject(sObjName)
 						.destroy(chunk, true)
-						.then((rets) => {
+						.then((rets: any[]) => {
 							rets.forEach((ret) => {
 								total[ret.success ? "good" : "bad"]++;
 								if (!ret.success) {
@@ -473,7 +474,8 @@ class JsRest {
 				} else {
 					let chunks = [];
 					const allChunks = [];
-					const query: any = org.conn
+					const orgConn: any = org.conn;
+					orgConn
 						.query(`SELECT Id FROM ${sObjName}`)
 						.on("record", (record) => {
 							chunks.push(record.Id);

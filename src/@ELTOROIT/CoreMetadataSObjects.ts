@@ -3,7 +3,7 @@ import { ISettingsSObjectMetatada, Settings } from "./Settings";
 
 export class CoreMetadataSObjects {
 	private settings: Settings;
-	private metadataSobjects: Map<string, ISchemaMetadata> = null;
+	private metadataSobjects: Map<string, any> = null;
 
 	public constructor(settings: Settings) {
 		this.settings = settings;
@@ -82,7 +82,7 @@ export class CoreMetadataSObjects {
 
 	private makeMetadata(): void {
 		if (this.metadataSobjects == null) {
-			this.metadataSobjects = new Map<string, ISchemaMetadata>();
+			this.metadataSobjects = new Map<string, any>();
 			this.settings.getRequestedSObjectNames(true).forEach((sObjName: string) => {
 				const sObj: ISettingsSObjectMetatada = this.settings.getSObjectMetadata(sObjName);
 				const fieldList: string[] = sObj.fieldsToExport as string[];

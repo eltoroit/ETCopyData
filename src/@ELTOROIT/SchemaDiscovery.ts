@@ -14,7 +14,7 @@ export class SchemaDiscovery {
 	private allRejects = {};
 	private orgManager: OrgManager;
 	private allFields: Map<string, string[]> = null;
-	private privSObjects: Map<string, ISchemaData> = null;
+	public privSObjects: Map<string, any> = null;
 
 	constructor(orgManager: OrgManager) {
 		this.orgManager = orgManager;
