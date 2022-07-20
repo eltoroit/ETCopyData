@@ -427,6 +427,9 @@ export class ETCopyData {
 		const orgDomain: string = orgLoginUrl.split("/")[2];
 		const isProductionOrg: boolean = orgDomain.toUpperCase() === productionLoginUrl.toUpperCase();
 
+		// REMOVE THIS COMMENT TO ALLOW PRODUCTION DATA MODIFICATIONS (DANGEROUS)
+		// return;
+
 		// RESOLVE: If destination org a production org
 		if (isProductionOrg) {
 			// Continue checking
