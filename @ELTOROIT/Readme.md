@@ -11,7 +11,7 @@
     - `npm audit`
 6. Create a valid **@ELTOROIT/data/ETCopyData.json** file
 
-Other useful node tools:
+# Other useful node tools:
 
 -   npmvet
 -   ncu
@@ -30,10 +30,15 @@ https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_plugins.meta/sfdx_cli
 
 ### Testing without installing it
 
--   `NODE_OPTIONS=--inspect-brk bin/run ETCopyData:export -c "./@ELTOROIT/data" --loglevel trace --json`
--   `NODE_OPTIONS=--inspect-brk bin/run ETCopyData:import -c "./@ELTOROIT/data" --loglevel trace --json`
--   `NODE_OPTIONS=--inspect-brk bin/run ETCopyData:export -c "/Users/aperez/DO NOT BACKUP/GitProjects/Content Recommendation/COE2/@ELTOROIT/data" --loglevel trace --json`
--   `NODE_OPTIONS=--inspect-brk bin/run ETCopyData:export -c "/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data" --loglevel trace --json`
+- Commands
+    - ETCopyData:compare
+    - ETCopyData:delete
+    - ETCopyData:export
+    - ETCopyData:full
+    - ETCopyData:import
+
+- `NODE_OPTIONS=--inspect bin/dev ETCopyData:*** -c "./@ELTOROIT/data" --loglevel trace --json`
+- `NODE_OPTIONS=--inspect-brk bin/dev ETCopyData:compare -c "/Users/aperez/GitProjects/current/MyScratchOrg/@ELTOROIT/data" --loglevel trace --json`
 
 # How to Install Plugin
 
@@ -43,7 +48,7 @@ https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_plugins.meta/sfdx_cli
 ## Install different versions
 
 -   Link the code without installing it:
-    -   `sfdx plugins:link -v`
+    -   `sfdx plugins:link --verbose`
 -   Released:
     -   `echo 'y' | sfdx plugins:install etcopydata`
 -   Beta:
@@ -76,11 +81,11 @@ Plugin can be found here: https://www.npmjs.com/package/etcopydata/
 
 # Compile
 
+-   rm -r node_modules
 -   npm install
--   clear && rm -r node_modules && npm install
--   clear && npm run prepare && yarn run prepare
--   clear && sfdx plugins:link -v
--   clear && npm publish ./ --tag beta
+-   npm run build 
+-   npm run prepack 
+-   sfdx plugins:link --verbose
 
 # Proxy (Charles)
 
@@ -90,7 +95,6 @@ Plugin can be found here: https://www.npmjs.com/package/etcopydata/
         -   \*.salesforce.com
     -   Proxy > Proxy Settings > HTTP Proxy > Port: 8888
 -   Setting the proxy
-    -   `HTTP_PROXY=http://127.0.0.1:8888 NODE_TLS_REJECT_UNAUTHORIZED=0 bin/run ETCopyData:delete -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json`
+    -   `HTTP_PROXY=http://127.0.0.1:8888 NODE_TLS_REJECT_UNAUTHORIZED=0 bin/dev ETCopyData:delete -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json`
         -   NODE_TLS_REJECT_UNAUTHORIZED=0
             -   Avoids this error: Error: self signed certificate in certificate chain
--   x

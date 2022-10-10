@@ -1,90 +1,69 @@
 {
-	"name": "etcopydata",
-	"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
-	"version": "2.0.3",
-	"author": "Andres Perez @ElToroIT",
-	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
-	"dependencies": {
-		"@oclif/command": "1.8.16",
-		"@oclif/config": "1.18.3",
-		"@oclif/errors": "1.3.5",
-		"@salesforce/command": "5.2.1",
-		"@salesforce/core": "2.37.1",
-		"mkdirp": "1.0.4",
-		"tslib": "2.4.0"
-	},
-	"devDependencies": {
-		"@oclif/dev-cli": "1.26.10",
-		"@oclif/plugin-help": "5.1.12",
-		"@oclif/test": "2.1.0",
-		"@salesforce/dev-config": "3.0.1",
-		"@salesforce/dev-scripts": "2.0.3",
-		"@salesforce/prettier-config": "0.0.2",
-		"@salesforce/ts-sinon": "1.3.21",
-		"@types/chai": "4.3.1",
-		"@types/jsforce": "1.9.42",
-		"@types/mocha": "9.1.1",
-		"@typescript-eslint/eslint-plugin": "5.30.5",
-		"@typescript-eslint/parser": "5.30.5",
-		"chai": "4.3.6",
-		"eslint": "8.19.0",
-		"eslint-config-oclif": "4.0.0",
-		"eslint-config-prettier": "8.5.0",
-		"eslint-config-salesforce": "1.0.2",
-		"eslint-config-salesforce-typescript": "1.0.0",
-		"eslint-plugin-header": "3.1.1",
-		"eslint-plugin-import": "2.26.0",
-		"eslint-plugin-jsdoc": "39.3.3",
-		"eslint-plugin-prettier": "4.2.1",
-		"eslint-plugin-typescript": "0.14.0",
-		"globby": "^11",
-		"husky": "8.0.1",
-		"mocha": "10.0.0",
-		"nyc": "15.1.0",
-		"prettier": "2.7.1",
-		"pretty-quick": "3.1.3",
-		"sinon": "14.0.0",
-		"ts-node": "10.8.2",
-		"typescript": "4.7.4"
-	},
-	"engines": {
-		"node": ">=14.0.0"
-	},
-	"files": [
-		"/lib",
-		"/messages",
-		"/npm-shrinkwrap.json",
-		"/oclif.manifest.json"
-	],
-	"homepage": "https://github.com/eltoroit/ETCopyData",
-	"keywords": [
-		"sfdx-plugin"
-	],
-	"license": "MIT",
-	"oclif": {
-		"commands": "./lib/commands",
-		"topics": {
-			"ETCopyData": {
-				"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.y data from an org to a scratch org."
-			}
-		},
-		"bin": "sfdx",
-		"devPlugins": [
-			"@oclif/plugin-help"
-		]
-	},
-	"repository": "https://github.com/eltoroit/ETCopyData",
-	"scripts": {
-		"build": "tsc -p .",
-		"lint": "eslint src/**/*.ts test/**/*.ts",
-		"postpack": "rm -f oclif.manifest.json",
-		"posttest": "eslint src/**/*.ts test/**/*.ts",
-		"prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
-		"test": "nyc --extension .ts --require ts-node/register mocha --forbid-only \"test/**/*.test.ts\"",
-		"version": "oclif-dev readme && git add README.md",
-		"test:delete": "bin/run ETCopyData:delete -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json",
-		"test:export": "bin/run ETCopyData:export -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json",
-		"test:import": "bin/run ETCopyData:import -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json",
-		"test:import:proxy": "HTTP_PROXY=http://127.0.0.1:8888 NODE_TLS_REJECT_UNAUTHORIZED=0 bin/run ETCopyData:import -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json"
-	}
+  "name": "etcopydata",
+  "description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
+  "version": "2.1.0",
+  "author": "Andres Perez @ElToroIT",
+  "bugs": "https://github.com/eltoroit/ETCopyData/issues",
+  "dependencies": {
+    "@oclif/core": "^1",
+    "@salesforce/command": "^5",
+    "@salesforce/core": "^3",
+    "tslib": "^2"
+  },
+  "devDependencies": {
+    "@oclif/test": "^2",
+    "@salesforce/ts-sinon": "^1",
+    "@types/chai": "^4",
+    "@types/mocha": "^8",
+    "@typescript-eslint/eslint-plugin": "^4",
+    "@typescript-eslint/parser": "^4",
+    "chai": "^4",
+    "eslint": "^7",
+    "eslint-config-prettier": "^8",
+    "eslint-plugin-header": "^3",
+    "eslint-plugin-import": "^2",
+    "eslint-plugin-jsdoc": "^35",
+    "eslint-plugin-prettier": "^3",
+    "eslint-plugin-typescript": "^0",
+    "mocha": "^9",
+    "nyc": "^15",
+    "oclif": "^3",
+    "prettier": "^2",
+    "sinon": "10.0.0",
+    "ts-node": "^10",
+    "typescript": "4"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "/lib",
+    "/messages",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/eltoroit/ETCopyData",
+  "keywords": [
+    "sfdx-plugin"
+  ],
+  "license": "MIT",
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "sfdx",
+    "topics": {
+      "ETCopyData": {
+        "description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.y data from an org to a scratch org."
+      }
+    }
+  },
+  "repository": "https://github.com/eltoroit/ETCopyData",
+  "scripts": {
+    "build": "tsc -p .",
+    "lint": "eslint src/**/*.ts test/**/*.ts",
+    "postpack": "rm -f oclif.manifest.json",
+    "posttest": "eslint src/**/*.ts test/**/*.ts",
+    "prepack": "rm -rf lib && tsc -b && oclif manifest && oclif readme",
+    "test": "nyc --extension .ts --require ts-node/register mocha --forbid-only \"test/**/*.test.ts\"",
+    "version": "oclif readme && git add README.md"
+  }
 }
