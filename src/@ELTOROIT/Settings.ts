@@ -1,5 +1,4 @@
 import * as fsPromises from "fs/promises";
-import mkdirp from "mkdirp";
 import { ConfigContents, ConfigFile } from "@salesforce/core";
 import { AnyJson, Dictionary } from "@salesforce/ts-types";
 import { WhichOrg } from "./OrgManager";
@@ -51,6 +50,10 @@ export interface ISettingsValues {
 	// LEARNING: Salesforce default is 10,000
 	bulkPollingTimeout: number;
 	rootFolderRaw: string;
+}
+
+function mkdirp(path: string): Promise<string> {
+	return fsPromises.mkdir(path, { recursive: true });
 }
 
 export class Settings implements ISettingsValues {

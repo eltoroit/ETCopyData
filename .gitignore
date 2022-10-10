@@ -1,13 +1,9 @@
-.DS_Store
 *-debug.log
 *-error.log
 /.nyc_output
 /dist
 /lib
 /tmp
+node_modules
 /package-lock.json
-/node_modules
-@ELTOROIT/data
-ETCopyData.json
-# "Tab separated values" files
-*.tsv
+/yarn.lock

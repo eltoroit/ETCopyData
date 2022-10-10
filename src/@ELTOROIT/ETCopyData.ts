@@ -1,7 +1,7 @@
 const fse = require("fs-extra");
 const path = require("path");
 // import { fs } from "@salesforce/core";
-import { OutputFlags } from "@oclif/parser";
+// import { OutputFlags } from "@oclif/parser";
 import { flags, UX } from "@salesforce/command";
 import { CoreMetadataSObjects } from "./CoreMetadataSObjects";
 import { Exporter } from "./Exporter";
@@ -36,7 +36,7 @@ export class ETCopyData {
 		})
 	};
 
-	public static setLogs(params: OutputFlags<any>, ux: UX, processName: string, config: any): void {
+	public static setLogs(params: any, ux: UX, processName: string, config: any): void {
 		// Set log level based on parameters
 		if (!params.loglevel) {
 			params.loglevel = "TRACE";
@@ -56,7 +56,7 @@ export class ETCopyData {
 		}
 	}
 
-	public static readParameters(params: OutputFlags<any>): Settings {
+	public static readParameters(params: any): Settings {
 		const s: Settings = new Settings();
 		s.orgAliases = new Map<WhichOrg, string>();
 

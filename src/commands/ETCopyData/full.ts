@@ -1,10 +1,8 @@
-import { SfdxCommand } from "@salesforce/command";
-import { Result } from "@salesforce/command/lib/sfdxCommand";
+import { SfdxCommand, Result } from '@salesforce/command';
 import { ETCopyData } from "../../@ELTOROIT/ETCopyData";
 import { Settings } from "../../@ELTOROIT/Settings";
 import { Util } from "../../@ELTOROIT/Util";
 
-// TODO: Read the settings, and then override them with any parameters.
 export default class Full extends SfdxCommand {
 	public static result: Partial<Result> = Util.getLogsTable();
 	public static description =

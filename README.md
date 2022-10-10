@@ -11,7 +11,7 @@ SFDX Plugin to populate your scratch org and/or developer sandbox with data extr
 * [Documentation](#documentation)
 * [Commands](#commands)
 <!-- tocstop -->
-        <!-- ET-AUTO-STOP: This section is auto-updated... -->
+<!-- ET-AUTO-STOP: This section is auto-updated... -->
 
 # Install
 
@@ -236,26 +236,26 @@ Checks the source and destination org for any differences in the sObject's metad
 
 ```
 USAGE
-  $ sfdx ETCopyData:compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sfdx ETCopyData:compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
-OPTIONS
+FLAGS
   -c, --configfolder=PATH                                                           Root folder to find the
                                                                                     configuration file
-
   -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
                                                                                     DESTINATION org
-
   -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
                                                                                     SOURCE org
-
   --json                                                                            format output as json
-
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
                                                                                     this command invocation
+
+DESCRIPTION
+  Checks the source and destination org for any differences in the sObject's metadata, this helps determine what data
+  can be properly exported/imported.
 ```
 
-_See code: [src/commands/ETCopyData/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v2.0.3/src/commands/ETCopyData/compare.ts)_
+_See code: [src/commands/ETCopyData/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.0/src/commands/ETCopyData/compare.ts)_
 
 ## `sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -263,26 +263,26 @@ Deletes data from destination org, preparing for the new data that will be uploa
 
 ```
 USAGE
-  $ sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
-OPTIONS
+FLAGS
   -c, --configfolder=PATH                                                           Root folder to find the
                                                                                     configuration file
-
   -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
                                                                                     DESTINATION org
-
   -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
                                                                                     SOURCE org
-
   --json                                                                            format output as json
-
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
                                                                                     this command invocation
+
+DESCRIPTION
+  Deletes data from destination org, preparing for the new data that will be uploaded. Note: Deleting optionally happens
+  before loading, but if there are some errors this operation can be retried by itself.
 ```
 
-_See code: [src/commands/ETCopyData/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v2.0.3/src/commands/ETCopyData/delete.ts)_
+_See code: [src/commands/ETCopyData/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.0/src/commands/ETCopyData/delete.ts)_
 
 ## `sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -290,26 +290,26 @@ Exports the data from the source org, and saves it in the destination folder so 
 
 ```
 USAGE
-  $ sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
-OPTIONS
+FLAGS
   -c, --configfolder=PATH                                                           Root folder to find the
                                                                                     configuration file
-
   -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
                                                                                     DESTINATION org
-
   -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
                                                                                     SOURCE org
-
   --json                                                                            format output as json
-
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
                                                                                     this command invocation
+
+DESCRIPTION
+  Exports the data from the source org, and saves it in the destination folder so that it can be imported at a later
+  time.
 ```
 
-_See code: [src/commands/ETCopyData/export.ts](https://github.com/eltoroit/ETCopyData/blob/v2.0.3/src/commands/ETCopyData/export.ts)_
+_See code: [src/commands/ETCopyData/export.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.0/src/commands/ETCopyData/export.ts)_
 
 ## `sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -317,26 +317,26 @@ Performs all the steps, including comparing schemas, exporting data from the sou
 
 ```
 USAGE
-  $ sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
-OPTIONS
+FLAGS
   -c, --configfolder=PATH                                                           Root folder to find the
                                                                                     configuration file
-
   -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
                                                                                     DESTINATION org
-
   -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
                                                                                     SOURCE org
-
   --json                                                                            format output as json
-
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
                                                                                     this command invocation
+
+DESCRIPTION
+  Performs all the steps, including comparing schemas, exporting data from the source, optionally deleting data from the
+  destination, and importing the data to the destination org. This may help you when setting up a new process
 ```
 
-_See code: [src/commands/ETCopyData/full.ts](https://github.com/eltoroit/ETCopyData/blob/v2.0.3/src/commands/ETCopyData/full.ts)_
+_See code: [src/commands/ETCopyData/full.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.0/src/commands/ETCopyData/full.ts)_
 
 ## `sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -344,25 +344,26 @@ Imports data into destination org, you can control if the data in the destinatio
 
 ```
 USAGE
-  $ sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
-OPTIONS
+FLAGS
   -c, --configfolder=PATH                                                           Root folder to find the
                                                                                     configuration file
-
   -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
                                                                                     DESTINATION org
-
   -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
                                                                                     SOURCE org
-
   --json                                                                            format output as json
-
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
                                                                                     this command invocation
+
+DESCRIPTION
+  Imports data into destination org, you can control if the data in the destination sObjects should be removed before
+  loading a new data set. The data load happens in a specific order (children first, parents last) which has been
+  determined by checking the schema in the destination org.
 ```
 
-_See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v2.0.3/src/commands/ETCopyData/import.ts)_
+_See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.0/src/commands/ETCopyData/import.ts)_
 <!-- commandsstop -->
 <!-- ET-AUTO-STOP: This section is auto-updated... -->
