@@ -1,69 +1,69 @@
 {
-  "name": "etcopydata",
-  "description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
-  "version": "2.1.0",
-  "author": "Andres Perez @ElToroIT",
-  "bugs": "https://github.com/eltoroit/ETCopyData/issues",
-  "dependencies": {
-    "@oclif/core": "^1",
-    "@salesforce/command": "^5",
-    "@salesforce/core": "^3",
-    "tslib": "^2"
-  },
-  "devDependencies": {
-    "@oclif/test": "^2",
-    "@salesforce/ts-sinon": "^1",
-    "@types/chai": "^4",
-    "@types/mocha": "^8",
-    "@typescript-eslint/eslint-plugin": "^4",
-    "@typescript-eslint/parser": "^4",
-    "chai": "^4",
-    "eslint": "^7",
-    "eslint-config-prettier": "^8",
-    "eslint-plugin-header": "^3",
-    "eslint-plugin-import": "^2",
-    "eslint-plugin-jsdoc": "^35",
-    "eslint-plugin-prettier": "^3",
-    "eslint-plugin-typescript": "^0",
-    "mocha": "^9",
-    "nyc": "^15",
-    "oclif": "^3",
-    "prettier": "^2",
-    "sinon": "10.0.0",
-    "ts-node": "^10",
-    "typescript": "4"
-  },
-  "engines": {
-    "node": ">=14.0.0"
-  },
-  "files": [
-    "/lib",
-    "/messages",
-    "/npm-shrinkwrap.json",
-    "/oclif.manifest.json"
-  ],
-  "homepage": "https://github.com/eltoroit/ETCopyData",
-  "keywords": [
-    "sfdx-plugin"
-  ],
-  "license": "MIT",
-  "oclif": {
-    "commands": "./lib/commands",
-    "bin": "sfdx",
-    "topics": {
-      "ETCopyData": {
-        "description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.y data from an org to a scratch org."
-      }
-    }
-  },
-  "repository": "https://github.com/eltoroit/ETCopyData",
-  "scripts": {
-    "build": "tsc -p .",
-    "lint": "eslint src/**/*.ts test/**/*.ts",
-    "postpack": "rm -f oclif.manifest.json",
-    "posttest": "eslint src/**/*.ts test/**/*.ts",
-    "prepack": "rm -rf lib && tsc -b && oclif manifest && oclif readme",
-    "test": "nyc --extension .ts --require ts-node/register mocha --forbid-only \"test/**/*.test.ts\"",
-    "version": "oclif readme && git add README.md"
-  }
+	"name": "etcopydata",
+	"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
+	"version": "2.1.1",
+	"author": "Andres Perez @ElToroIT",
+	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
+	"dependencies": {
+		"@oclif/core": "^1",
+		"@salesforce/command": "^5",
+		"@salesforce/core": "^3",
+		"tslib": "^2"
+	},
+	"devDependencies": {
+		"@oclif/test": "^2",
+		"@salesforce/ts-sinon": "^1",
+		"@types/chai": "^4",
+		"@types/mocha": "^8",
+		"@typescript-eslint/eslint-plugin": "^4",
+		"@typescript-eslint/parser": "^4",
+		"chai": "^4",
+		"eslint": "^7",
+		"eslint-config-prettier": "^8",
+		"eslint-plugin-header": "^3",
+		"eslint-plugin-import": "^2",
+		"eslint-plugin-jsdoc": "^35",
+		"eslint-plugin-prettier": "^3",
+		"eslint-plugin-typescript": "^0",
+		"mocha": "^9",
+		"nyc": "^15",
+		"oclif": "^3",
+		"prettier": "^2",
+		"sinon": "10.0.0",
+		"ts-node": "^10",
+		"typescript": "4"
+	},
+	"engines": {
+		"node": ">=14.0.0"
+	},
+	"files": [
+		"/lib",
+		"/messages",
+		"/npm-shrinkwrap.json",
+		"/oclif.manifest.json"
+	],
+	"homepage": "https://github.com/eltoroit/ETCopyData",
+	"keywords": [
+		"sfdx-plugin"
+	],
+	"license": "MIT",
+	"oclif": {
+		"commands": "./lib/commands",
+		"bin": "sfdx",
+		"topics": {
+			"ETCopyData": {
+				"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.y data from an org to a scratch org."
+			}
+		}
+	},
+	"repository": "https://github.com/eltoroit/ETCopyData",
+	"scripts": {
+		"build": "tsc -p .",
+		"lint": "eslint src/**/*.ts test/**/*.ts",
+		"postpack": "rm -f oclif.manifest.json",
+		"posttest": "eslint src/**/*.ts test/**/*.ts",
+		"prepack": "rm -rf lib && tsc -b && oclif manifest && oclif readme",
+		"test": "nyc --extension .ts --require ts-node/register mocha --forbid-only \"test/**/*.test.ts\"",
+		"version": "oclif readme && git add README.md"
+	}
 }

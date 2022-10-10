@@ -255,7 +255,7 @@ DESCRIPTION
   can be properly exported/imported.
 ```
 
-_See code: [src/commands/ETCopyData/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.0/src/commands/ETCopyData/compare.ts)_
+_See code: [src/commands/ETCopyData/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/compare.ts)_
 
 ## `sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -282,7 +282,7 @@ DESCRIPTION
   before loading, but if there are some errors this operation can be retried by itself.
 ```
 
-_See code: [src/commands/ETCopyData/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.0/src/commands/ETCopyData/delete.ts)_
+_See code: [src/commands/ETCopyData/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/delete.ts)_
 
 ## `sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -309,7 +309,7 @@ DESCRIPTION
   time.
 ```
 
-_See code: [src/commands/ETCopyData/export.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.0/src/commands/ETCopyData/export.ts)_
+_See code: [src/commands/ETCopyData/export.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/export.ts)_
 
 ## `sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -336,7 +336,7 @@ DESCRIPTION
   destination, and importing the data to the destination org. This may help you when setting up a new process
 ```
 
-_See code: [src/commands/ETCopyData/full.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.0/src/commands/ETCopyData/full.ts)_
+_See code: [src/commands/ETCopyData/full.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/full.ts)_
 
 ## `sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -364,6 +364,6 @@ DESCRIPTION
   determined by checking the schema in the destination org.
 ```
 
-_See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.0/src/commands/ETCopyData/import.ts)_
+_See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/import.ts)_
 <!-- commandsstop -->
 <!-- ET-AUTO-STOP: This section is auto-updated... -->
