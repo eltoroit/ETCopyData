@@ -140,7 +140,7 @@ export class ETCopyData {
 				});
 		}
 		return new Promise((resolve, reject) => {
-			this.initializeETCopy(overrideSettings, data)
+			this.initializeETCopy(overrideSettings, data, true)
 				.then((value: IETCopyData) => {
 					data = value;
 				})
@@ -366,7 +366,7 @@ export class ETCopyData {
 		});
 	}
 
-	private initializeETCopy(overrideSettings: Settings, data: IETCopyData): Promise<IETCopyData> {
+	private initializeETCopy(overrideSettings: Settings, data: IETCopyData, isExport: Boolean = false): Promise<IETCopyData> {
 		return new Promise((resolve, reject) => {
 			if (data) {
 				resolve(data);
@@ -390,7 +390,11 @@ export class ETCopyData {
 						return this.setupOrg(data, WhichOrg.DESTINATION);
 					})
 					.then(() => {
-						return this.makeSureThisOrgIsSafe(data, data.orgs.get(WhichOrg.DESTINATION));
+						if (isExport) {
+							return Promise.resolve();
+						} else {
+							return this.makeSureThisOrgIsSafe(data, data.orgs.get(WhichOrg.DESTINATION));
+						}
 					})
 					.then(() => {
 						return this.setupOrg(data, WhichOrg.SOURCE);
