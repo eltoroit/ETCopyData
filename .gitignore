@@ -8,3 +8,4 @@ node_modules
 /package-lock.json
 /yarn.lock
 oclif.manifest.json
+.DS_Store
