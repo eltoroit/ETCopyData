@@ -311,23 +311,25 @@ export class Importer {
 				const newRecord = {};
 				// eslint-disable-next-line guard-for-in
 				for (const field in record) {
-					if (record[field]) {
-						let dirtyReason = null;
-						if (allRejects.has(field)) {
-							dirtyReason = "NOT_IN_SOURCE";
-						} else if (!allDestinationFields.has(field)) {
-							dirtyReason = "NOT_IN_DESTINATION";
-						}
-						if (dirtyReason) {
-							let count = 0;
-							if (fieldsCleaned.has(field)) count = fieldsCleaned.get(field);
-							if (count === 0) {
-								Util.writeLog(`[${orgDestination.alias}] Field [${sObjName}.${field}] has been removed because [${dirtyReason}]`, LogLevel.WARN);
+					if (field !== "attributes") {
+						if (record[field]) {
+							let dirtyReason = null;
+							if (allRejects.has(field)) {
+								dirtyReason = "NOT_IN_SOURCE";
+							} else if (!allDestinationFields.has(field)) {
+								dirtyReason = "NOT_IN_DESTINATION";
 							}
-							fieldsCleaned.set(field, count + 1);
-						} else {
-							// Add it
-							newRecord[field] = record[field];
+							if (dirtyReason) {
+								let count = 0;
+								if (fieldsCleaned.has(field)) count = fieldsCleaned.get(field);
+								if (count === 0) {
+									Util.writeLog(`[${orgDestination.alias}] Field [${sObjName}.${field}] has been removed because [${dirtyReason}]`, LogLevel.WARN);
+								}
+								fieldsCleaned.set(field, count + 1);
+							} else {
+								// Add it
+								newRecord[field] = record[field];
+							}
 						}
 					}
 				}
