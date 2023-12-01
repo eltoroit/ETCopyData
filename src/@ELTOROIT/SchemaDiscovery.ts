@@ -252,9 +252,9 @@ export class SchemaDiscovery {
 			if (!sObj.queryable) {
 				localRejects.push("Must be queryable");
 			}
-			if (!sObj.replicateable) {
-				localRejects.push("Must be replicateable");
-			}
+			// if (!sObj.replicateable) {
+			// 	localRejects.push("Must be replicateable");
+			// }
 			if (!sObj.retrieveable) {
 				localRejects.push("Must be retrieveable");
 			}
