@@ -6,12 +6,13 @@ SFDX Plugin to populate your scratch org and/or developer sandbox with data extr
 
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- toc -->
-* [ETCopyData](#etcopydata)
-* [Install](#install)
-* [Documentation](#documentation)
-* [Commands](#commands)
-<!-- tocstop -->
-<!-- ET-AUTO-STOP: This section is auto-updated... -->
+
+-   [ETCopyData](#etcopydata)
+-   [Install](#install)
+-   [Documentation](#documentation)
+-   [Commands](#commands)
+    <!-- tocstop -->
+    <!-- ET-AUTO-STOP: This section is auto-updated... -->
 
 # Install
 
@@ -28,6 +29,16 @@ You'll be prompted that this, like any plugin, is not officially code-signed by 
 3. Change directory `cd ETCopyData`
 4. Install npm modules: `npm install --production`
 5. Link the plugin: `sfdx plugins:link .`
+
+## 2024-03-12 Update
+
+The SFDX architecture changed, and I have not had the time to fix the error. But there is a way out, so I have been using this as a solution in the mean time. I will try to find some time and fix this properly, but in the mean time this is how you can solve this. I kow this is not the best answer... but it's an answer :-)
+
+1. Install SFDX CLI in your project: `npm i sfdx-cli@7.209.6`
+2. Use the local SFDX version with ETCopyData
+    - Export Data: "./node_modules/sfdx-cli/bin/run ETCopyData export --configfolder ./@ELTOROIT/data --loglevel trace --json",
+    - Import Data: "./node_modules/sfdx-cli/bin/run ETCopyData import --configfolder ./@ELTOROIT/data --loglevel trace --json",
+    - Delete Data: "./node_modules/sfdx-cli/bin/run ETCopyData delete --configfolder ./@ELTOROIT/data --loglevel trace --json"
 
 # Documentation
 
@@ -231,31 +242,33 @@ Since the idea of this tool is to copy data between orgs, it could be possible t
 
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- commands -->
-- [ETCopyData](#etcopydata)
-- [Install](#install)
-  - [Install as plugin](#install-as-plugin)
-  - [Install from source](#install-from-source)
-- [Documentation](#documentation)
-  - [ETCopyData.json](#etcopydatajson)
-    - [Sample](#sample)
-    - [Fields](#fields)
-  - [sObjectsData](#sobjectsdata)
-    - [Sample: Minimum fields required](#sample-minimum-fields-required)
-    - [Sample: All fields complete](#sample-all-fields-complete)
-    - [Fields](#fields-1)
-  - [sObjectsMetadata](#sobjectsmetadata)
-    - [Sample: Minimum fields required](#sample-minimum-fields-required-1)
-    - [Sample: All fields complete](#sample-all-fields-complete-1)
-    - [Fields](#fields-2)
-  - [References](#references)
-  - [Copying to production](#copying-to-production)
-  - [Notes:](#notes)
-- [Commands](#commands)
-  - [`sfdx ETCopyData:compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatacompare--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-  - [`sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatadelete--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-  - [`sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataexport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-  - [`sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatafull--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-  - [`sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataimport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+
+-   [ETCopyData](#etcopydata)
+-   [Install](#install)
+    -   [Install as plugin](#install-as-plugin)
+    -   [Install from source](#install-from-source)
+    -   [2024-03-12 Update](#2024-03-12-update)
+-   [Documentation](#documentation)
+    -   [ETCopyData.json](#etcopydatajson)
+        -   [Sample](#sample)
+        -   [Fields](#fields)
+    -   [sObjectsData](#sobjectsdata)
+        -   [Sample: Minimum fields required](#sample-minimum-fields-required)
+        -   [Sample: All fields complete](#sample-all-fields-complete)
+        -   [Fields](#fields-1)
+    -   [sObjectsMetadata](#sobjectsmetadata)
+        -   [Sample: Minimum fields required](#sample-minimum-fields-required-1)
+        -   [Sample: All fields complete](#sample-all-fields-complete-1)
+        -   [Fields](#fields-2)
+    -   [References](#references)
+    -   [Copying to production](#copying-to-production)
+    -   [Notes:](#notes)
+-   [Commands](#commands)
+    -   [`sfdx ETCopyData:compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatacompare--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+    -   [`sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatadelete--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+    -   [`sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataexport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+    -   [`sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatafull--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+    -   [`sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataimport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
 ## `sfdx ETCopyData:compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -392,5 +405,6 @@ DESCRIPTION
 ```
 
 _See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/import.ts)_
+
 <!-- commandsstop -->
 <!-- ET-AUTO-STOP: This section is auto-updated... -->
