@@ -22,23 +22,27 @@ SFDX Plugin to populate your scratch org and/or developer sandbox with data extr
 
 You'll be prompted that this, like any plugin, is not officially code-signed by Salesforce. If that's annoying, you can [whitelist it](https://developer.salesforce.com/blogs/2017/10/salesforce-dx-cli-plugin-update.html)
 
-## Install from source
-
-1. Install the SDFX CLI.
-2. Clone the repository: `git clone https://github.com/eltoroit/ETCopyData.git`
-3. Change directory `cd ETCopyData`
-4. Install npm modules: `npm install --production`
-5. Link the plugin: `sfdx plugins:link .`
-
 ## 2024-03-12 Update
 
-The SFDX architecture changed, and I have not had the time to fix the error. But there is a way out, so I have been using this as a solution in the mean time. I will try to find some time and fix this properly, but in the mean time this is how you can solve this. I kow this is not the best answer... but it's an answer :-)
+The SFDX architecture changed, and I have not had the time to fix the error. But there is a way out, so I have been using this as a solution in the mean time. I will try to find some time and fix this properly, but in the mean time this is how you can solve this. I know this is not the best answer... but it's an answer :-)
 
-1. Install SFDX CLI in your project: `npm i sfdx-cli@7.209.6`
-2. Use the local SFDX version with ETCopyData
+1. Clone the repository: `git clone https://github.com/eltoroit/ETCopyData.git`
+2. Change directory `cd ETCopyData`
+3. Install npm modules: `npm install --production`
+4. Install SFDX CLI in your project: `npm i sfdx-cli@7.209.6`
+5. Link the plugin: `./node_modules/sfdx-cli/bin/run plugins:link .`
+6. Use the local SFDX version with ETCopyData
     - Export Data: "./node_modules/sfdx-cli/bin/run ETCopyData export --configfolder ./@ELTOROIT/data --loglevel trace --json",
     - Import Data: "./node_modules/sfdx-cli/bin/run ETCopyData import --configfolder ./@ELTOROIT/data --loglevel trace --json",
     - Delete Data: "./node_modules/sfdx-cli/bin/run ETCopyData delete --configfolder ./@ELTOROIT/data --loglevel trace --json"
+
+## ~~Install from source~~
+1. ~~Install the SDFX CLI.~~
+2. ~~Clone the repository: `git clone https://github.com/eltoroit/ETCopyData.git`~~
+3. ~~Change directory `cd ETCopyData`~~
+4. ~~Install npm modules: `npm install --production`~~
+5. ~~Link the plugin: `sfdx plugins:link .`~~
+
 
 # Documentation
 
