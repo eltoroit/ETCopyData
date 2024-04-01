@@ -32,9 +32,9 @@ The SFDX architecture changed, and I have not had the time to fix the error. But
 4. Install SFDX CLI in your project: `npm i sfdx-cli@7.209.6`
 5. Link the plugin: `./node_modules/sfdx-cli/bin/run plugins:link .`
 6. Use the local SFDX version with ETCopyData
-    - Export Data: "./node_modules/sfdx-cli/bin/run ETCopyData export --configfolder ./@ELTOROIT/data --loglevel trace --json",
-    - Import Data: "./node_modules/sfdx-cli/bin/run ETCopyData import --configfolder ./@ELTOROIT/data --loglevel trace --json",
-    - Delete Data: "./node_modules/sfdx-cli/bin/run ETCopyData delete --configfolder ./@ELTOROIT/data --loglevel trace --json"
+    - Export Data: `./node_modules/sfdx-cli/bin/run ETCopyData export --configfolder ./@ELTOROIT/data --loglevel trace --json`
+    - Import Data: `./node_modules/sfdx-cli/bin/run ETCopyData import --configfolder ./@ELTOROIT/data --loglevel trace --json`
+    - Delete Data: `./node_modules/sfdx-cli/bin/run ETCopyData delete --configfolder ./@ELTOROIT/data --loglevel trace --json`
 
 ## ~~Install from source~~
 1. ~~Install the SDFX CLI.~~
