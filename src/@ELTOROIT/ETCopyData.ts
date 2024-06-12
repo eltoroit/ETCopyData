@@ -427,7 +427,8 @@ export class ETCopyData {
 
 	private async makeSureThisOrgIsSafe(data: IETCopyData, org: any): Promise<void> {
 		const productionLoginUrl: string = "login.salesforce.com";
-		const orgLoginUrl: string = org.conn.getAuthInfoFields().loginUrl;
+		const orgData: any = org.conn.getAuthInfoFields();
+		const orgLoginUrl: string = orgData.loginUrl;
 		const orgDomain: string = orgLoginUrl.split("/")[2];
 		const isProductionOrg: boolean = orgDomain.toUpperCase() === productionLoginUrl.toUpperCase();
 
@@ -474,7 +475,7 @@ export class ETCopyData {
 		// }
 
 		// 	ASK: Make sure user is awake ;-)
-		if (await this.PromptUserYN(`Do you really, really, really want to import data into your PRODUCTION org?`)) {
+		if (await this.PromptUserYN(`Do you really, really, really want to import data into your PRODUCTION org [${orgData.username}]?`)) {
 			return;
 		} else {
 			const msg = "*** *** *** Destination Org can not be production because this app deletes data!";
