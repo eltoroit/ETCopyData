@@ -8,6 +8,7 @@
 		"@oclif/core": "^1",
 		"@salesforce/command": "^5",
 		"@salesforce/core": "^3",
+		"sfdx-cli": "^7.209.6",
 		"tslib": "^2"
 	},
 	"devDependencies": {
