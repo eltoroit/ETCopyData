@@ -1,3 +1,13 @@
+# Deprecate tool, use `Salesforce Data Move Utility`
+
+-   https://help.sfdmu.com/
+-   https://github.com/forcedotcom/SFDX-Data-Move-Utility
+-   There is even a GUI app... https://help.sfdmu.com/sfdmu-gui-app
+-   https://help.sfdmu.com/additional-information/support_policy
+    -   THIS IS NOT AN OFFICIAL SALESFORCE PROJECT.
+    -   IT IS DEVELOPED AS A FREE OPEN-SOURCE CONTRIBUTION TO THE SALESFORCE COMMUNITY.
+    -   WHILE SALESFORCE HOLDS THE COPYRIGHTS, IT IS NOT INVOLVED IN THE DEVELOPMENT OR SUPPORT OF THIS PROJECT.
+
 # How to Make Changes?
 
 1. Clone the repo
