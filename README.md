@@ -1,3 +1,13 @@
+# ETCopyData has been deprecated. Please use `Salesforce Data Move Utility (SFDMU)`
+
+-   https://help.sfdmu.com/
+-   https://github.com/forcedotcom/SFDX-Data-Move-Utility
+-   There is even a GUI app... https://help.sfdmu.com/sfdmu-gui-app
+-   https://help.sfdmu.com/additional-information/support_policy
+    -   THIS IS NOT AN OFFICIAL SALESFORCE PROJECT.
+    -   IT IS DEVELOPED AS A FREE OPEN-SOURCE CONTRIBUTION TO THE SALESFORCE COMMUNITY.
+    -   WHILE SALESFORCE HOLDS THE COPYRIGHTS, IT IS NOT INVOLVED IN THE DEVELOPMENT OR SUPPORT OF THIS PROJECT.
+
 # ETCopyData
 
 SFDX Plugin to populate your scratch org and/or developer sandbox with data extracted from multiple sObjects.
@@ -33,17 +43,17 @@ The SFDX architecture changed, and I have not had the time to fix the error. But
 5. Link the plugin: `./node_modules/sfdx-cli/bin/run plugins:link .`
 6. Use the local SFDX version with ETCopyData
 
-- Export Data: `./node_modules/sfdx-cli/bin/run ETCopyData export --configfolder ./@ELTOROIT/data --loglevel trace --json`
-- Import Data: `./node_modules/sfdx-cli/bin/run ETCopyData import --configfolder ./@ELTOROIT/data --loglevel trace --json`
-- Delete Data: `./node_modules/sfdx-cli/bin/run ETCopyData delete --configfolder ./@ELTOROIT/data --loglevel trace --json`
+-   Export Data: `./node_modules/sfdx-cli/bin/run ETCopyData export --configfolder ./@ELTOROIT/data --loglevel trace --json`
+-   Import Data: `./node_modules/sfdx-cli/bin/run ETCopyData import --configfolder ./@ELTOROIT/data --loglevel trace --json`
+-   Delete Data: `./node_modules/sfdx-cli/bin/run ETCopyData delete --configfolder ./@ELTOROIT/data --loglevel trace --json`
 
 ## ~~Install from source~~
+
 1. ~~Install the SDFX CLI.~~
 2. ~~Clone the repository: `git clone https://github.com/eltoroit/ETCopyData.git`~~
 3. ~~Change directory `cd ETCopyData`~~
 4. ~~Install npm modules: `npm install --production`~~
 5. ~~Link the plugin: `sfdx plugins:link .`~~
-
 
 # Documentation
 
@@ -248,11 +258,12 @@ Since the idea of this tool is to copy data between orgs, it could be possible t
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- commands -->
 
+-   [ETCopyData has been deprecated. Please use `Salesforce Data Move Utility (SFDMU)`](#etcopydata-has-been-deprecated-please-use-salesforce-data-move-utility-sfdmu)
 -   [ETCopyData](#etcopydata)
 -   [Install](#install)
     -   [Install as plugin](#install-as-plugin)
-    -   [Install from source](#install-from-source)
     -   [2024-03-12 Update](#2024-03-12-update)
+    -   [~~Install from source~~](#install-from-source)
 -   [Documentation](#documentation)
     -   [ETCopyData.json](#etcopydatajson)
         -   [Sample](#sample)
