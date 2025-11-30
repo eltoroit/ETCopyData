@@ -139,7 +139,7 @@ class JsBulk {
 			});
 		};
 
-		const queryRecords = (totalSize: number): Promise<any> => {
+		const queryRecordsToDelete = (totalSize: number): Promise<any> => {
 			return new Promise((resolve, reject) => {
 				if (totalSize === 0) {
 					resolve([]);
@@ -147,9 +147,13 @@ class JsBulk {
 				} else {
 					let chunks = [];
 					const allChunks = [];
+					let SOQLToDelete: string = `SELECT Id FROM ${sObjName}`;
+					if (sObjName === "Contact" && org.discovery.getSObjects().get("Contact").fields.includes("IsPersonAccount")) {
+						SOQLToDelete = `SELECT Id FROM ${sObjName} WHERE IsPersonAccount = false`;
+					}
 					org.conn.bulk.pollTimeout = org.settings.bulkPollingTimeout;
 					org.conn.bulk
-						.query(`SELECT Id FROM ${sObjName}`)
+						.query(SOQLToDelete)
 						.on("record", (record) => {
 							chunks.push(record);
 							if (chunks.length >= chunkSize) {
@@ -183,7 +187,7 @@ class JsBulk {
 			countRecords(org, sObjName, "Deleting")
 				.then((totalSize) => {
 					total.totalSize = totalSize;
-					return queryRecords(totalSize);
+					return queryRecordsToDelete(totalSize);
 				})
 				.then(async (allChunks) => {
 					for (const chunk of allChunks) {
@@ -467,7 +471,7 @@ class JsRest {
 			});
 		};
 
-		const queryRecords = (totalSize: number): Promise<any> => {
+		const queryRecordsToDelete = (totalSize: number): Promise<any> => {
 			return new Promise((resolve, reject) => {
 				if (totalSize === 0) {
 					resolve([]);
@@ -475,8 +479,12 @@ class JsRest {
 					let chunks = [];
 					const allChunks = [];
 					const orgConn: any = org.conn;
+					let SOQLToDelete: string = `SELECT Id FROM ${sObjName}`;
+					if (sObjName === "Contact" && org.discovery.getSObjects().get(sObjName).fields.includes("IsPersonAccount")) {
+						SOQLToDelete = `SELECT Id FROM ${sObjName} WHERE IsPersonAccount = false`;
+					}
 					orgConn
-						.query(`SELECT Id FROM ${sObjName}`)
+						.query(SOQLToDelete)
 						.on("record", (record) => {
 							chunks.push(record.Id);
 							if (chunks.length >= chunkSize) {
@@ -506,7 +514,7 @@ class JsRest {
 			countRecords(org, sObjName, "Deleting")
 				.then((totalSize) => {
 					total.totalSize = totalSize;
-					return queryRecords(totalSize);
+					return queryRecordsToDelete(totalSize);
 				})
 				.then((allChunks) => {
 					// SERIES
