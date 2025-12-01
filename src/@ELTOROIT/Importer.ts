@@ -228,6 +228,73 @@ export class Importer {
 		});
 	}
 
+	private queryPersonContactIds(orgSource: OrgManager, orgDestination: OrgManager, exportedRecords: any[]): Promise<void> {
+		return new Promise((resolve, reject) => {
+			// Get all newly imported Account IDs (destination IDs)
+			const accountMapping = this.matchingIds.get("Account");
+			if (!accountMapping || accountMapping.size === 0) {
+				resolve();
+				return;
+			}
+
+			const newAccountIds: string[] = Array.from(accountMapping.values()).filter((id) => id !== null);
+
+			if (newAccountIds.length === 0) {
+				resolve();
+				return;
+			}
+
+			// Query destination org for Person Accounts and their PersonContactIds
+			const query = `SELECT Id, PersonContactId FROM Account WHERE IsPersonAccount = true AND Id IN ('${newAccountIds.join("','")}')`;
+
+			Util.writeLog(`[${orgDestination.alias}] Querying for Person Contact IDs from newly imported Person Accounts`, LogLevel.INFO);
+
+			orgDestination.conn
+				.query(query)
+				.then((result: any) => {
+					if (result.records && result.records.length > 0) {
+						// Initialize Contact mapping if it doesn't exist
+						if (!this.matchingIds.has("Contact")) {
+							this.matchingIds.set("Contact", new Map<string, string>());
+						}
+						const contactMapping = this.matchingIds.get("Contact");
+
+						// Create a reverse map: new Account ID -> old Account ID
+						const reverseAccountMap = new Map<string, string>();
+						accountMapping.forEach((newId, oldId) => {
+							if (newId !== null) {
+								reverseAccountMap.set(newId, oldId);
+							}
+						});
+
+						// Map old PersonContactId to new PersonContactId
+						result.records.forEach((account: any) => {
+							const newAccountId = account.Id;
+							const newPersonContactId = account.PersonContactId;
+							const oldAccountId = reverseAccountMap.get(newAccountId);
+
+							if (oldAccountId && newPersonContactId) {
+								// Find the old PersonContactId from the exported records
+								const exportedAccount = exportedRecords.find((rec) => rec.Id === oldAccountId);
+								if (exportedAccount && exportedAccount.PersonContactId) {
+									const oldPersonContactId = exportedAccount.PersonContactId;
+									contactMapping.set(oldPersonContactId, newPersonContactId);
+									Util.writeLog(`[${orgDestination.alias}] Mapped Person Contact: [${oldPersonContactId}] => [${newPersonContactId}]`, LogLevel.TRACE);
+								}
+							}
+						});
+
+						Util.writeLog(`[${orgDestination.alias}] Mapped ${result.records.length} Person Contact IDs`, LogLevel.INFO);
+					}
+					resolve();
+				})
+				.catch((err) => {
+					Util.writeLog(`[${orgDestination.alias}] Error querying Person Contact IDs: ${err}`, LogLevel.ERROR);
+					reject(err);
+				});
+		});
+	}
+
 	private loadOneSObjectData(orgSource: OrgManager, orgDestination: OrgManager, sObjName: string): Promise<number> {
 		// Read file from JSON into usable structure
 		let msg = "";
@@ -241,57 +308,78 @@ export class Importer {
 					.then((jsonSource: any) => {
 						records = jsonSource.records;
 						records.forEach((record: any) => {
+							const parents = orgDestination.discovery.getSObjects().get(sObjName).parents;
 							// Update parent IDs.
-							orgDestination.discovery
-								.getSObjects()
-								.get(sObjName)
-								.parents.forEach((parent: ISchemaDataParent) => {
-									const sourceParentId = record[parent.parentId];
-									// Issue #003: Null pointer if there was no data, so split and check for null
-									const destinationParentMap = this.matchingIds.get(parent.sObj);
-									const destinationParentId = destinationParentMap ? destinationParentMap.get(sourceParentId) : null;
-									record[parent.parentId] = destinationParentId;
+							parents.forEach((parent: ISchemaDataParent) => {
+								const sourceParentId = record[parent.parentId];
+								// Issue #003: Null pointer if there was no data, so split and check for null
+								const destinationParentMap = this.matchingIds.get(parent.sObj);
+								const destinationParentId = destinationParentMap ? destinationParentMap.get(sourceParentId) : null;
+								record[parent.parentId] = destinationParentId;
 
-									if (destinationParentId === null) {
-										// Do not include fields that are blank, so default values can be used.
-										delete record[parent.parentId];
+								if (destinationParentId === null) {
+									// Do not include fields that are blank, so default values can be used.
+									delete record[parent.parentId];
 
-										// VERBOSE: This may blank a field if there is no corresponding parent in the destination
-										if (!hasNotified) {
-											msg = `Default fields values are being used because no parents were found`;
-											Util.writeLog(msg, LogLevel.WARN);
-											hasNotified = true;
-										}
-
-										msg = ``;
-										msg += `[${orgDestination.alias}] [${sObjName + "." + parent.parentId}] `;
-										msg += `for source [${record.Id}] cleared, because `;
-										msg += `no [${parent.sObj}] matched source [${sourceParentId}] `;
-										Util.writeLog(msg, LogLevel.INFO);
+									// VERBOSE: This may blank a field if there is no corresponding parent in the destination
+									if (!hasNotified) {
+										msg = `Default fields values are being used because no parents were found`;
+										Util.writeLog(msg, LogLevel.WARN);
+										hasNotified = true;
 									}
-								});
+
+									msg = ``;
+									msg += `[${orgDestination.alias}] [${sObjName + "." + parent.parentId}] `;
+									msg += `for source [${record.Id}] cleared, because `;
+									msg += `no [${parent.sObj}] matched source [${sourceParentId}] `;
+									Util.writeLog(msg, LogLevel.INFO);
+								}
+							});
 
 							// Clear reference fields that will be set in second pass
 							const asArray = (param: string | string[]): string[] => {
 								return typeof param === "string" ? [param] : param;
 							};
 							asArray(orgDestination.settings.getSObjectData(sObjName).twoPassReferenceFields).forEach((fieldName: string) => {
-								if (record[fieldName] !== null && record[fieldName] !== undefined) {
-									let sObjectData = this.twoPassReferenceFieldData.get(sObjName);
-									if (sObjectData === undefined) {
-										sObjectData = new Map<string, Array<ReferenceFieldMapping>>();
-										this.twoPassReferenceFieldData.set(sObjName, sObjectData);
+								let skip = false;
+								if (sObjName === "Account" && fieldName === "PersonContactId") {
+									skip ||= true;
+								}
+								if (!skip) {
+									if (record[fieldName] !== null && record[fieldName] !== undefined) {
+										let sObjectData = this.twoPassReferenceFieldData.get(sObjName);
+										if (sObjectData === undefined) {
+											sObjectData = new Map<string, Array<ReferenceFieldMapping>>();
+											this.twoPassReferenceFieldData.set(sObjName, sObjectData);
+										}
+										let mappings = sObjectData.get(record.Id);
+										if (mappings === undefined) {
+											mappings = new Array<ReferenceFieldMapping>();
+											sObjectData.set(record.Id, mappings);
+										}
+										mappings.push(new ReferenceFieldMapping(fieldName, record[fieldName]));
+										delete record[fieldName];
 									}
-									let mappings = sObjectData.get(record.Id);
-									if (mappings === undefined) {
-										mappings = new Array<ReferenceFieldMapping>();
-										sObjectData.set(record.Id, mappings);
-									}
-									mappings.push(new ReferenceFieldMapping(fieldName, record[fieldName]));
-									delete record[fieldName];
 								}
 							});
 						});
+
+						// Filter out Person Contacts - they are auto-created with Person Accounts
+						if (sObjName === "Contact") {
+							const originalCount = records.length;
+							records = records.filter((record: any) => {
+								// Keep only regular Contacts (not Person Contacts)
+								return record.IsPersonAccount !== true;
+							});
+							const personContactCount = originalCount - records.length;
+							if (personContactCount > 0) {
+								Util.writeLog(
+									`[${orgDestination.alias}] Skipped ${personContactCount} Person Contact(s) (auto-created with Person Accounts). Importing ${records.length} regular Contact(s).`,
+									LogLevel.INFO
+								);
+							}
+						}
+
 						resolve(records);
 					})
 					.catch((err) => reject(err));
@@ -307,18 +395,33 @@ export class Importer {
 			const allRejects: Set<string> = new Set(sObjSourceRejects.concat(sObjDestinationRejects));
 			const allDestinationFields: Set<string> = new Set<string>(sObjDestination.fields);
 			const fieldsCleaned: Map<String, number> = new Map();
+
+			// Person Account read-only fields that cannot be set on import
+			const personAccountReadOnlyFields = new Set(["Name", "PersonContactId", "PersonMailingAddress", "PersonOtherAddress", "IsPersonAccount"]);
+
 			const cleaned = recordsToProcess.map((record) => {
 				const newRecord = {};
+
+				// Detect if this is a Person Account or Person Contact
+				const isPersonAccount =
+					(sObjName === "Account" || sObjName === "Contact") &&
+					(record.IsPersonAccount === true || (record.FirstName !== undefined && record.FirstName !== null) || (record.LastName !== undefined && record.LastName !== null));
+
 				// eslint-disable-next-line guard-for-in
 				for (const field in record) {
 					if (field !== "attributes") {
 						if (record[field]) {
 							let dirtyReason = null;
-							if (allRejects.has(field)) {
+
+							// Special handling for Person Account read-only fields
+							if (isPersonAccount && personAccountReadOnlyFields.has(field)) {
+								dirtyReason = "PERSON_ACCOUNT_READONLY_FIELD";
+							} else if (allRejects.has(field)) {
 								dirtyReason = "NOT_IN_SOURCE";
 							} else if (!allDestinationFields.has(field)) {
 								dirtyReason = "NOT_IN_DESTINATION";
 							}
+
 							if (dirtyReason) {
 								let count = 0;
 								if (fieldsCleaned.has(field)) count = fieldsCleaned.get(field);
@@ -354,6 +457,19 @@ export class Importer {
 						DataAPI.upsert(orgDestination, operation, sObjName, recordsToProcess, this.matchingIds, orgDestination.settings.getSObjectData(sObjName).externalIdField || null)
 							.then((badCount) => {
 								this.countImportErrorsRecords += badCount;
+
+								// After importing Accounts, query for Person Contact IDs
+								if (sObjName === "Account") {
+									return this.queryPersonContactIds(orgSource, orgDestination, records)
+										.then(() => badCount)
+										.catch((err) => {
+											Util.writeLog(`[${orgDestination.alias}] Warning: Failed to map Person Contact IDs: ${err}`, LogLevel.WARN);
+											return badCount;
+										});
+								}
+								return badCount;
+							})
+							.then((badCount) => {
 								resolve(badCount);
 							})
 							.catch((err) => reject(err));

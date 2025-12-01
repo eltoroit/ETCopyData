@@ -402,7 +402,7 @@ export class SchemaDiscovery {
 	}
 
 	private overrideIncludeField(fieldName: string): boolean {
-		const alwaysFields: string[] = ["Id"];
+		const alwaysFields: string[] = ["Id", "IsPersonAccount", "PersonContactId"];
 		if (alwaysFields.includes(fieldName)) {
 			return true;
 		}

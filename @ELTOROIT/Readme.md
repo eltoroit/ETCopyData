@@ -51,6 +51,7 @@ https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_plugins.meta/sfdx_cli
 -   `NODE_OPTIONS=--inspect-brk bin/dev ETCopyData:compare -c "/Users/aperez/GitProjects/current/MyScratchOrg/@ELTOROIT/data" --loglevel trace --json`
 -   `NODE_OPTIONS=--inspect-brk bin/dev ETCopyData:export -c "/Users/aperez/GitProjects/current/TandC/RelatedCourses/@ELTOROIT/data" --loglevel trace --json`
 -   `NODE_OPTIONS=--inspect-brk bin/dev ETCopyData:import --configfolder "/Users/aperez/Git Projects/current/ARC101/2024/SalesforceORG_OData/@ELTOROIT/data" --loglevel trace --json --orgsource "soODataSource" --orgdestination "thODataSource"`
+-   `NODE_OPTIONS=--inspect-brk bin/dev ETCopyData:import --configfolder "/Users/aperez/Git Projects/AgentforceEngineer/2025-11/03. MusicStore/Salesforce/@ELTOROIT/data" --loglevel trace --json --orgsource "soETMS.20251130T1715" --orgdestination "soETMS"`
 
 ```
 NODE_OPTIONS=--inspect-brk --trace-warnings bin/dev ETCopyData:delete --configfolder "
