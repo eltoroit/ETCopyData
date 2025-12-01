@@ -32,6 +32,11 @@ export class ETCopyDataSF {
 		orgsource: Flags.string({
 			char: "s",
 			summary: "SF alias or username for the SOURCE org"
+		}),
+		loglevel: Flags.string({
+			summary: "Logging level for this command invocation",
+			options: ["trace", "debug", "info", "warn", "error", "fatal", "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
+			default: "warn"
 		})
 	};
 
@@ -43,11 +48,32 @@ export class ETCopyDataSF {
 		Util.setLogLevel(params.loglevel);
 		Util.writeLog("Log level: " + params.loglevel, LogLevel.TRACE);
 
-		// Print who am i?
-		const me: any = config.plugins.filter((plugin) => plugin.name === "etcopydatasf")[0];
-		// Util.writeLog(`Plugin: ${me.name} (${me.type}) [${me.version}]`, LogLevel.INFO);
-		Util.writeLog(`Plugin: ETCopyDataSF (${me.type}) [${me.version}]`, LogLevel.INFO);
-		Util.writeLog(`Plugin Root: ${me.root}`, LogLevel.TRACE);
+		// Print plugin info - SF CLI uses Map for plugins, not array
+		try {
+			let pluginInfo = null;
+			
+			// SF CLI: config.plugins is a Map
+			if (config.plugins && config.plugins.get) {
+				pluginInfo = config.plugins.get("etcopydatasf");
+			}
+			// SFDX CLI (legacy): config.plugins is an array
+			else if (config.plugins && Array.isArray(config.plugins)) {
+				pluginInfo = config.plugins.find((plugin: any) => plugin.name === "etcopydatasf");
+			}
+			
+			if (pluginInfo) {
+				Util.writeLog(`Plugin: ETCopyDataSF (${pluginInfo.type || 'link'}) [${pluginInfo.version || '3.0.0'}]`, LogLevel.INFO);
+				if (pluginInfo.root) {
+					Util.writeLog(`Plugin Root: ${pluginInfo.root}`, LogLevel.TRACE);
+				}
+			} else {
+				Util.writeLog(`Plugin: ETCopyDataSF`, LogLevel.INFO);
+			}
+		} catch (err) {
+			// If we can't get plugin info, just log the plugin name
+			Util.writeLog(`Plugin: ETCopyDataSF`, LogLevel.INFO);
+		}
+		
 		if (Util.doesLogOutputsEachStep()) {
 			Util.writeLog(`${processName} Process Started`, LogLevel.INFO);
 		} else {
@@ -86,6 +112,7 @@ export class ETCopyDataSF {
 					data = value;
 				})
 				.then(() => {
+					Util.writeLog("✅ Compare operation completed successfully", LogLevel.INFO);
 					resolve();
 				})
 				.catch((err) => {
@@ -111,6 +138,7 @@ export class ETCopyDataSF {
 					return importer.deleteAll(orgDestination);
 				})
 				.then(() => {
+					Util.writeLog("✅ Delete operation completed successfully", LogLevel.INFO);
 					resolve();
 				})
 				.catch((err) => {
@@ -145,6 +173,7 @@ export class ETCopyDataSF {
 				// 	Util.writeLog("sObjects should be processed in this order: " + importOrder, LogLevel.TRACE);
 				// })
 				.then(() => {
+					Util.writeLog("✅ Export operation completed successfully", LogLevel.INFO);
 					resolve();
 				})
 				.catch((err) => {
@@ -171,6 +200,7 @@ export class ETCopyDataSF {
 					return importer.importAll(orgSource, orgDestination);
 				})
 				.then(() => {
+					Util.writeLog("✅ Import operation completed successfully", LogLevel.INFO);
 					resolve();
 				})
 				.catch((err) => {
@@ -187,18 +217,19 @@ export class ETCopyDataSF {
 				.then((value: IETCopyDataSF) => {
 					data = value;
 				})
-				.then(() => {
-					return this.compareSchemas(overrideSettings, data);
-				})
-				.then(() => {
-					return this.exportData(overrideSettings, data);
-				})
-				.then(() => {
-					return this.importData(overrideSettings, data);
-				})
-				.then(() => {
-					resolve();
-				})
+			.then(() => {
+				return this.compareSchemas(overrideSettings, data);
+			})
+			.then(() => {
+				return this.exportData(overrideSettings, data);
+			})
+			.then(() => {
+				return this.importData(overrideSettings, data);
+			})
+			.then(() => {
+				Util.writeLog("✅ Full migration operation completed successfully", LogLevel.INFO);
+				resolve();
+			})
 				.catch((err) => {
 					reject(err);
 				});

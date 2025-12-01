@@ -328,12 +328,15 @@ Checks the source and destination org for any differences in the sObject's metad
 
 ```
 USAGE
-  $ sf ETCopyDataSF:compare [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>]
+  $ sf ETCopyDataSF:compare [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>] [--loglevel
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 FLAGS
   -c, --configfolder=<value>    Root folder to find the configuration file
   -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
   -s, --orgsource=<value>       SF alias or username for the SOURCE org
+      --loglevel=<option>       [default: warn] Logging level for this command invocation
+                                <options: trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL>
 
 GLOBAL FLAGS
   --flags-dir=<value>  Import flag values from a directory.
@@ -358,12 +361,15 @@ Deletes data from destination org
 
 ```
 USAGE
-  $ sf ETCopyDataSF:delete [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>]
+  $ sf ETCopyDataSF:delete [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>] [--loglevel
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 FLAGS
   -c, --configfolder=<value>    Root folder to find the configuration file
   -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
   -s, --orgsource=<value>       SF alias or username for the SOURCE org
+      --loglevel=<option>       [default: warn] Logging level for this command invocation
+                                <options: trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL>
 
 GLOBAL FLAGS
   --flags-dir=<value>  Import flag values from a directory.
@@ -389,12 +395,15 @@ Exports the data from the source org
 
 ```
 USAGE
-  $ sf ETCopyDataSF:export [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>]
+  $ sf ETCopyDataSF:export [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>] [--loglevel
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 FLAGS
   -c, --configfolder=<value>    Root folder to find the configuration file
   -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
   -s, --orgsource=<value>       SF alias or username for the SOURCE org
+      --loglevel=<option>       [default: warn] Logging level for this command invocation
+                                <options: trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL>
 
 GLOBAL FLAGS
   --flags-dir=<value>  Import flag values from a directory.
@@ -419,12 +428,15 @@ Performs all steps of the data migration
 
 ```
 USAGE
-  $ sf ETCopyDataSF:full [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>]
+  $ sf ETCopyDataSF:full [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>] [--loglevel
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 FLAGS
   -c, --configfolder=<value>    Root folder to find the configuration file
   -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
   -s, --orgsource=<value>       SF alias or username for the SOURCE org
+      --loglevel=<option>       [default: warn] Logging level for this command invocation
+                                <options: trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL>
 
 GLOBAL FLAGS
   --flags-dir=<value>  Import flag values from a directory.
@@ -450,12 +462,15 @@ Imports data into destination org
 
 ```
 USAGE
-  $ sf ETCopyDataSF:import [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>]
+  $ sf ETCopyDataSF:import [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>] [--loglevel
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 FLAGS
   -c, --configfolder=<value>    Root folder to find the configuration file
   -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
   -s, --orgsource=<value>       SF alias or username for the SOURCE org
+      --loglevel=<option>       [default: warn] Logging level for this command invocation
+                                <options: trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL>
 
 GLOBAL FLAGS
   --flags-dir=<value>  Import flag values from a directory.
