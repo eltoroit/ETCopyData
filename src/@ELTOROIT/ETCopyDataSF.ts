@@ -1,42 +1,41 @@
-const fse = require("fs-extra");
-const path = require("path");
+import fse from "fs-extra";
+import path from "path";
 // import { fs } from "@salesforce/core";
 // import { OutputFlags } from "@oclif/parser";
-import { flags, UX } from "@salesforce/command";
-import { CoreMetadataSObjects } from "./CoreMetadataSObjects";
-import { Exporter } from "./Exporter";
-import { Importer } from "./Importer";
-import { ISchemaData } from "./Interfaces";
-import { OrgManager, WhichOrg } from "./OrgManager";
-import { Settings } from "./Settings";
-import { LogLevel, ResultOperation, Util } from "./Util";
+import { Flags } from "@salesforce/sf-plugins-core";
+import { Ux } from "@salesforce/sf-plugins-core";
+import { CoreMetadataSObjects } from "./CoreMetadataSObjects.js";
+import { Exporter } from "./Exporter.js";
+import { Importer } from "./Importer.js";
+import { ISchemaData } from "./Interfaces.js";
+import { OrgManager, WhichOrg } from "./OrgManager.js";
+import { Settings } from "./Settings.js";
+import { LogLevel, ResultOperation, Util } from "./Util.js";
 
-interface IETCopyData {
+interface IETCopyDataSF {
 	settings: Settings;
 	coreMD: CoreMetadataSObjects;
 	orgs: Map<WhichOrg, OrgManager>;
 }
 
-export class ETCopyData {
+export class ETCopyDataSF {
 	public static flagsConfig = {
-		configfolder: flags.string({
+		configfolder: Flags.string({
 			char: "c",
-			description: "Root folder to find the configuration file",
-			helpValue: "PATH"
+			summary: "Root folder to find the configuration file",
+			description: "Path to folder containing ETCopyDataSF.json config file"
 		}),
-		orgdestination: flags.string({
+		orgdestination: Flags.string({
 			char: "d",
-			description: "SFDX alias or username for the DESTINATION org",
-			helpValue: "(alias|username)"
+			summary: "SF alias or username for the DESTINATION org"
 		}),
-		orgsource: flags.string({
+		orgsource: Flags.string({
 			char: "s",
-			description: "SFDX alias or username for the SOURCE org",
-			helpValue: "(alias|username)"
+			summary: "SF alias or username for the SOURCE org"
 		})
 	};
 
-	public static setLogs(params: any, ux: UX, processName: string, config: any): void {
+	public static setLogs(params: any, ux: Ux, processName: string, config: any): void {
 		// Set log level based on parameters
 		if (!params.loglevel) {
 			params.loglevel = "TRACE";
@@ -45,14 +44,15 @@ export class ETCopyData {
 		Util.writeLog("Log level: " + params.loglevel, LogLevel.TRACE);
 
 		// Print who am i?
-		const me: any = config.plugins.filter((plugin) => plugin.name === "etcopydata")[0];
+		const me: any = config.plugins.filter((plugin) => plugin.name === "etcopydatasf")[0];
 		// Util.writeLog(`Plugin: ${me.name} (${me.type}) [${me.version}]`, LogLevel.INFO);
-		Util.writeLog(`Plugin: ETCopyData (${me.type}) [${me.version}]`, LogLevel.INFO);
+		Util.writeLog(`Plugin: ETCopyDataSF (${me.type}) [${me.version}]`, LogLevel.INFO);
 		Util.writeLog(`Plugin Root: ${me.root}`, LogLevel.TRACE);
 		if (Util.doesLogOutputsEachStep()) {
 			Util.writeLog(`${processName} Process Started`, LogLevel.INFO);
 		} else {
-			ux.startSpinner(`${processName}`);
+			// TODO: SF CLI spinner - use ux.spinner.start() if needed
+			Util.writeLog(`${processName} Process Started`, LogLevel.INFO);
 		}
 	}
 
@@ -75,19 +75,14 @@ export class ETCopyData {
 		return s;
 	}
 
-	public compareSchemas(overrideSettings: Settings, data: IETCopyData): Promise<void> {
+	public compareSchemas(overrideSettings: Settings, data: IETCopyDataSF): Promise<void> {
 		if (!Util.doesLogOutputsEachStep()) {
-			UX.create()
-				.then((ux) => {
-					ux.startSpinner("ETCopyData:compare");
-				})
-				.catch((err) => {
-					Util.throwError(err);
-				});
+			// TODO: SF CLI spinner - use ux.spinner if needed
+			Util.writeLog("ETCopyDataSF:compare started", LogLevel.INFO);
 		}
 		return new Promise((resolve, reject) => {
 			this.initializeETCopy(overrideSettings, data)
-				.then((value: IETCopyData) => {
+				.then((value: IETCopyDataSF) => {
 					data = value;
 				})
 				.then(() => {
@@ -99,19 +94,14 @@ export class ETCopyData {
 		});
 	}
 
-	public deleteData(overrideSettings: Settings, data: IETCopyData): Promise<void> {
+	public deleteData(overrideSettings: Settings, data: IETCopyDataSF): Promise<void> {
 		if (!Util.doesLogOutputsEachStep()) {
-			UX.create()
-				.then((ux) => {
-					ux.startSpinner("ETCopyData:Delete");
-				})
-				.catch((err) => {
-					Util.throwError(err);
-				});
+			// TODO: SF CLI spinner - use ux.spinner if needed
+			Util.writeLog("ETCopyDataSF:Delete started", LogLevel.INFO);
 		}
 		return new Promise((resolve, reject) => {
 			this.initializeETCopy(overrideSettings, data)
-				.then((value: IETCopyData) => {
+				.then((value: IETCopyDataSF) => {
 					data = value;
 				})
 				.then(() => {
@@ -129,19 +119,14 @@ export class ETCopyData {
 		});
 	}
 
-	public exportData(overrideSettings: Settings, data: IETCopyData): Promise<void> {
+	public exportData(overrideSettings: Settings, data: IETCopyDataSF): Promise<void> {
 		if (!Util.doesLogOutputsEachStep()) {
-			UX.create()
-				.then((ux) => {
-					ux.startSpinner("ETCopyData:Export");
-				})
-				.catch((err) => {
-					Util.throwError(err);
-				});
+			// TODO: SF CLI spinner - use ux.spinner if needed
+			Util.writeLog("ETCopyDataSF:Export started", LogLevel.INFO);
 		}
 		return new Promise((resolve, reject) => {
 			this.initializeETCopy(overrideSettings, data, true)
-				.then((value: IETCopyData) => {
+				.then((value: IETCopyDataSF) => {
 					data = value;
 				})
 				.then(() => {
@@ -168,19 +153,14 @@ export class ETCopyData {
 		});
 	}
 
-	public importData(overrideSettings: Settings, data: IETCopyData): Promise<void> {
+	public importData(overrideSettings: Settings, data: IETCopyDataSF): Promise<void> {
 		if (!Util.doesLogOutputsEachStep()) {
-			UX.create()
-				.then((ux) => {
-					ux.startSpinner("ETCopyData:Import");
-				})
-				.catch((err) => {
-					Util.throwError(err);
-				});
+			// TODO: SF CLI spinner - use ux.spinner if needed
+			Util.writeLog("ETCopyDataSF:Import started", LogLevel.INFO);
 		}
 		return new Promise((resolve, reject) => {
 			this.initializeETCopy(overrideSettings, data)
-				.then((value: IETCopyData) => {
+				.then((value: IETCopyDataSF) => {
 					data = value;
 				})
 				.then(() => {
@@ -200,11 +180,11 @@ export class ETCopyData {
 	}
 
 	public processAll(overrideSettings: Settings): Promise<void> {
-		let data: IETCopyData = null;
+		let data: IETCopyDataSF | null = null;
 
 		return new Promise((resolve, reject) => {
 			this.initializeETCopy(overrideSettings, data)
-				.then((value: IETCopyData) => {
+				.then((value: IETCopyDataSF) => {
 					data = value;
 				})
 				.then(() => {
@@ -226,7 +206,7 @@ export class ETCopyData {
 	}
 
 	// tslint:disable-next-line:max-line-length
-	private setupOrg(data: IETCopyData, wo: WhichOrg): Promise<void> {
+	private setupOrg(data: IETCopyDataSF, wo: WhichOrg): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const doSetupOrg = () => {
 				const alias = data.settings.getOrgAlias(wo);
@@ -366,7 +346,7 @@ export class ETCopyData {
 		});
 	}
 
-	private initializeETCopy(overrideSettings: Settings, data: IETCopyData, isExport: Boolean = false): Promise<IETCopyData> {
+	private initializeETCopy(overrideSettings: Settings, data: IETCopyDataSF | null, isExport: Boolean = false): Promise<IETCopyDataSF> {
 		return new Promise((resolve, reject) => {
 			if (data) {
 				resolve(data);
@@ -375,7 +355,7 @@ export class ETCopyData {
 					coreMD: null,
 					orgs: new Map<WhichOrg, OrgManager>(),
 					settings: null
-				};
+				} as IETCopyDataSF;
 
 				Settings.read(overrideSettings)
 					.then((value: Settings) => {
@@ -425,7 +405,7 @@ export class ETCopyData {
 		});
 	}
 
-	private async makeSureThisOrgIsSafe(data: IETCopyData, org: any): Promise<void> {
+	private async makeSureThisOrgIsSafe(data: IETCopyDataSF, org: any): Promise<void> {
 		const productionLoginUrl: string = "login.salesforce.com";
 		const orgData: any = org.conn.getAuthInfoFields();
 		const orgLoginUrl: string = orgData.loginUrl;
@@ -492,65 +472,26 @@ export class ETCopyData {
 
 	private PromptUserYN(question: string): Promise<boolean> {
 		return new Promise((resolve, reject) => {
-			UX.create()
-				.then((ux) => {
-					console.log("*** *** ***");
-					console.log("*** *** ***");
-					console.log("*** *** ***");
-					console.log("*** *** *** Review the list of sObjects above, and tell me... ");
-					ux.confirm(`*** *** *** ${question} [Y|N|YES|NO]`)
-						.then((resultYN) => {
-							if (resultYN) {
-								console.log("*** *** ***");
-								this.RequestedNumberEntered(ux, 0, "Just to make sure you are awake... Type this number")
-									.then(() => resolve(true))
-									.catch((err) => {
-										reject(err);
-									});
-							} else {
-								reject("You decided not to import data into production, good boy (girl)!");
-							}
-						})
-						.catch((err) => {
-							reject(err);
-						});
-				})
-				.catch((err) => {
-					Util.throwError(err);
-					reject(err);
-				});
+			console.log("*** *** ***");
+			console.log("*** *** ***");
+			console.log("*** *** ***");
+			console.log("*** *** *** Review the list of sObjects above, and tell me... ");
+			console.log(`*** *** *** ${question} [Y|N|YES|NO]`);
+			// TODO: SF CLI - implement proper user confirmation
+			// For now, automatically reject to be safe
+			reject("User confirmation needed - not implemented in SF CLI version yet");
 		});
 	}
 
-	private RequestedNumberEntered(ux: UX, counter: number, message: string): Promise<void> {
+	private RequestedNumberEntered(counter: number, message: string): Promise<void> {
 		return new Promise((resolve, reject) => {
 			let expected = `${Math.floor(100000000 + Math.random() * 900000000)}`;
 			if (counter > 0) {
 				console.log(`*** *** *** Wrong, please try again (Retry #${counter})`);
 			}
-			ux.prompt("ProductionDeploy", {
-				prompt: `*** *** *** ${message} [${expected}]: `,
-				type: "normal",
-				required: true,
-				default: "NOT_ENTERED"
-			})
-				.then((resultSTR) => {
-					if (resultSTR === expected) {
-						resolve();
-					} else {
-						// reject("Number expected was not entered");
-						this.RequestedNumberEntered(ux, counter + 1, message)
-							.then(() => {
-								resolve();
-							})
-							.catch((err) => {
-								reject(err);
-							});
-					}
-				})
-				.catch((err) => {
-					reject(err);
-				});
+			// TODO: SF CLI - implement proper prompt
+			console.log(`${message}: ${expected}`);
+			reject("User prompt needed - not implemented in SF CLI version yet");
 		});
 	}
 }

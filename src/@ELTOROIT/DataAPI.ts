@@ -1,6 +1,6 @@
-import { OrgManager } from "./OrgManager";
-import { IExportData } from "./Interfaces";
-import { LogLevel, ResultOperation, Util } from "./Util";
+import { OrgManager } from "./OrgManager.js";
+import { IExportData } from "./Interfaces.js";
+import { LogLevel, ResultOperation, Util } from "./Util.js";
 
 let msg = "";
 let chunkSize = 10000;
@@ -152,8 +152,10 @@ class JsBulk {
 						SOQLToDelete = `SELECT Id FROM ${sObjName} WHERE IsPersonAccount = false`;
 					}
 					org.conn.bulk.pollTimeout = org.settings.bulkPollingTimeout;
-					org.conn.bulk
-						.query(SOQLToDelete)
+					// TODO: SF CLI - bulk API may need updating for @salesforce/core v7+
+					// For now, cast to any to maintain existing stream-based behavior
+					const queryStream: any = org.conn.bulk.query(SOQLToDelete);
+					queryStream
 						.on("record", (record) => {
 							chunks.push(record);
 							if (chunks.length >= chunkSize) {

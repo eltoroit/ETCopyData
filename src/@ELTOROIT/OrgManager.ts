@@ -1,9 +1,9 @@
 import { Connection, Org } from "@salesforce/core";
-import { CoreMetadataSObjects } from "./CoreMetadataSObjects";
-import { SchemaDiscovery } from "./SchemaDiscovery";
-import { SchemaOrder } from "./SchemaOrder";
-import { Settings } from "./Settings";
-import { LogLevel, Util } from "./Util";
+import { CoreMetadataSObjects } from "./CoreMetadataSObjects.js";
+import { SchemaDiscovery } from "./SchemaDiscovery.js";
+import { SchemaOrder } from "./SchemaOrder.js";
+import { Settings } from "./Settings.js";
+import { LogLevel, Util } from "./Util.js";
 
 export enum WhichOrg { SOURCE = "orgSource", DESTINATION = "orgDestination" }
 

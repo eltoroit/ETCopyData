@@ -1,7 +1,7 @@
-import DataAPI from "./DataAPI";
-import { IExportData } from "./Interfaces";
-import { OrgManager } from "./OrgManager";
-import { LogLevel, Util } from "./Util";
+import DataAPI from "./DataAPI.js";
+import { IExportData } from "./Interfaces.js";
+import { OrgManager } from "./OrgManager.js";
+import { LogLevel, Util } from "./Util.js";
 
 export class Exporter {
 	public static all(org: OrgManager, folderCode: string): Promise<void> {
@@ -33,7 +33,6 @@ export class Exporter {
 		return exporter.privExportMetadata(org, folderCode);
 	}
 
-	// eslint-disable-next-line @typescript-eslint/member-ordering
 	private mapRecordsFetched: Map<string, IExportData> = new Map<string, IExportData>();
 
 	private privExportData(org: OrgManager, folderCode: string): Promise<void> {

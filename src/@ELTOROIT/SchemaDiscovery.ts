@@ -1,6 +1,6 @@
-import { ISchemaData } from "./Interfaces";
-import { OrgManager } from "./OrgManager";
-import { LogLevel, Util } from "./Util";
+import { ISchemaData } from "./Interfaces.js";
+import { OrgManager } from "./OrgManager.js";
+import { LogLevel, Util } from "./Util.js";
 
 enum RejectType {
 	ADD_SOBJECT,

@@ -1,116 +1,203 @@
-# Deprecate tool, use `Salesforce Data Move Utility`
+# ETCopyDataSF - Developer Guide
 
--   https://help.sfdmu.com/
--   https://github.com/forcedotcom/SFDX-Data-Move-Utility
--   There is even a GUI app... https://help.sfdmu.com/sfdmu-gui-app
--   https://help.sfdmu.com/additional-information/support_policy
-    -   THIS IS NOT AN OFFICIAL SALESFORCE PROJECT.
-    -   IT IS DEVELOPED AS A FREE OPEN-SOURCE CONTRIBUTION TO THE SALESFORCE COMMUNITY.
-    -   WHILE SALESFORCE HOLDS THE COPYRIGHTS, IT IS NOT INVOLVED IN THE DEVELOPMENT OR SUPPORT OF THIS PROJECT.
+## Alternative Tool
+
+For more advanced data migration needs, consider [Salesforce Data Move Utility (SFDMU)](https://help.sfdmu.com/) - a feature-rich, actively maintained tool.
 
 # How to Make Changes?
 
-1. Clone the repo
-    - `git clone https://github.com/eltoroit/ETCopyData.git`
-2. Open Terminal window
-3. Intall the dependency modules
-    - `npm install`
-4. Fix vulnerabilities
-    - `npm audit fix`
-5. Review vulnerabilities
-    - `npm audit`
-6. Create a valid **@ELTOROIT/data/ETCopyData.json** file
+1. **Clone the repo:**
+    ```bash
+    git clone https://github.com/eltoroit/ETCopyData.git
+    cd ETCopyData
+    ```
+
+2. **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3. **Build the plugin:**
+    ```bash
+    npm run build
+    ```
+
+4. **Fix and review vulnerabilities:**
+    ```bash
+    npm audit fix
+    npm audit
+    ```
+
+5. **Create a valid test config file:**
+    - Create **@ELTOROIT/data/ETCopyDataSF.json** with your test configuration
 
 # Other useful node tools:
 
--   npmvet
--   ncu
+-   `npmvet` - Audit npm packages
+-   `ncu` - Check for package updates
 
 # How to Test Changes
 
-## How to Debug Your Salesforce CLI Plug-In
+## How to Debug Your SF CLI Plug-In
 
-Documentation page explaining process:
-https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_plugins.meta/sfdx_cli_plugins/cli_plugins_debug.htm
+Documentation: [SF CLI Plugin Development](https://developer.salesforce.com/docs/platform/salesforce-cli/overview)
 
-### Testing an installed plugin
+### Testing an installed/linked plugin
 
--   `sfdx ETCopyData:export -c "./@ELTOROIT/data" --loglevel trace --json --dev-suspend`
--   `sfdx ETCopyData:import -c "./@ELTOROIT/data" --loglevel trace --json --dev-suspend`
-
-### Testing without installing it
-
--   Commands
-
-    -   ETCopyData:compare
-    -   ETCopyData:delete
-    -   ETCopyData:export
-    -   ETCopyData:full
-    -   ETCopyData:import
-
--   `NODE_OPTIONS=--inspect-brk bin/dev ETCopyData:compare -c "/Users/aperez/GitProjects/current/MyScratchOrg/@ELTOROIT/data" --loglevel trace --json`
--   `NODE_OPTIONS=--inspect-brk bin/dev ETCopyData:export -c "/Users/aperez/GitProjects/current/TandC/RelatedCourses/@ELTOROIT/data" --loglevel trace --json`
--   `NODE_OPTIONS=--inspect-brk bin/dev ETCopyData:import --configfolder "/Users/aperez/Git Projects/current/ARC101/2024/SalesforceORG_OData/@ELTOROIT/data" --loglevel trace --json --orgsource "soODataSource" --orgdestination "thODataSource"`
--   `NODE_OPTIONS=--inspect-brk bin/dev ETCopyData:import --configfolder "/Users/aperez/Git Projects/AgentforceEngineer/2025-11/03. MusicStore/Salesforce/@ELTOROIT/data" --loglevel trace --json --orgsource "soETMS.20251130T1715" --orgdestination "soETMS"`
-
+```bash
+sf ETCopyDataSF export -c "./@ELTOROIT/data" -s SourceOrg
+sf ETCopyDataSF import -c "./@ELTOROIT/data" -d DestOrg
 ```
-NODE_OPTIONS=--inspect-brk --trace-warnings bin/dev ETCopyData:delete --configfolder "
-/Users/aperez/Git Projects/current/Data Cloud Advanced Topics/DCOrchestration/WithManagedPackage/ETOrchestrateDC _Demo/@ELTOROIT/data" --loglevel trace --json
+
+### Testing without installing (with debugging)
+
+**Available Commands:**
+- `ETCopyDataSF compare`
+- `ETCopyDataSF delete`
+- `ETCopyDataSF export`
+- `ETCopyDataSF full`
+- `ETCopyDataSF import`
+
+**Debug Examples:**
+
+```bash
+# Compare
+NODE_OPTIONS=--inspect-brk bin/dev ETCopyDataSF compare -c "/path/to/@ELTOROIT/data"
+
+# Export
+NODE_OPTIONS=--inspect-brk bin/dev ETCopyDataSF export -c "/path/to/@ELTOROIT/data" -s SourceOrg
+
+# Import
+NODE_OPTIONS=--inspect-brk bin/dev ETCopyDataSF import -c "/path/to/@ELTOROIT/data" -d DestOrg
+
+# Delete
+NODE_OPTIONS=--inspect-brk --trace-warnings bin/dev ETCopyDataSF delete -c "/path/to/@ELTOROIT/data" -d DestOrg
+
+# Full migration
+NODE_OPTIONS=--inspect-brk bin/dev ETCopyDataSF full -c "/path/to/@ELTOROIT/data" -s SourceOrg -d DestOrg
 ```
 
 # How to Install Plugin
 
--   Uninstall the old one first:
-    -   `sfdx plugins:uninstall etcopydata`
+## Uninstall old versions
+
+```bash
+# Uninstall v2.x (SFDX)
+npm uninstall -g etcopydata
+
+# Uninstall v3.x (SF)
+sf plugins:uninstall etcopydatasf
+```
 
 ## Install different versions
 
--   Link the code without installing it:
-    -   `sfdx plugins:link --verbose`
--   Released:
-    -   `echo 'y' | sfdx plugins:install etcopydata`
--   Beta:
-    -   `echo 'y' | sfdx plugins:install etcopydata@beta`
--   Specific version:
-    -   `echo 'y' | sfdx plugins:install etcopydata@0.5.1`
+**Link local code for development:**
+```bash
+sf plugins:link --verbose
+```
+
+**Install released version:**
+```bash
+sf plugins:install etcopydatasf
+```
+
+**Install beta version:**
+```bash
+sf plugins:install etcopydatasf@beta
+```
+
+**Install specific version:**
+```bash
+sf plugins:install etcopydatasf@3.0.0
+```
 
 ## Validate which version is being used
 
--   Execute:
-    -   `sfdx plugins`
-    -   It Should indicate the version like this:
-        -   etcopydata 0.5.6 (beta)
-        -   etcopydata 0.5.7 (link) /<FULL_PATH>/ETCopyData
-        -   etcopydata 0.5.8
+```bash
+sf plugins
+```
+
+You should see output like:
+- `etcopydatasf 3.0.0 (beta)`
+- `etcopydatasf 3.0.0 (link) /FULL_PATH/ETCopyData`
+- `etcopydatasf 3.0.0`
 
 # How to publish to npm?
 
-Plugin can be found here: https://www.npmjs.com/package/etcopydata/
+Plugin can be found here: https://www.npmjs.com/package/etcopydatasf/
 
--   Update version number in the **package.json** file.
--   No need to comit (yet)
--   Publish a beta package
-    -   `npm publish ./ --tag beta`
--   Publish a production package
-    -   `npm publish ./`
--   Commit to repo and push to Github
+1. **Update version number** in `package.json`
+2. **Test thoroughly** before publishing
+3. **Publish beta version:**
+   ```bash
+   npm publish ./ --tag beta
+   ```
+4. **Publish production version:**
+   ```bash
+   npm publish ./
+   ```
+5. **Create GitHub release:**
+   - Tag: `v3.x.x`
+   - Include release notes
+6. **Commit and push to GitHub**
 
-# Compile
+# Compile and Link
 
--   rm -r node_modules
--   npm install
--   npm run build
--   npm run prepack
--   sfdx plugins:link --verbose
+```bash
+# Clean and rebuild
+rm -rf node_modules lib
+npm install
+npm run build
 
-# Proxy (Charles)
+# Generate manifest and README
+npm run prepack
 
--   Setting up charles
-    -   Help > SSL Proxying > Install Charles Root Certificate
-    -   Proxy > SSL Proxying Settings > SSL Proxying > include
-        -   \*.salesforce.com
-    -   Proxy > Proxy Settings > HTTP Proxy > Port: 8888
--   Setting the proxy
-    -   `HTTP_PROXY=http://127.0.0.1:8888 NODE_TLS_REJECT_UNAUTHORIZED=0 bin/dev ETCopyData:delete -c '/Users/aperez/DO NOT BACKUP/GitProjects/ETCopyData/TesterOrg/@ELTOROIT/data' --loglevel trace --json`
-        -   NODE_TLS_REJECT_UNAUTHORIZED=0
-            -   Avoids this error: Error: self signed certificate in certificate chain
+# Link for local testing
+sf plugins:link --verbose
+```
+
+# Proxy (Charles) for Debugging
+
+## Setting up Charles
+
+1. **Install Charles Root Certificate:**
+   - Help > SSL Proxying > Install Charles Root Certificate
+
+2. **Configure SSL Proxying:**
+   - Proxy > SSL Proxying Settings > SSL Proxying > Include
+   - Add: `*.salesforce.com`
+
+3. **Configure Proxy Port:**
+   - Proxy > Proxy Settings > HTTP Proxy > Port: 8888
+
+## Using the Proxy
+
+```bash
+HTTP_PROXY=http://127.0.0.1:8888 NODE_TLS_REJECT_UNAUTHORIZED=0 \
+  bin/dev ETCopyDataSF delete -c '/path/to/@ELTOROIT/data' -d DestOrg
+```
+
+**Note:** `NODE_TLS_REJECT_UNAUTHORIZED=0` avoids "self signed certificate in certificate chain" errors.
+
+# Troubleshooting
+
+## ESM Module Warning
+
+If you see warnings about ESM modules when linking:
+```
+Warning: etcopydatasf is a linked ESM module and cannot be auto-transpiled
+```
+
+This is expected and not an error. The plugin will use the compiled source from the `lib` directory.
+
+## Build Errors
+
+If you encounter build errors:
+1. Clean everything: `rm -rf node_modules lib`
+2. Reinstall: `npm install`
+3. Rebuild: `npm run build`
+
+## TypeScript Errors
+
+- Make sure all `.js` extensions are included in relative imports (ESM requirement)
+- Check `tsconfig.json` has `"module": "node16"` and `"moduleResolution": "node16"`

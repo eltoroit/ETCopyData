@@ -1,5 +1,5 @@
-import { ISchemaMetadata } from "./Interfaces";
-import { ISettingsSObjectMetatada, Settings } from "./Settings";
+import { ISchemaMetadata } from "./Interfaces.js";
+import { ISettingsSObjectMetatada, Settings } from "./Settings.js";
 
 export class CoreMetadataSObjects {
 	private settings: Settings;

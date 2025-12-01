@@ -1,41 +1,41 @@
 {
-	"name": "etcopydata",
-	"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
-	"version": "2.1.2",
+	"name": "etcopydatasf",
+	"description": "SF Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
+	"version": "3.0.0",
 	"author": "Andres Perez @ElToroIT",
 	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
+	"type": "module",
 	"dependencies": {
-		"@oclif/core": "^1",
-		"@salesforce/command": "^5",
-		"@salesforce/core": "^3",
-		"sfdx-cli": "^7.209.6",
+		"@oclif/core": "^4",
+		"@salesforce/core": "^8",
+		"@salesforce/sf-plugins-core": "^12",
 		"tslib": "^2"
 	},
 	"devDependencies": {
-		"@oclif/test": "^2",
+		"@oclif/test": "^4",
+		"@salesforce/dev-scripts": "^10",
 		"@salesforce/ts-sinon": "^1",
 		"@types/chai": "^4",
-		"@types/mocha": "^8",
-		"@typescript-eslint/eslint-plugin": "^4",
-		"@typescript-eslint/parser": "^4",
-		"chai": "^4",
-		"eslint": "^7",
-		"eslint-config-prettier": "^8",
+		"@types/mocha": "^10",
+		"@typescript-eslint/eslint-plugin": "^7",
+		"@typescript-eslint/parser": "^7",
+		"chai": "^5",
+		"eslint": "^8",
+		"eslint-config-prettier": "^9",
 		"eslint-plugin-header": "^3",
 		"eslint-plugin-import": "^2",
-		"eslint-plugin-jsdoc": "^35",
-		"eslint-plugin-prettier": "^3",
-		"eslint-plugin-typescript": "^0",
-		"mocha": "^9",
-		"nyc": "^15",
-		"oclif": "^3",
-		"prettier": "^2",
-		"sinon": "10.0.0",
+		"eslint-plugin-jsdoc": "^48",
+		"eslint-plugin-prettier": "^5",
+		"mocha": "^10",
+		"nyc": "^17",
+		"oclif": "^4",
+		"prettier": "^3",
+		"sinon": "^18",
 		"ts-node": "^10",
-		"typescript": "4"
+		"typescript": "^5"
 	},
 	"engines": {
-		"node": ">=14.0.0"
+		"node": ">=18.0.0"
 	},
 	"files": [
 		"/lib",
@@ -45,15 +45,19 @@
 	],
 	"homepage": "https://github.com/eltoroit/ETCopyData",
 	"keywords": [
-		"sfdx-plugin"
+		"sf-plugin",
+		"salesforce",
+		"data-migration",
+		"etcopydatasf",
+		"etcopydata"
 	],
 	"license": "MIT",
 	"oclif": {
 		"commands": "./lib/commands",
-		"bin": "sfdx",
+		"bin": "sf",
 		"topics": {
-			"ETCopyData": {
-				"description": "SFDX Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.y data from an org to a scratch org."
+			"ETCopyDataSF": {
+				"description": "SF Plugin to populate your orgs with data for multiple related sObjects."
 			}
 		}
 	},

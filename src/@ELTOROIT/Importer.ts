@@ -1,7 +1,7 @@
-import DataAPI from "./DataAPI";
-import { OrgManager } from "./OrgManager";
-import { ISchemaDataParent } from "./Interfaces";
-import { LogLevel, Util } from "./Util";
+import DataAPI from "./DataAPI.js";
+import { OrgManager } from "./OrgManager.js";
+import { ISchemaDataParent } from "./Interfaces.js";
+import { LogLevel, Util } from "./Util.js";
 
 class ReferenceFieldMapping {
 	public fieldName: string;

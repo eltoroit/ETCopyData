@@ -1,8 +1,6 @@
-import { UX } from "@salesforce/command";
-import { Result } from "@salesforce/command/lib/sfdxCommand";
-import { Logger, SfdxError } from "@salesforce/core";
+import { Logger, SfError } from "@salesforce/core";
 import { AnyFunction } from "@salesforce/ts-types";
-import { OrgManager } from "./OrgManager";
+import { OrgManager } from "./OrgManager.js";
 // import { asAnyJson } from "@salesforce/ts-types";
 
 // TRACE is just for making sure the code works.
@@ -64,7 +62,7 @@ export class Util {
 			Util.writeLog(msg.stack, LogLevel.FATAL);
 		}
 
-		throw new SfdxError(msg, "Error", null, -1);
+		throw new SfError(msg, "Error");
 	}
 
 	public static doesLogOutputsEachStep(): boolean {
@@ -122,7 +120,7 @@ export class Util {
 		}
 	}
 
-	public static getLogsTable(): Partial<Result> {
+	public static getLogsTable(): any {
 		let tableColumnData: any = {
 			columns: [
 				{ key: "timestamp", label: "Timestamp" },
@@ -137,10 +135,8 @@ export class Util {
 			display: () => {
 				// LEARNING: [ARRAY]: Shadow clone of the array.
 				const data = this.entries.slice(0);
-				// LEARNING: Getting ux in a static method
-				UX.create().then((ux) => {
-					ux.table(data, tableColumnData);
-				});
+				// TODO: SF CLI - implement table display with ux.table() if needed
+				console.log("Logs:", JSON.stringify(data, null, 2));
 			}
 		};
 	}

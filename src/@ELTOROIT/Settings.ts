@@ -1,8 +1,8 @@
 import * as fsPromises from "fs/promises";
 import { ConfigContents, ConfigFile } from "@salesforce/core";
 import { AnyJson, Dictionary } from "@salesforce/ts-types";
-import { WhichOrg } from "./OrgManager";
-import { LogLevel, Util } from "./Util";
+import { WhichOrg } from "./OrgManager.js";
+import { LogLevel, Util } from "./Util.js";
 
 /*
 How to add a new entry in the config file?
@@ -216,13 +216,42 @@ export class Settings implements ISettingsValues {
 		});
 	}
 
+	private async detectLegacyConfig(): Promise<void> {
+		if (!this.configfolder) {
+			return;
+		}
+
+		const legacyConfigPath = `${this.configfolder}/ETCopyData.json`;
+
+		try {
+			const fse = require("fs-extra");
+			if (fse.existsSync(legacyConfigPath)) {
+				// Legacy config exists!
+				Util.writeLog("⚠️  Legacy ETCopyData.json detected!", LogLevel.WARN);
+				Util.writeLog("", LogLevel.INFO);
+				Util.writeLog("This plugin uses ETCopyDataSF.json (not ETCopyData.json)", LogLevel.INFO);
+				Util.writeLog("To migrate, copy your config:", LogLevel.INFO);
+				Util.writeLog(`  cp ${legacyConfigPath} ${this.configfolder}/ETCopyDataSF.json`, LogLevel.INFO);
+				Util.writeLog("", LogLevel.INFO);
+				Util.writeLog("To continue using the legacy version, use: npm install etcopydata@2.1.2", LogLevel.INFO);
+				Util.writeLog("", LogLevel.INFO);
+			}
+		} catch (err) {
+			// No legacy config found, continue normally
+		}
+	}
+
 	private readAll(overrideSettings: Settings): Promise<Settings> {
 		let path: string;
 
 		return new Promise((resolve, reject) => {
-			// This has to be done in serial mode, so chain the requests...
-			// LEARNING: [PROMISES]: Promises running in serial mode. the next block can't start before the previous finishes.
-			this.openConfigFile(overrideSettings.configfolder)
+			// Check for legacy config file
+			this.detectLegacyConfig()
+				.then(() => {
+					// This has to be done in serial mode, so chain the requests...
+					// LEARNING: [PROMISES]: Promises running in serial mode. the next block can't start before the previous finishes.
+					return this.openConfigFile(overrideSettings.configfolder);
+				})
 				.then((resfile: ConfigFile<ConfigFile.Options>) => {
 					this.configFile = resfile;
 					// LEARNING: [PROMISES]: Remember to return the method that throws a promise.
@@ -258,7 +287,7 @@ export class Settings implements ISettingsValues {
 			// Make folder
 			const overrideFolder = overrideSettings.configfolder;
 			if (!readFolder) {
-				readFolder = "ETCopyData";
+				readFolder = "ETCopyDataSF";
 			}
 			this.rootFolderRaw = readFolder;
 			this.rootFolderFull = this.rootFolderRaw;
@@ -564,7 +593,7 @@ export class Settings implements ISettingsValues {
 			this.configfolder = ".";
 		}
 		return ConfigFile.create({
-			filename: "ETCopyData.json",
+			filename: "ETCopyDataSF.json",
 			isGlobal: false,
 			isState: false,
 			rootFolder: this.configfolder
@@ -572,7 +601,10 @@ export class Settings implements ISettingsValues {
 	}
 
 	private write(): Promise<object> {
-		return this.configFile.write(this.valuesToWrite());
+		// TODO: SF CLI - ConfigFile.write() signature may have changed
+		// For now, set the values and then write
+		Object.assign(this.configFile, this.valuesToWrite());
+		return this.configFile.write();
 	}
 
 	// TODO: UPDATE SETTINGS HERE: WRITE!

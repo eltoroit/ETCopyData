@@ -1,6 +1,6 @@
-import { ISchemaData, ISchemaDataParent } from "./Interfaces";
-import { OrgManager } from "./OrgManager";
-import { Util } from "./Util";
+import { ISchemaData, ISchemaDataParent } from "./Interfaces.js";
+import { OrgManager } from "./OrgManager.js";
+import { Util } from "./Util.js";
 
 export class SchemaOrder {
 	private orgManager: OrgManager;

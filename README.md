@@ -1,65 +1,124 @@
-# ETCopyData has been deprecated. Please use `Salesforce Data Move Utility (SFDMU)`
+# ETCopyDataSF
 
--   https://help.sfdmu.com/
--   https://github.com/forcedotcom/SFDX-Data-Move-Utility
--   There is even a GUI app... https://help.sfdmu.com/sfdmu-gui-app
--   https://help.sfdmu.com/additional-information/support_policy
-    -   THIS IS NOT AN OFFICIAL SALESFORCE PROJECT.
-    -   IT IS DEVELOPED AS A FREE OPEN-SOURCE CONTRIBUTION TO THE SALESFORCE COMMUNITY.
-    -   WHILE SALESFORCE HOLDS THE COPYRIGHTS, IT IS NOT INVOLVED IN THE DEVELOPMENT OR SUPPORT OF THIS PROJECT.
+SF Plugin (v3.x) for Salesforce data migration - migrate data between Salesforce orgs with support for related sObjects.
 
-# ETCopyData
+[![Version](https://img.shields.io/npm/v/etcopydatasf.svg)](https://npmjs.org/package/etcopydatasf) [![License](https://img.shields.io/npm/l/etcopydatasf.svg)](https://github.com/ELTOROIT/ETCopyData/blob/master/package.json)
 
-SFDX Plugin to populate your scratch org and/or developer sandbox with data extracted from multiple sObjects.
+> **⚠️ Version 3.0 Breaking Changes**: This version migrates from SFDX CLI to SF CLI. If you're using v2.x, see the [Migration Guide](#migrating-from-v2x-sfdx-to-v3x-sf) below.
 
-[![Version](https://img.shields.io/npm/v/etcopydata.svg)](https://npmjs.org/package/etcopydata) [![License](https://img.shields.io/npm/l/etcopydata.svg)](https://github.com/ELTOROIT/ETCopyData/blob/master/package.json)
+> **Alternative Tool**: For more advanced data migration needs, consider [Salesforce Data Move Utility (SFDMU)](https://help.sfdmu.com/) - a feature-rich, actively maintained tool by the Salesforce community.
 
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- toc -->
-
--   [ETCopyData](#etcopydata)
--   [Install](#install)
--   [Documentation](#documentation)
--   [Commands](#commands)
-    <!-- tocstop -->
+* [ETCopyDataSF](#etcopydatasf)
+* [Install](#install)
+* [Migrating from v2.x (SFDX) to v3.x (SF)](#migrating-from-v2x-sfdx-to-v3x-sf)
+* [Quick Start](#quick-start)
+* [Documentation](#documentation)
+* [Commands](#commands)
+<!-- tocstop -->
     <!-- ET-AUTO-STOP: This section is auto-updated... -->
 
 # Install
 
-## Install as plugin
+## Prerequisites
 
-`sfdx plugins:install etcopydata`
+-   SF CLI v2.x or higher: `sf --version`
+-   If you need to install SF CLI, see: [Salesforce CLI Installation](https://developer.salesforce.com/tools/salesforcecli)
+
+## Install as Plugin
+
+```bash
+sf plugins:install etcopydatasf
+```
 
 You'll be prompted that this, like any plugin, is not officially code-signed by Salesforce. If that's annoying, you can [whitelist it](https://developer.salesforce.com/blogs/2017/10/salesforce-dx-cli-plugin-update.html)
 
-## 2024-03-12 Update
+## Install from Source (for development)
 
-The SFDX architecture changed, and I have not had the time to fix the error. But there is a way out, so I have been using this as a solution in the mean time. I will try to find some time and fix this properly, but in the mean time this is how you can solve this. I know this is not the best answer... but it's an answer :-)
+1. Install the SF CLI
+2. Clone the repository: `git clone https://github.com/eltoroit/ETCopyData.git`
+3. Change directory: `cd ETCopyData`
+4. Install npm modules: `npm install`
+5. Build the plugin: `npm run build`
+6. Link the plugin: `sf plugins:link .`
 
-1. Clone the repository: `git clone https://github.com/eltoroit/ETCopyData.git`
-2. Change directory `cd ETCopyData`
-3. Install npm modules: `npm install --production`
-4. Install SFDX CLI in your project: `npm i sfdx-cli@7.209.6`
-5. Link the plugin: `./node_modules/sfdx-cli/bin/run plugins:link .`
-6. Use the local SFDX version with ETCopyData
+# Migrating from v2.x (SFDX) to v3.x (SF)
 
--   Export Data: `./node_modules/sfdx-cli/bin/run ETCopyData export --configfolder ./@ELTOROIT/data --loglevel trace --json`
--   Import Data: `./node_modules/sfdx-cli/bin/run ETCopyData import --configfolder ./@ELTOROIT/data --loglevel trace --json`
--   Delete Data: `./node_modules/sfdx-cli/bin/run ETCopyData delete --configfolder ./@ELTOROIT/data --loglevel trace --json`
+**This is a MAJOR breaking change release.** Version 3.x works with the SF CLI and uses different command names and config files.
 
-## ~~Install from source~~
+## Key Changes
 
-1. ~~Install the SDFX CLI.~~
-2. ~~Clone the repository: `git clone https://github.com/eltoroit/ETCopyData.git`~~
-3. ~~Change directory `cd ETCopyData`~~
-4. ~~Install npm modules: `npm install --production`~~
-5. ~~Link the plugin: `sfdx plugins:link .`~~
+| Aspect | v2.x (SFDX) | v3.x (SF) |
+|--------|-------------|-----------|
+| Package | `etcopydata` | `etcopydatasf` |
+| CLI | `sfdx` | `sf` |
+| Commands | `sfdx ETCopyData:export` | `sf ETCopyDataSF export` |
+| Config File | `ETCopyData.json` | `ETCopyDataSF.json` |
+| Default Folder | `./ETCopyData` | `./ETCopyDataSF` |
+
+## Migration Steps
+
+1. **Install new version:**
+   ```bash
+   sf plugins:install etcopydatasf
+   ```
+
+2. **Copy your config file:**
+   ```bash
+   cp ETCopyData.json ETCopyDataSF.json
+   ```
+
+3. **Update config file (if using default folder):**
+   Edit `ETCopyDataSF.json` and change `"rootFolder": "./ETCopyData"` to `"rootFolder": "./ETCopyDataSF"` (or keep using your custom folder path).
+
+4. **Update your scripts:**
+   ```bash
+   # Old (v2.x)
+   sfdx ETCopyData:export -c ./data -s MyOrg
+   
+   # New (v3.x)
+   sf ETCopyDataSF export -c ./data -s MyOrg
+   ```
+
+5. **(Optional) Uninstall legacy version:**
+   ```bash
+   npm uninstall -g etcopydata
+   ```
+
+**Note:** Both versions can coexist on the same machine since they use different command namespaces, config files, and default folders.
+
+For detailed migration instructions, see [USER_MIGRATION_GUIDE.md](USER_MIGRATION_GUIDE.md).
+
+# Quick Start
+
+1. **Authenticate to your orgs:**
+   ```bash
+   sf org login web -a SourceOrg
+   sf org login web -a DestOrg
+   ```
+
+2. **Create a config file:**
+   The plugin will create a sample `ETCopyDataSF.json` if it doesn't exist:
+   ```bash
+   sf ETCopyDataSF export -c ./mydata -s SourceOrg
+   ```
+
+3. **Edit the config file** to specify which sObjects and fields to copy
+
+4. **Export, import, and enjoy:**
+   ```bash
+   sf ETCopyDataSF export -c ./mydata -s SourceOrg
+   sf ETCopyDataSF import -c ./mydata -d DestOrg
+   ```
 
 # Documentation
 
-This plugin is highly configurable with a JSON file named `ETCopyData.json` located on the current folder you are using when running this plugin. If the file does not exist, the plugin creates the file before erroring out, this allows you to get the bare bones of the file and modify it.
+This plugin is highly configurable with a JSON file named `ETCopyDataSF.json` located in the folder you specify with the `-c` flag. If the file does not exist, the plugin creates a sample file before erroring out, allowing you to get started quickly.
 
-## ETCopyData.json
+> **Legacy Config Detection:** If you have an old `ETCopyData.json` file, the plugin will warn you and suggest migrating it to `ETCopyDataSF.json`.
+
+## ETCopyDataSF.json
 
 ### Sample
 
@@ -257,170 +316,164 @@ Since the idea of this tool is to copy data between orgs, it could be possible t
 
 <!-- ET-AUTO-START: This section is auto-updated... -->
 <!-- commands -->
+* [`sf ETCopyDataSF:compare`](#sf-etcopydatasfcompare)
+* [`sf ETCopyDataSF:delete`](#sf-etcopydatasfdelete)
+* [`sf ETCopyDataSF:export`](#sf-etcopydatasfexport)
+* [`sf ETCopyDataSF:full`](#sf-etcopydatasffull)
+* [`sf ETCopyDataSF:import`](#sf-etcopydatasfimport)
 
--   [ETCopyData has been deprecated. Please use `Salesforce Data Move Utility (SFDMU)`](#etcopydata-has-been-deprecated-please-use-salesforce-data-move-utility-sfdmu)
--   [ETCopyData](#etcopydata)
--   [Install](#install)
-    -   [Install as plugin](#install-as-plugin)
-    -   [2024-03-12 Update](#2024-03-12-update)
-    -   [~~Install from source~~](#install-from-source)
--   [Documentation](#documentation)
-    -   [ETCopyData.json](#etcopydatajson)
-        -   [Sample](#sample)
-        -   [Fields](#fields)
-    -   [sObjectsData](#sobjectsdata)
-        -   [Sample: Minimum fields required](#sample-minimum-fields-required)
-        -   [Sample: All fields complete](#sample-all-fields-complete)
-        -   [Fields](#fields-1)
-    -   [sObjectsMetadata](#sobjectsmetadata)
-        -   [Sample: Minimum fields required](#sample-minimum-fields-required-1)
-        -   [Sample: All fields complete](#sample-all-fields-complete-1)
-        -   [Fields](#fields-2)
-    -   [References](#references)
-    -   [Copying to production](#copying-to-production)
-    -   [Notes:](#notes)
--   [Commands](#commands)
-    -   [`sfdx ETCopyData:compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatacompare--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-    -   [`sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatadelete--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-    -   [`sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataexport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-    -   [`sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydatafull--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-    -   [`sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-etcopydataimport--c-string--d-string--s-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+## `sf ETCopyDataSF:compare`
 
-## `sfdx ETCopyData:compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
-
-Checks the source and destination org for any differences in the sObject's metadata, this helps determine what data can be properly exported/imported.
+Checks the source and destination org for any differences in the sObject's metadata
 
 ```
 USAGE
-  $ sfdx ETCopyData:compare [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
-    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf ETCopyDataSF:compare [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>]
 
 FLAGS
-  -c, --configfolder=PATH                                                           Root folder to find the
-                                                                                    configuration file
-  -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
-                                                                                    DESTINATION org
-  -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
-                                                                                    SOURCE org
-  --json                                                                            format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
+  -c, --configfolder=<value>    Root folder to find the configuration file
+  -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
+  -s, --orgsource=<value>       SF alias or username for the SOURCE org
+
+GLOBAL FLAGS
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
 
 DESCRIPTION
-  Checks the source and destination org for any differences in the sObject's metadata, this helps determine what data
-  can be properly exported/imported.
+  Checks the source and destination org for any differences in the sObject's metadata
+
+  This helps determine what data can be properly exported/imported.
+
+FLAG DESCRIPTIONS
+  -c, --configfolder=<value>  Root folder to find the configuration file
+
+    Path to folder containing ETCopyDataSF.json config file
 ```
 
-_See code: [src/commands/ETCopyData/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/compare.ts)_
+_See code: [src/commands/ETCopyDataSF/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v3.0.0/src/commands/ETCopyDataSF/compare.ts)_
 
-## `sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sf ETCopyDataSF:delete`
 
-Deletes data from destination org, preparing for the new data that will be uploaded. Note: Deleting optionally happens before loading, but if there are some errors this operation can be retried by itself.
+Deletes data from destination org
 
 ```
 USAGE
-  $ sfdx ETCopyData:delete [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
-    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf ETCopyDataSF:delete [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>]
 
 FLAGS
-  -c, --configfolder=PATH                                                           Root folder to find the
-                                                                                    configuration file
-  -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
-                                                                                    DESTINATION org
-  -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
-                                                                                    SOURCE org
-  --json                                                                            format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
+  -c, --configfolder=<value>    Root folder to find the configuration file
+  -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
+  -s, --orgsource=<value>       SF alias or username for the SOURCE org
+
+GLOBAL FLAGS
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
 
 DESCRIPTION
-  Deletes data from destination org, preparing for the new data that will be uploaded. Note: Deleting optionally happens
-  before loading, but if there are some errors this operation can be retried by itself.
+  Deletes data from destination org
+
+  Prepares for the new data that will be uploaded. Note: Deleting optionally happens before loading, but if there are
+  some errors this operation can be retried by itself.
+
+FLAG DESCRIPTIONS
+  -c, --configfolder=<value>  Root folder to find the configuration file
+
+    Path to folder containing ETCopyDataSF.json config file
 ```
 
-_See code: [src/commands/ETCopyData/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/delete.ts)_
+_See code: [src/commands/ETCopyDataSF/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v3.0.0/src/commands/ETCopyDataSF/delete.ts)_
 
-## `sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sf ETCopyDataSF:export`
 
-Exports the data from the source org, and saves it in the destination folder so that it can be imported at a later time.
+Exports the data from the source org
 
 ```
 USAGE
-  $ sfdx ETCopyData:export [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
-    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf ETCopyDataSF:export [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>]
 
 FLAGS
-  -c, --configfolder=PATH                                                           Root folder to find the
-                                                                                    configuration file
-  -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
-                                                                                    DESTINATION org
-  -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
-                                                                                    SOURCE org
-  --json                                                                            format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
+  -c, --configfolder=<value>    Root folder to find the configuration file
+  -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
+  -s, --orgsource=<value>       SF alias or username for the SOURCE org
+
+GLOBAL FLAGS
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
 
 DESCRIPTION
-  Exports the data from the source org, and saves it in the destination folder so that it can be imported at a later
-  time.
+  Exports the data from the source org
+
+  Saves the data in the destination folder so that it can be imported at a later time.
+
+FLAG DESCRIPTIONS
+  -c, --configfolder=<value>  Root folder to find the configuration file
+
+    Path to folder containing ETCopyDataSF.json config file
 ```
 
-_See code: [src/commands/ETCopyData/export.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/export.ts)_
+_See code: [src/commands/ETCopyDataSF/export.ts](https://github.com/eltoroit/ETCopyData/blob/v3.0.0/src/commands/ETCopyDataSF/export.ts)_
 
-## `sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sf ETCopyDataSF:full`
 
-Performs all the steps, including comparing schemas, exporting data from the source, optionally deleting data from the destination, and importing the data to the destination org. This may help you when setting up a new process
+Performs all steps of the data migration
 
 ```
 USAGE
-  $ sfdx ETCopyData:full [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
-    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf ETCopyDataSF:full [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>]
 
 FLAGS
-  -c, --configfolder=PATH                                                           Root folder to find the
-                                                                                    configuration file
-  -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
-                                                                                    DESTINATION org
-  -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
-                                                                                    SOURCE org
-  --json                                                                            format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
+  -c, --configfolder=<value>    Root folder to find the configuration file
+  -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
+  -s, --orgsource=<value>       SF alias or username for the SOURCE org
+
+GLOBAL FLAGS
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
 
 DESCRIPTION
-  Performs all the steps, including comparing schemas, exporting data from the source, optionally deleting data from the
-  destination, and importing the data to the destination org. This may help you when setting up a new process
+  Performs all steps of the data migration
+
+  Includes comparing schemas, exporting data from the source, optionally deleting data from the destination, and
+  importing the data to the destination org. This may help you when setting up a new process.
+
+FLAG DESCRIPTIONS
+  -c, --configfolder=<value>  Root folder to find the configuration file
+
+    Path to folder containing ETCopyDataSF.json config file
 ```
 
-_See code: [src/commands/ETCopyData/full.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/full.ts)_
+_See code: [src/commands/ETCopyDataSF/full.ts](https://github.com/eltoroit/ETCopyData/blob/v3.0.0/src/commands/ETCopyDataSF/full.ts)_
 
-## `sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sf ETCopyDataSF:import`
 
-Imports data into destination org, you can control if the data in the destination sObjects should be removed before loading a new data set. The data load happens in a specific order (children first, parents last) which has been determined by checking the schema in the destination org.
+Imports data into destination org
 
 ```
 USAGE
-  $ sfdx ETCopyData:import [-c <string>] [-d <string>] [-s <string>] [--json] [--loglevel
-    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf ETCopyDataSF:import [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>]
 
 FLAGS
-  -c, --configfolder=PATH                                                           Root folder to find the
-                                                                                    configuration file
-  -d, --orgdestination=(alias|username)                                             SFDX alias or username for the
-                                                                                    DESTINATION org
-  -s, --orgsource=(alias|username)                                                  SFDX alias or username for the
-                                                                                    SOURCE org
-  --json                                                                            format output as json
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
+  -c, --configfolder=<value>    Root folder to find the configuration file
+  -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
+  -s, --orgsource=<value>       SF alias or username for the SOURCE org
+
+GLOBAL FLAGS
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
 
 DESCRIPTION
-  Imports data into destination org, you can control if the data in the destination sObjects should be removed before
-  loading a new data set. The data load happens in a specific order (children first, parents last) which has been
-  determined by checking the schema in the destination org.
+  Imports data into destination org
+
+  You can control if the data in the destination sObjects should be removed before loading a new data set. The data load
+  happens in a specific order (children first, parents last) which has been determined by checking the schema in the
+  destination org.
+
+FLAG DESCRIPTIONS
+  -c, --configfolder=<value>  Root folder to find the configuration file
+
+    Path to folder containing ETCopyDataSF.json config file
 ```
 
-_See code: [src/commands/ETCopyData/import.ts](https://github.com/eltoroit/ETCopyData/blob/v2.1.1/src/commands/ETCopyData/import.ts)_
-
+_See code: [src/commands/ETCopyDataSF/import.ts](https://github.com/eltoroit/ETCopyData/blob/v3.0.0/src/commands/ETCopyDataSF/import.ts)_
 <!-- commandsstop -->
 <!-- ET-AUTO-STOP: This section is auto-updated... -->
