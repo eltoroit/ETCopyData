@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 
-const oclif = require('@oclif/core');
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-const path = require('path');
+const require = createRequire(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const oclif = require('@oclif/core');
 const project = path.join(__dirname, '..', 'tsconfig.json');
 
 // In dev mode -> use ts-node and dev plugins

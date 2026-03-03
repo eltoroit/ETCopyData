@@ -36,7 +36,15 @@ export class OrgManager {
 						this.discovery = new SchemaDiscovery(this);
 						resolve(this);
 					})
-					.catch((err) => { reject(err); });
+					.catch((err) => {
+						const hint =
+							"Org aliases are case-sensitive. Run 'sf org list' to see your authenticated orgs and their exact aliases.";
+						const enhancedErr =
+							err instanceof Error
+								? new Error(`${hint}\n\n${err.message}`, { cause: err })
+								: new Error(`${hint}\n\n${String(err)}`, { cause: err });
+						reject(enhancedErr);
+					});
 			} catch (ex) {
 				this.resetValues(this.alias);
 				const msg = "Alias [" + this.alias + "] does not reference a valid org";

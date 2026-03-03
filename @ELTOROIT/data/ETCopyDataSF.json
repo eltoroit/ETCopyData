@@ -1,0 +1,79 @@
+{
+  "orgSource": "soDEMO",
+  "orgDestination": "soDEMO",
+  "sObjectsData": [
+    {
+      "name": "Opportunity",
+      "ignoreFields": "OwnerId",
+      "externalIdField": null,
+      "twoPassReferenceFields": "",
+      "where": null,
+      "orderBy": null,
+      "maxRecords": -1
+    },
+    {
+      "name": "Case",
+      "ignoreFields": "OwnerId",
+      "externalIdField": null,
+      "twoPassReferenceFields": "",
+      "where": null,
+      "orderBy": null,
+      "maxRecords": -1
+    },
+    {
+      "name": "Lead",
+      "ignoreFields": "OwnerId",
+      "externalIdField": null,
+      "twoPassReferenceFields": "",
+      "where": null,
+      "orderBy": null,
+      "maxRecords": -1
+    },
+    {
+      "name": "Contact",
+      "ignoreFields": "OwnerId",
+      "externalIdField": null,
+      "twoPassReferenceFields": "",
+      "where": null,
+      "orderBy": null,
+      "maxRecords": -1
+    },
+    {
+      "name": "Campaign",
+      "ignoreFields": "OwnerId",
+      "externalIdField": null,
+      "twoPassReferenceFields": "",
+      "where": null,
+      "orderBy": null,
+      "maxRecords": -1
+    },
+    {
+      "name": "Account",
+      "ignoreFields": "OwnerId",
+      "externalIdField": null,
+      "twoPassReferenceFields": "",
+      "where": null,
+      "orderBy": null,
+      "maxRecords": -1
+    },
+    {
+      "name": "Entitlement",
+      "ignoreFields": "",
+      "externalIdField": null,
+      "twoPassReferenceFields": "",
+      "where": null,
+      "orderBy": null
+    }
+  ],
+  "sObjectsMetadata": [],
+  "rootFolder": "ETCopyData",
+  "includeAllCustom": false,
+  "customObjectsToIgnore": null,
+  "stopOnErrors": true,
+  "ignoreFields": null,
+  "copyToProduction": false,
+  "twoPassReferenceFields": null,
+  "deleteDestination": true,
+  "useBulkAPI": false,
+  "bulkPollingTimeout": null
+}
