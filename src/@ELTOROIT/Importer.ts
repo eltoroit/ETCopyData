@@ -244,6 +244,20 @@ export class Importer {
 				return;
 			}
 
+			// Check if Person Accounts are enabled in the destination org
+			const accountFields = orgDestination.discovery.getSObjects().get("Account")?.fields ?? [];
+			const hasPersonAccounts =
+				accountFields.includes("PersonContactId") && accountFields.includes("IsPersonAccount");
+
+			if (!hasPersonAccounts) {
+				Util.writeLog(
+					`[${orgDestination.alias}] Skipping Person Contact ID mapping: Person Accounts are not enabled in this org.`,
+					LogLevel.INFO
+				);
+				resolve();
+				return;
+			}
+
 			// Query destination org for Person Accounts and their PersonContactIds
 			const query = `SELECT Id, PersonContactId FROM Account WHERE IsPersonAccount = true AND Id IN ('${newAccountIds.join("','")}')`;
 

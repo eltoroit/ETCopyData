@@ -1,6 +1,6 @@
 {
-  "orgSource": "soDEMO",
-  "orgDestination": "soDEMO",
+  "orgSource": "soDemo",
+  "orgDestination": "soDemo",
   "sObjectsData": [
     {
       "name": "Opportunity",
