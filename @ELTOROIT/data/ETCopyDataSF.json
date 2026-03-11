@@ -1,16 +1,7 @@
 {
   "orgSource": "soDemo",
-  "orgDestination": "soDemo",
+  "orgDestination": "prCDO_Rocket",
   "sObjectsData": [
-    {
-      "name": "Opportunity",
-      "ignoreFields": "OwnerId",
-      "externalIdField": null,
-      "twoPassReferenceFields": "",
-      "where": null,
-      "orderBy": null,
-      "maxRecords": -1
-    },
     {
       "name": "Case",
       "ignoreFields": "OwnerId",
@@ -21,25 +12,7 @@
       "maxRecords": -1
     },
     {
-      "name": "Lead",
-      "ignoreFields": "OwnerId",
-      "externalIdField": null,
-      "twoPassReferenceFields": "",
-      "where": null,
-      "orderBy": null,
-      "maxRecords": -1
-    },
-    {
       "name": "Contact",
-      "ignoreFields": "OwnerId",
-      "externalIdField": null,
-      "twoPassReferenceFields": "",
-      "where": null,
-      "orderBy": null,
-      "maxRecords": -1
-    },
-    {
-      "name": "Campaign",
       "ignoreFields": "OwnerId",
       "externalIdField": null,
       "twoPassReferenceFields": "",
@@ -63,6 +36,14 @@
       "twoPassReferenceFields": "",
       "where": null,
       "orderBy": null
+    },
+    {
+      "name": "Loan__c",
+      "ignoreFields": "",
+      "externalIdField": null,
+      "twoPassReferenceFields": "",
+      "where": null,
+      "orderBy": null
     }
   ],
   "sObjectsMetadata": [],
@@ -71,7 +52,7 @@
   "customObjectsToIgnore": null,
   "stopOnErrors": true,
   "ignoreFields": null,
-  "copyToProduction": false,
+  "copyToProduction": true,
   "twoPassReferenceFields": null,
   "deleteDestination": true,
   "useBulkAPI": false,
