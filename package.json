@@ -63,6 +63,7 @@
 	},
 	"repository": "https://github.com/eltoroit/ETCopyData",
 	"scripts": {
+		"TEST": "npm run build && sf ETCopyDataSF delete --configfolder ./@ELTOROIT/data --loglevel trace --json --force-production | tee ./etLogs/etCopyData.txt",
 		"build": "tsc -p .",
 		"lint": "eslint src/**/*.ts test/**/*.ts",
 		"postpack": "rm -f oclif.manifest.json",
@@ -72,6 +73,7 @@
 		"version": "oclif readme && git add README.md",
 		"exportData": "sf ETCopyDataSF export --configfolder ./@ELTOROIT/data --loglevel trace | tee ./etLogs/etCopyData.txt",
 		"importData": "sf ETCopyDataSF import --configfolder ./@ELTOROIT/data --loglevel trace --force-production | tee ./etLogs/etCopyData.txt",
-		"deleteData": "sf ETCopyDataSF delete --configfolder ./@ELTOROIT/data --loglevel trace --json --force-production | tee ./etLogs/etCopyData.txt"
+		"deleteDataPrompt": "sf ETCopyDataSF delete --configfolder ./@ELTOROIT/data --loglevel trace --json | tee ./etLogs/etCopyData.txt",
+		"deleteDataNoPrompt": "sf ETCopyDataSF delete --configfolder ./@ELTOROIT/data --loglevel trace --json --force-production | tee ./etLogs/etCopyData.txt"
 	}
 }
