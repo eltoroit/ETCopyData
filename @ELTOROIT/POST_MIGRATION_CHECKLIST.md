@@ -123,10 +123,10 @@ These items were marked as TODOs in the code for future enhancement:
    - Current: Simple log messages
    - Future: Use `ux.spinner` for better UX
 
-2. **User Prompts**: Implement proper user confirmation prompts
+2. **User Prompts**: ✅ Implemented
    - Files: `src/@ELTOROIT/ETCopyDataSF.ts` (PromptUserYN method)
-   - Current: Auto-rejects with error
-   - Future: Use SF CLI prompt API
+   - Uses `prompts.confirm` from @salesforce/sf-plugins-core for interactive runs
+   - `--confirm-production` flag for scripted/CI runs; fails with clear error when --json without flag
 
 3. **Bulk API**: Verify bulk API compatibility
    - Files: `src/@ELTOROIT/DataAPI.ts`
