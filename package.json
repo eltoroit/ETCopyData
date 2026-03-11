@@ -63,7 +63,7 @@
 	},
 	"repository": "https://github.com/eltoroit/ETCopyData",
 	"scripts": {
-		"TEST": "npm run build && sf ETCopyDataSF delete --configfolder ./@ELTOROIT/data --loglevel trace --json --force-production | tee ./etLogs/etCopyData.txt",
+		"TEST": "clear && npm run build && sf ETCopyDataSF export --configfolder ./@ELTOROIT/data --loglevel trace --json --force-production | tee ./etLogs/etCopyData.txt",
 		"build": "tsc -p .",
 		"lint": "eslint src/**/*.ts test/**/*.ts",
 		"postpack": "rm -f oclif.manifest.json",

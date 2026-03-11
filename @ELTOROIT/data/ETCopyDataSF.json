@@ -1,12 +1,21 @@
 {
-  "orgSource": "soDemo",
+  "orgSource": "prCDO_Rocket",
   "orgDestination": "prCDO_Rocket",
   "sObjectsData": [
+    {
+      "name": "Account",
+      "ignoreFields": "OwnerId",
+      "externalIdField": null,
+      "twoPassReferenceFields": "PersonContactId,MasterRecordId,ParentId",
+      "where": null,
+      "orderBy": null,
+      "maxRecords": -1
+    },
     {
       "name": "Case",
       "ignoreFields": "OwnerId",
       "externalIdField": null,
-      "twoPassReferenceFields": "",
+      "twoPassReferenceFields": "MasterRecordId,ParentId",
       "where": null,
       "orderBy": null,
       "maxRecords": -1
@@ -15,16 +24,7 @@
       "name": "Contact",
       "ignoreFields": "OwnerId",
       "externalIdField": null,
-      "twoPassReferenceFields": "",
-      "where": null,
-      "orderBy": null,
-      "maxRecords": -1
-    },
-    {
-      "name": "Account",
-      "ignoreFields": "OwnerId",
-      "externalIdField": null,
-      "twoPassReferenceFields": "",
+      "twoPassReferenceFields": "AccountId,MasterRecordId,ReportsToId",
       "where": null,
       "orderBy": null,
       "maxRecords": -1

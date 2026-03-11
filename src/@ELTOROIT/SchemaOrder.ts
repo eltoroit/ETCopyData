@@ -56,100 +56,74 @@ export class SchemaOrder {
 
 					// Build helpful error message with configuration guidance
 					let errorMsg = "Deadlock determining import order, most likely caused by circular or self reference, configure those fields as twoPassReferenceFields.";
+					errorMsg += "\n\nTo resolve this, update your ETCopyDataSF.json configuration file with the following twoPassReferenceFields:\n\n";
 
 					if (relationships.length > 0) {
-						errorMsg += ` Verify these relationships: ${relationships.join(", ")}`;
-					} else {
-						// No direct circular relationships found - likely self-references or complex cycles
-						errorMsg += "\n\nTo resolve this, update your ETCopyDataSF.json configuration file with the following twoPassReferenceFields:\n\n";
+						// Cross-object circular relationships detected - extract fields from relationships
+						// Parse the relationships to get the actual fields causing circular dependencies
+						const suggestions: Map<string, Set<string>> = new Map();
 
-						// Collect all fields that are causing the deadlock
-						const suggestions: Map<string, string[]> = new Map();
+						// Parse the relationships array to extract specific fields
+						// Format: "[Account<=>Contact (Account.PersonContactId, Contact.AccountId)]"
+						for (const relationship of relationships) {
+							// Extract fields from the relationship string
+							const match = relationship.match(/\(([^)]+)\)/);
+							if (match) {
+								const fieldList = match[1].split(",").map(f => f.trim());
+								for (const fieldRef of fieldList) {
+									// Parse "ObjectName.FieldName"
+									const parts = fieldRef.split(".");
+									if (parts.length === 2) {
+										const [objName, fieldName] = parts;
+										if (!suggestions.has(objName)) {
+											suggestions.set(objName, new Set());
+										}
+										suggestions.get(objName).add(fieldName);
+									}
+								}
+							}
+						}
 
+						// Also get rejected self-referencing fields for objects in the deadlock
 						for (const objName of allSObjNames) {
-							const sObj = this.orgManager.discovery.getSObjects().get(objName);
-							const fieldSuggestions: string[] = [];
-
-							// Check all parents that are in the deadlock set (cross-object references)
-							sObj.parents.forEach((parent) => {
-								if (allSObjNames.includes(parent.sObj)) {
-									fieldSuggestions.push(parent.parentId);
+							const rejectedFields = this.orgManager.discovery.getRejectedSelfReferencingFields(objName);
+							if (rejectedFields.length > 0) {
+								if (!suggestions.has(objName)) {
+									suggestions.set(objName, new Set());
 								}
-							});
-
-							// Also check twoPassParents (these are already configured but might be part of complex cycle)
-							sObj.twoPassParents.forEach((parent) => {
-								if (allSObjNames.includes(parent.sObj) && !fieldSuggestions.includes(parent.parentId)) {
-									fieldSuggestions.push(parent.parentId);
-								}
-							});
-
-							if (fieldSuggestions.length > 0) {
-								suggestions.set(objName, fieldSuggestions);
+								rejectedFields.forEach(field => suggestions.get(objName).add(field));
 							}
 						}
 
-						// If no suggestions found from parents, check the config for fields that might need twoPassReferenceFields
-						// This happens when self-referencing fields were rejected during schema discovery
-						if (suggestions.size === 0) {
-							// Check ALL objects (not just deadlocked ones) for potential self-reference configuration needs
-							const allObjects = Array.from(this.orgManager.discovery.getSObjects().keys());
-							const objectsNeedingConfig = [];
-
-							for (const objName of allObjects) {
-								const sObj = this.orgManager.discovery.getSObjects().get(objName);
-								const sObjData = this.orgManager.settings.getSObjectData(objName);
-
-								// Check if this object has any lookup fields that might be self-referencing
-								// Common self-referencing fields that are often rejected
-								const commonSelfRefFields = ["MasterRecordId", "ParentId", "ReportsToId"];
-								const potentialFields = commonSelfRefFields.filter(field =>
-									sObjData.twoPassReferenceFields.indexOf(field) === -1  // Not already configured
-								);
-
-								if (potentialFields.length > 0 || allSObjNames.includes(objName)) {
-									objectsNeedingConfig.push(objName);
-								}
-							}
-
-							// Show configuration for objects in the deadlock
-							for (const objName of allSObjNames) {
-								errorMsg += `  {\n    "name": "${objName}",\n    "twoPassReferenceFields": "MasterRecordId,ParentId"  // Or other self-referencing lookup fields\n  },\n`;
-							}
-
-							errorMsg += "\nNote: The exact field names depend on your schema. Common self-referencing fields include:\n";
-							errorMsg += "  - MasterRecordId (for merged records)\n";
-							errorMsg += "  - ParentId (for hierarchical relationships)\n";
-							errorMsg += "  - ReportsToId (for Contact hierarchy)\n";
-							errorMsg += "\nCheck the INFO log messages above to see which fields were rejected due to self-references.";
-
-							// If other objects also have potential issues, mention them
-							const otherObjects = objectsNeedingConfig.filter(obj => !allSObjNames.includes(obj));
-							if (otherObjects.length > 0) {
-								errorMsg += `\n\nAdditional objects that may also need configuration: ${otherObjects.join(", ")}`;
-							}
-						} else {
-							// Format as JSON for easy copy-paste
-							const sObjectConfigs = [];
-							for (const [objName, fields] of suggestions.entries()) {
-								sObjectConfigs.push(`  {\n    "name": "${objName}",\n    "twoPassReferenceFields": "${fields.join(",")}"\n  }`);
-							}
-							errorMsg += sObjectConfigs.join(",\n");
-							errorMsg += "\n\nNote: You may not need ALL of these fields - configure only the ones causing circular dependencies.";
+						// Show only the specific fields that need configuration (sorted alphabetically)
+						const sortedSuggestions = Array.from(suggestions.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+						for (const [objName, fields] of sortedSuggestions) {
+							const sortedFields = Array.from(fields).sort();
+							errorMsg += `- Object [${objName}], twoPassReferenceFields [${sortedFields.join(",")}]\n`;
 						}
-						errorMsg += "\nFor more information, see the References section in the documentation.";
+					} else {
+						// No direct circular relationships found - likely self-references only
+						// Show only rejected self-referencing fields (sorted alphabetically)
+						const sortedObjNames = [...allSObjNames].sort();
+						for (const objName of sortedObjNames) {
+							const rejectedFields = this.orgManager.discovery.getRejectedSelfReferencingFields(objName);
+							if (rejectedFields.length > 0) {
+								const sortedFields = rejectedFields.sort();
+								errorMsg += `- Object [${objName}], twoPassReferenceFields [${sortedFields.join(",")}]\n`;
+							}
+						}
 					}
 
 					// Log the error message before throwing the exception
-				// Split by newlines and log each line separately for better readability
-				const lines = errorMsg.split('\n');
-				for (const line of lines) {
-					// Skip empty lines to avoid null errors in writeLog
-					if (line.trim().length > 0) {
-						Util.writeLog(line, LogLevel.ERROR);
+					// Split by newlines and log each line separately for better readability
+					const lines = errorMsg.split("\n");
+					for (const line of lines) {
+						// Skip empty lines to avoid null errors in writeLog
+						if (line.trim().length > 0) {
+							Util.writeLog(line, LogLevel.ERROR);
+						}
 					}
-				}
-				Util.throwError(errorMsg);
+					Util.throwError(errorMsg);
 				}
 
 				// Add the newly found sObjects to the master list
