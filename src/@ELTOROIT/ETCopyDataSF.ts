@@ -2,7 +2,7 @@ import fse from "fs-extra";
 import path from "path";
 // import { fs } from "@salesforce/core";
 // import { OutputFlags } from "@oclif/parser";
-import { Flags } from "@salesforce/sf-plugins-core";
+import { Flags, prompts } from "@salesforce/sf-plugins-core";
 import { Ux } from "@salesforce/sf-plugins-core";
 import { CoreMetadataSObjects } from "./CoreMetadataSObjects.js";
 import { Exporter } from "./Exporter.js";
@@ -37,6 +37,13 @@ export class ETCopyDataSF {
 			summary: "Logging level for this command invocation",
 			options: ["trace", "debug", "info", "warn", "error", "fatal", "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
 			default: "warn"
+		}),
+		forceProduction: Flags.boolean({
+			summary: "Skip interactive confirmation when importing to production org",
+			description:
+				"When copying to a production org, the plugin normally prompts for confirmation. " +
+				"Use this flag to force past the check (e.g. for CI/CD scripts).",
+			aliases: ["force-production"]
 		})
 	};
 
@@ -97,6 +104,9 @@ export class ETCopyDataSF {
 		if (params.orgdestination) {
 			Util.writeLog(`Parameter: destination [${params.orgdestination}]`, LogLevel.TRACE);
 			s.orgAliases.set(WhichOrg.DESTINATION, params.orgdestination);
+		}
+		if (params.forceProduction !== undefined) {
+			s.forceProduction = params.forceProduction;
 		}
 		return s;
 	}
@@ -486,6 +496,11 @@ export class ETCopyDataSF {
 		// }
 
 		// 	ASK: Make sure user is awake ;-)
+		// If --force-production: skip prompt, proceed
+		if (data.settings.forceProduction) {
+			return;
+		}
+		// Interactive: prompt user
 		if (await this.PromptUserYN(`Do you really, really, really want to import data into your PRODUCTION org [${orgData.username}]?`)) {
 			return;
 		} else {
@@ -501,17 +516,14 @@ export class ETCopyDataSF {
 	// 	console.error("*** *** ***");
 	// }
 
-	private PromptUserYN(question: string): Promise<boolean> {
-		return new Promise((resolve, reject) => {
-			console.log("*** *** ***");
-			console.log("*** *** ***");
-			console.log("*** *** ***");
-			console.log("*** *** *** Review the list of sObjects above, and tell me... ");
-			console.log(`*** *** *** ${question} [Y|N|YES|NO]`);
-			// TODO: SF CLI - implement proper user confirmation
-			// For now, automatically reject to be safe
-			reject("User confirmation needed - not implemented in SF CLI version yet");
+	private async PromptUserYN(question: string): Promise<boolean> {
+		console.log("*** *** ***");
+		console.log("*** *** *** Review the list of sObjects above, and tell me... ");
+		const result = await prompts.confirm({
+			message: `${question} [Y|N]`,
+			defaultAnswer: false
 		});
+		return result;
 	}
 
 	private RequestedNumberEntered(counter: number, message: string): Promise<void> {

@@ -325,8 +325,8 @@ export class SchemaDiscovery {
 		// Check reference
 		if (field.type === "reference") {
 			if (field.referenceTo.length === 1) {
-				if (this.privSObjects.has(field.referenceTo[0]) || this.orgManager.coreMD.isMD(field.referenceTo[0])) {
-					// Include it...
+				if (this.privSObjects.has(field.referenceTo[0]) || this.orgManager.coreMD.isMD(field.referenceTo[0]) || sObjName === field.referenceTo[0]) {
+					// Include it (parent sObject is in migration set, is metadata, or is self-reference)
 				} else {
 					localRejects.push("Parent sObject [" + field.referenceTo[0] + "] is not processed");
 				}
@@ -392,6 +392,30 @@ export class SchemaDiscovery {
 		} else {
 			this.allRejects[RejectType[RejectType.ADD_CHILD]][sObjName + "." + child.relationshipName + " => " + child.childSObject] = localRejects;
 		}
+	}
+
+	public getRejectedSelfReferencingFields(sObjName: string): string[] {
+		const fields: string[] = [];
+		const addFieldRejects = this.allRejects[RejectType[RejectType.ADD_FIELD]] || {};
+
+		// Look for rejected fields for this sObject
+		for (const key in addFieldRejects) {
+			if (key.startsWith(sObjName + ".")) {
+				const rejectionReasons = addFieldRejects[key];
+				// Check if any rejection reason mentions self-referencing/recursive
+				if (Array.isArray(rejectionReasons)) {
+					for (const reason of rejectionReasons) {
+						if (reason.includes("Recursive parenting") || reason.includes("twoPassReferenceField")) {
+							const fieldName = key.substring(sObjName.length + 1);
+							fields.push(fieldName);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		return fields;
 	}
 
 	private overrideIncludeSobject(sObj: any): boolean {

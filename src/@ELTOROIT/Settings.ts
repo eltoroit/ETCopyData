@@ -50,6 +50,8 @@ export interface ISettingsValues {
 	// LEARNING: Salesforce default is 10,000
 	bulkPollingTimeout: number;
 	rootFolderRaw: string;
+	/** Command-line only: skip interactive confirmation for production */
+	forceProduction?: boolean;
 }
 
 function mkdirp(path: string): Promise<string> {
@@ -94,6 +96,9 @@ export class Settings implements ISettingsValues {
 	public rootFolderRaw: string;
 	public rootFolderFull: string;
 	public configfolder: string;
+
+	/** Command-line flag: skip interactive confirmation for production (used with --force-production) */
+	public forceProduction: boolean;
 
 	// Local private variables
 	private configFile: ConfigFile<ConfigFile.Options> = null;
@@ -324,6 +329,11 @@ export class Settings implements ISettingsValues {
 			this.configFile
 				.read()
 				.then((resValues: Dictionary<AnyJson>) => {
+					// Copy command-line overrides (not from config file)
+					if (overrideSettings.forceProduction !== undefined) {
+						this.forceProduction = overrideSettings.forceProduction;
+					}
+
 					// This can be done in parallel mode, so use an array of promises and wait for all of them to complete at the end
 					let msg: string = "";
 					let overridenValue: string = "";
@@ -707,6 +717,7 @@ export class Settings implements ISettingsValues {
 		this.twoPassReferenceFieldsRaw = null;
 		this.deleteDestination = false;
 		this.bulkPollingTimeout = 1800000;
+		this.forceProduction = false;
 	}
 
 	private getBlankSObjectData(sObjName: string): ISettingsSObjectData {

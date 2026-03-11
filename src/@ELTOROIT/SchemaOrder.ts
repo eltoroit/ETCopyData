@@ -1,6 +1,6 @@
 import { ISchemaData, ISchemaDataParent } from "./Interfaces.js";
 import { OrgManager } from "./OrgManager.js";
-import { Util } from "./Util.js";
+import { LogLevel, Util } from "./Util.js";
 
 export class SchemaOrder {
 	private orgManager: OrgManager;
@@ -53,11 +53,77 @@ export class SchemaOrder {
 							}
 						});
 					}
-					Util.throwError(
-						`Deadlock determining import order, most likely caused by circular or self reference, configure those fields as twoPassReferenceFields. Verify these relationships: ${
-							relationships.length > 0 ? relationships.join(", ") : ""
-						}`
-					);
+
+					// Build helpful error message with configuration guidance
+					let errorMsg = "Deadlock determining import order, most likely caused by circular or self reference, configure those fields as twoPassReferenceFields.";
+					errorMsg += "\n\nTo resolve this, update your ETCopyDataSF.json configuration file with the following twoPassReferenceFields:\n\n";
+
+					if (relationships.length > 0) {
+						// Cross-object circular relationships detected - extract fields from relationships
+						// Parse the relationships to get the actual fields causing circular dependencies
+						const suggestions: Map<string, Set<string>> = new Map();
+
+						// Parse the relationships array to extract specific fields
+						// Format: "[Account<=>Contact (Account.PersonContactId, Contact.AccountId)]"
+						for (const relationship of relationships) {
+							// Extract fields from the relationship string
+							const match = relationship.match(/\(([^)]+)\)/);
+							if (match) {
+								const fieldList = match[1].split(",").map(f => f.trim());
+								for (const fieldRef of fieldList) {
+									// Parse "ObjectName.FieldName"
+									const parts = fieldRef.split(".");
+									if (parts.length === 2) {
+										const [objName, fieldName] = parts;
+										if (!suggestions.has(objName)) {
+											suggestions.set(objName, new Set());
+										}
+										suggestions.get(objName).add(fieldName);
+									}
+								}
+							}
+						}
+
+						// Also get rejected self-referencing fields for objects in the deadlock
+						for (const objName of allSObjNames) {
+							const rejectedFields = this.orgManager.discovery.getRejectedSelfReferencingFields(objName);
+							if (rejectedFields.length > 0) {
+								if (!suggestions.has(objName)) {
+									suggestions.set(objName, new Set());
+								}
+								rejectedFields.forEach(field => suggestions.get(objName).add(field));
+							}
+						}
+
+						// Show only the specific fields that need configuration (sorted alphabetically)
+						const sortedSuggestions = Array.from(suggestions.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+						for (const [objName, fields] of sortedSuggestions) {
+							const sortedFields = Array.from(fields).sort();
+							errorMsg += `- Object [${objName}], twoPassReferenceFields [${sortedFields.join(",")}]\n`;
+						}
+					} else {
+						// No direct circular relationships found - likely self-references only
+						// Show only rejected self-referencing fields (sorted alphabetically)
+						const sortedObjNames = [...allSObjNames].sort();
+						for (const objName of sortedObjNames) {
+							const rejectedFields = this.orgManager.discovery.getRejectedSelfReferencingFields(objName);
+							if (rejectedFields.length > 0) {
+								const sortedFields = rejectedFields.sort();
+								errorMsg += `- Object [${objName}], twoPassReferenceFields [${sortedFields.join(",")}]\n`;
+							}
+						}
+					}
+
+					// Log the error message before throwing the exception
+					// Split by newlines and log each line separately for better readability
+					const lines = errorMsg.split("\n");
+					for (const line of lines) {
+						// Skip empty lines to avoid null errors in writeLog
+						if (line.trim().length > 0) {
+							Util.writeLog(line, LogLevel.ERROR);
+						}
+					}
+					Util.throwError(errorMsg);
 				}
 
 				// Add the newly found sObjects to the master list
