@@ -50,6 +50,10 @@ export interface ISettingsValues {
 	// LEARNING: Salesforce default is 10,000
 	bulkPollingTimeout: number;
 	rootFolderRaw: string;
+	/** Command-line only: skip interactive confirmation for production */
+	confirmProduction?: boolean;
+	/** Command-line only: true when --json is used */
+	jsonEnabled?: boolean;
 }
 
 function mkdirp(path: string): Promise<string> {
@@ -94,6 +98,11 @@ export class Settings implements ISettingsValues {
 	public rootFolderRaw: string;
 	public rootFolderFull: string;
 	public configfolder: string;
+
+	/** Command-line flag: skip interactive confirmation for production (used with --confirm-production) */
+	public confirmProduction: boolean;
+	/** Command-line flag: true when --json is used (prevents interactive prompts) */
+	public jsonEnabled: boolean;
 
 	// Local private variables
 	private configFile: ConfigFile<ConfigFile.Options> = null;
@@ -324,6 +333,14 @@ export class Settings implements ISettingsValues {
 			this.configFile
 				.read()
 				.then((resValues: Dictionary<AnyJson>) => {
+					// Copy command-line overrides (not from config file)
+					if (overrideSettings.confirmProduction !== undefined) {
+						this.confirmProduction = overrideSettings.confirmProduction;
+					}
+					if (overrideSettings.jsonEnabled !== undefined) {
+						this.jsonEnabled = overrideSettings.jsonEnabled;
+					}
+
 					// This can be done in parallel mode, so use an array of promises and wait for all of them to complete at the end
 					let msg: string = "";
 					let overridenValue: string = "";
@@ -707,6 +724,8 @@ export class Settings implements ISettingsValues {
 		this.twoPassReferenceFieldsRaw = null;
 		this.deleteDestination = false;
 		this.bulkPollingTimeout = 1800000;
+		this.confirmProduction = false;
+		this.jsonEnabled = false;
 	}
 
 	private getBlankSObjectData(sObjName: string): ISettingsSObjectData {

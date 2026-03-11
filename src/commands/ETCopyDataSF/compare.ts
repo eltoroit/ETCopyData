@@ -12,7 +12,7 @@ export default class CompareOrgs extends SfCommand<any> {
 		const { flags } = await this.parse(CompareOrgs);
 		const ux = new Ux();
 		ETCopyDataSF.setLogs(flags, ux, "ETCopyDataSF:compare", this.config);
-		const s: Settings = ETCopyDataSF.readParameters(flags);
+		const s: Settings = ETCopyDataSF.readParameters(flags, this);
 
 		const ETCD = new ETCopyDataSF();
 		try {

@@ -16,7 +16,7 @@ export default class Import extends SfCommand<any> {
 		const { flags } = await this.parse(Import);
 		const ux = new Ux();
 		ETCopyDataSF.setLogs(flags, ux, "ETCopyDataSF:Import", this.config);
-		const s: Settings = ETCopyDataSF.readParameters(flags);
+		const s: Settings = ETCopyDataSF.readParameters(flags, this);
 
 		const ETCD = new ETCopyDataSF();
 		try {
