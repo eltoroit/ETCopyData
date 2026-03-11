@@ -69,6 +69,10 @@
 		"posttest": "eslint src/**/*.ts test/**/*.ts",
 		"prepack": "rm -rf lib && tsc -b && oclif manifest && oclif readme",
 		"test": "nyc --extension .ts --require ts-node/register mocha --forbid-only \"test/**/*.test.ts\"",
-		"version": "oclif readme && git add README.md"
+		"version": "oclif readme && git add README.md",
+		"exportData": "sf ETCopyDataSF export --configfolder ./@ELTOROIT/data --loglevel trace --json | tee ./etLogs/etCopyData.txt",
+		"importData": "sf ETCopyDataSF import --configfolder ./@ELTOROIT/data --loglevel trace --json | tee ./etLogs/etCopyData.txt",
+		"deleteData": "sf ETCopyDataSF delete --configfolder ./@ELTOROIT/data --loglevel trace --json | tee ./etLogs/etCopyData.txt"
+
 	}
 }
