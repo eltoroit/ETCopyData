@@ -73,6 +73,5 @@
 		"exportData": "sf ETCopyDataSF export --configfolder ./@ELTOROIT/data --loglevel trace --json | tee ./etLogs/etCopyData.txt",
 		"importData": "sf ETCopyDataSF import --configfolder ./@ELTOROIT/data --loglevel trace --json | tee ./etLogs/etCopyData.txt",
 		"deleteData": "sf ETCopyDataSF delete --configfolder ./@ELTOROIT/data --loglevel trace --json | tee ./etLogs/etCopyData.txt"
-
 	}
 }
