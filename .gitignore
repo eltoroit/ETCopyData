@@ -10,4 +10,4 @@ node_modules
 oclif.manifest.json
 .DS_Store
 @ELTOROIT/data/ETCopyData/**
-etLogs/**
+etLogs
