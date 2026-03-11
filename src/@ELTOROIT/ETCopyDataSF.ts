@@ -38,13 +38,12 @@ export class ETCopyDataSF {
 			options: ["trace", "debug", "info", "warn", "error", "fatal", "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
 			default: "warn"
 		}),
-		confirmProduction: Flags.boolean({
+		forceProduction: Flags.boolean({
 			summary: "Skip interactive confirmation when importing to production org",
 			description:
 				"When copying to a production org, the plugin normally prompts for confirmation. " +
-				"Use this flag to skip the prompt (e.g. for CI/CD scripts). " +
-				"Required when using --json with production destination.",
-			aliases: ["confirm-production"]
+				"Use this flag to force past the check (e.g. for CI/CD scripts).",
+			aliases: ["force-production"]
 		})
 	};
 
@@ -90,7 +89,7 @@ export class ETCopyDataSF {
 		}
 	}
 
-	public static readParameters(params: any, commandInstance?: { jsonEnabled?: () => boolean }): Settings {
+	public static readParameters(params: any): Settings {
 		const s: Settings = new Settings();
 		s.orgAliases = new Map<WhichOrg, string>();
 
@@ -106,11 +105,8 @@ export class ETCopyDataSF {
 			Util.writeLog(`Parameter: destination [${params.orgdestination}]`, LogLevel.TRACE);
 			s.orgAliases.set(WhichOrg.DESTINATION, params.orgdestination);
 		}
-		if (params.confirmProduction !== undefined) {
-			s.confirmProduction = params.confirmProduction;
-		}
-		if (commandInstance?.jsonEnabled) {
-			s.jsonEnabled = commandInstance.jsonEnabled();
+		if (params.forceProduction !== undefined) {
+			s.forceProduction = params.forceProduction;
 		}
 		return s;
 	}
@@ -500,15 +496,8 @@ export class ETCopyDataSF {
 		// }
 
 		// 	ASK: Make sure user is awake ;-)
-		// If --confirm-production: skip prompt, proceed
-		if (data.settings.confirmProduction) {
-			return;
-		}
-		// If --json: can't prompt (would corrupt JSON output)
-		if (data.settings.jsonEnabled) {
-			Util.throwError(
-				"Production destination requires confirmation. Use --confirm-production flag when running with --json."
-			);
+		// If --force-production: skip prompt, proceed
+		if (data.settings.forceProduction) {
 			return;
 		}
 		// Interactive: prompt user

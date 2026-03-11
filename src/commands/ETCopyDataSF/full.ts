@@ -15,7 +15,7 @@ export default class Full extends SfCommand<any> {
 		const { flags } = await this.parse(Full);
 		const ux = new Ux();
 		ETCopyDataSF.setLogs(flags, ux, "ETCopyDataSF:Full", this.config);
-		const s: Settings = ETCopyDataSF.readParameters(flags, this);
+		const s: Settings = ETCopyDataSF.readParameters(flags);
 
 		const ETCD = new ETCopyDataSF();
 		try {

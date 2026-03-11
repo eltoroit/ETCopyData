@@ -51,9 +51,7 @@ export interface ISettingsValues {
 	bulkPollingTimeout: number;
 	rootFolderRaw: string;
 	/** Command-line only: skip interactive confirmation for production */
-	confirmProduction?: boolean;
-	/** Command-line only: true when --json is used */
-	jsonEnabled?: boolean;
+	forceProduction?: boolean;
 }
 
 function mkdirp(path: string): Promise<string> {
@@ -99,10 +97,8 @@ export class Settings implements ISettingsValues {
 	public rootFolderFull: string;
 	public configfolder: string;
 
-	/** Command-line flag: skip interactive confirmation for production (used with --confirm-production) */
-	public confirmProduction: boolean;
-	/** Command-line flag: true when --json is used (prevents interactive prompts) */
-	public jsonEnabled: boolean;
+	/** Command-line flag: skip interactive confirmation for production (used with --force-production) */
+	public forceProduction: boolean;
 
 	// Local private variables
 	private configFile: ConfigFile<ConfigFile.Options> = null;
@@ -334,11 +330,8 @@ export class Settings implements ISettingsValues {
 				.read()
 				.then((resValues: Dictionary<AnyJson>) => {
 					// Copy command-line overrides (not from config file)
-					if (overrideSettings.confirmProduction !== undefined) {
-						this.confirmProduction = overrideSettings.confirmProduction;
-					}
-					if (overrideSettings.jsonEnabled !== undefined) {
-						this.jsonEnabled = overrideSettings.jsonEnabled;
+					if (overrideSettings.forceProduction !== undefined) {
+						this.forceProduction = overrideSettings.forceProduction;
 					}
 
 					// This can be done in parallel mode, so use an array of promises and wait for all of them to complete at the end
@@ -724,8 +717,7 @@ export class Settings implements ISettingsValues {
 		this.twoPassReferenceFieldsRaw = null;
 		this.deleteDestination = false;
 		this.bulkPollingTimeout = 1800000;
-		this.confirmProduction = false;
-		this.jsonEnabled = false;
+		this.forceProduction = false;
 	}
 
 	private getBlankSObjectData(sObjName: string): ISettingsSObjectData {

@@ -16,7 +16,7 @@ export default class Delete extends SfCommand<any> {
 		const { flags } = await this.parse(Delete);
 		const ux = new Ux();
 		ETCopyDataSF.setLogs(flags, ux, "ETCopyDataSF:Delete", this.config);
-		const s: Settings = ETCopyDataSF.readParameters(flags, this);
+		const s: Settings = ETCopyDataSF.readParameters(flags);
 
 		const ETCD = new ETCopyDataSF();
 		try {
