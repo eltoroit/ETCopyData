@@ -126,7 +126,7 @@ These items were marked as TODOs in the code for future enhancement:
 2. **User Prompts**: ✅ Implemented
    - Files: `src/@ELTOROIT/ETCopyDataSF.ts` (PromptUserYN method)
    - Uses `prompts.confirm` from @salesforce/sf-plugins-core for interactive runs
-   - `--confirm-production` flag for scripted/CI runs; fails with clear error when --json without flag
+   - `--force-production` flag for scripted/CI runs
 
 3. **Bulk API**: Verify bulk API compatibility
    - Files: `src/@ELTOROIT/DataAPI.ts`

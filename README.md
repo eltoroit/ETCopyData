@@ -297,10 +297,10 @@ Since the idea of this tool is to copy data between orgs, it could be possible t
 
 1. **Interactive mode** (default): You will be prompted: *"Do you really, really, really want to import data into your PRODUCTION org [...]?"* — answer Y or N to proceed or cancel.
 
-2. **Scripted/CI mode**: Use the `--confirm-production` flag to skip the interactive prompt. Required when using `--json` with a production destination:
+2. **Scripted/CI mode**: Use the `--force-production` flag to skip the interactive prompt. For example:
    ```bash
-   sf ETCopyDataSF delete -c ./data --confirm-production
-   sf ETCopyDataSF import -c ./data --json --confirm-production
+   sf ETCopyDataSF delete -c ./data --force-production
+   sf ETCopyDataSF import -c ./data --force-production
    ```
 
 3. **Config requirement**: Set `"copyToProduction": true` in `ETCopyDataSF.json` when the destination is a production org.
@@ -336,13 +336,13 @@ Checks the source and destination org for any differences in the sObject's metad
 ```
 USAGE
   $ sf ETCopyDataSF:compare [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>] [--loglevel
-    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL] [--confirmProduction]
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL] [--forceProduction]
 
 FLAGS
   -c, --configfolder=<value>    Root folder to find the configuration file
   -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
   -s, --orgsource=<value>       SF alias or username for the SOURCE org
-      --confirmProduction       Skip interactive confirmation when importing to production org
+      --forceProduction         Skip interactive confirmation when importing to production org
       --loglevel=<option>       [default: warn] Logging level for this command invocation
                                 <options: trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL>
 
@@ -360,10 +360,10 @@ FLAG DESCRIPTIONS
 
     Path to folder containing ETCopyDataSF.json config file
 
-  --confirmProduction  Skip interactive confirmation when importing to production org
+  --forceProduction  Skip interactive confirmation when importing to production org
 
-    When copying to a production org, the plugin normally prompts for confirmation. Use this flag to skip the prompt
-    (e.g. for CI/CD scripts). Required when using --json with production destination.
+    When copying to a production org, the plugin normally prompts for confirmation. Use this flag to force past the
+    check (e.g. for CI/CD scripts).
 ```
 
 _See code: [src/commands/ETCopyDataSF/compare.ts](https://github.com/eltoroit/ETCopyData/blob/v3.0.0/src/commands/ETCopyDataSF/compare.ts)_
@@ -375,13 +375,13 @@ Deletes data from destination org
 ```
 USAGE
   $ sf ETCopyDataSF:delete [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>] [--loglevel
-    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL] [--confirmProduction]
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL] [--forceProduction]
 
 FLAGS
   -c, --configfolder=<value>    Root folder to find the configuration file
   -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
   -s, --orgsource=<value>       SF alias or username for the SOURCE org
-      --confirmProduction       Skip interactive confirmation when importing to production org
+      --forceProduction         Skip interactive confirmation when importing to production org
       --loglevel=<option>       [default: warn] Logging level for this command invocation
                                 <options: trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL>
 
@@ -400,10 +400,10 @@ FLAG DESCRIPTIONS
 
     Path to folder containing ETCopyDataSF.json config file
 
-  --confirmProduction  Skip interactive confirmation when importing to production org
+  --forceProduction  Skip interactive confirmation when importing to production org
 
-    When copying to a production org, the plugin normally prompts for confirmation. Use this flag to skip the prompt
-    (e.g. for CI/CD scripts). Required when using --json with production destination.
+    When copying to a production org, the plugin normally prompts for confirmation. Use this flag to force past the
+    check (e.g. for CI/CD scripts).
 ```
 
 _See code: [src/commands/ETCopyDataSF/delete.ts](https://github.com/eltoroit/ETCopyData/blob/v3.0.0/src/commands/ETCopyDataSF/delete.ts)_
@@ -415,13 +415,13 @@ Exports the data from the source org
 ```
 USAGE
   $ sf ETCopyDataSF:export [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>] [--loglevel
-    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL] [--confirmProduction]
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL] [--forceProduction]
 
 FLAGS
   -c, --configfolder=<value>    Root folder to find the configuration file
   -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
   -s, --orgsource=<value>       SF alias or username for the SOURCE org
-      --confirmProduction       Skip interactive confirmation when importing to production org
+      --forceProduction         Skip interactive confirmation when importing to production org
       --loglevel=<option>       [default: warn] Logging level for this command invocation
                                 <options: trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL>
 
@@ -439,10 +439,10 @@ FLAG DESCRIPTIONS
 
     Path to folder containing ETCopyDataSF.json config file
 
-  --confirmProduction  Skip interactive confirmation when importing to production org
+  --forceProduction  Skip interactive confirmation when importing to production org
 
-    When copying to a production org, the plugin normally prompts for confirmation. Use this flag to skip the prompt
-    (e.g. for CI/CD scripts). Required when using --json with production destination.
+    When copying to a production org, the plugin normally prompts for confirmation. Use this flag to force past the
+    check (e.g. for CI/CD scripts).
 ```
 
 _See code: [src/commands/ETCopyDataSF/export.ts](https://github.com/eltoroit/ETCopyData/blob/v3.0.0/src/commands/ETCopyDataSF/export.ts)_
@@ -454,13 +454,13 @@ Performs all steps of the data migration
 ```
 USAGE
   $ sf ETCopyDataSF:full [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>] [--loglevel
-    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL] [--confirmProduction]
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL] [--forceProduction]
 
 FLAGS
   -c, --configfolder=<value>    Root folder to find the configuration file
   -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
   -s, --orgsource=<value>       SF alias or username for the SOURCE org
-      --confirmProduction       Skip interactive confirmation when importing to production org
+      --forceProduction         Skip interactive confirmation when importing to production org
       --loglevel=<option>       [default: warn] Logging level for this command invocation
                                 <options: trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL>
 
@@ -479,10 +479,10 @@ FLAG DESCRIPTIONS
 
     Path to folder containing ETCopyDataSF.json config file
 
-  --confirmProduction  Skip interactive confirmation when importing to production org
+  --forceProduction  Skip interactive confirmation when importing to production org
 
-    When copying to a production org, the plugin normally prompts for confirmation. Use this flag to skip the prompt
-    (e.g. for CI/CD scripts). Required when using --json with production destination.
+    When copying to a production org, the plugin normally prompts for confirmation. Use this flag to force past the
+    check (e.g. for CI/CD scripts).
 ```
 
 _See code: [src/commands/ETCopyDataSF/full.ts](https://github.com/eltoroit/ETCopyData/blob/v3.0.0/src/commands/ETCopyDataSF/full.ts)_
@@ -494,13 +494,13 @@ Imports data into destination org
 ```
 USAGE
   $ sf ETCopyDataSF:import [--json] [--flags-dir <value>] [-c <value>] [-d <value>] [-s <value>] [--loglevel
-    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL] [--confirmProduction]
+    trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL] [--forceProduction]
 
 FLAGS
   -c, --configfolder=<value>    Root folder to find the configuration file
   -d, --orgdestination=<value>  SF alias or username for the DESTINATION org
   -s, --orgsource=<value>       SF alias or username for the SOURCE org
-      --confirmProduction       Skip interactive confirmation when importing to production org
+      --forceProduction         Skip interactive confirmation when importing to production org
       --loglevel=<option>       [default: warn] Logging level for this command invocation
                                 <options: trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL>
 
@@ -520,10 +520,10 @@ FLAG DESCRIPTIONS
 
     Path to folder containing ETCopyDataSF.json config file
 
-  --confirmProduction  Skip interactive confirmation when importing to production org
+  --forceProduction  Skip interactive confirmation when importing to production org
 
-    When copying to a production org, the plugin normally prompts for confirmation. Use this flag to skip the prompt
-    (e.g. for CI/CD scripts). Required when using --json with production destination.
+    When copying to a production org, the plugin normally prompts for confirmation. Use this flag to force past the
+    check (e.g. for CI/CD scripts).
 ```
 
 _See code: [src/commands/ETCopyDataSF/import.ts](https://github.com/eltoroit/ETCopyData/blob/v3.0.0/src/commands/ETCopyDataSF/import.ts)_
