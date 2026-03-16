@@ -1,12 +1,12 @@
 {
-  "orgSource": "prCDO_Rocket",
-  "orgDestination": "prCDO_Rocket",
+  "orgSource": "soDemo",
+  "orgDestination": "sbRocketFDE",
   "sObjectsData": [
     {
       "name": "Account",
       "ignoreFields": "OwnerId",
       "externalIdField": null,
-      "twoPassReferenceFields": "PersonContactId,MasterRecordId,ParentId",
+      "twoPassReferenceFields": "Bank__c,Branch_Manager__c,CCS_Contact__c,MasterRecordId,ParentId,PrimaryContact__c,Principal_Officer__c,Purchase_CCS_Contact__c,Sole_Prop_SRG_Agent_Id__c",
       "where": null,
       "orderBy": null,
       "maxRecords": -1
@@ -24,7 +24,7 @@
       "name": "Contact",
       "ignoreFields": "OwnerId",
       "externalIdField": null,
-      "twoPassReferenceFields": "AccountId,MasterRecordId,ReportsToId",
+      "twoPassReferenceFields": "AccountId,Account__c,Branch__c,Employer__c,MasterRecordId,ReportsToId",
       "where": null,
       "orderBy": null,
       "maxRecords": -1
@@ -52,7 +52,7 @@
   "customObjectsToIgnore": null,
   "stopOnErrors": true,
   "ignoreFields": null,
-  "copyToProduction": true,
+  "copyToProduction": false,
   "twoPassReferenceFields": null,
   "deleteDestination": true,
   "useBulkAPI": false,

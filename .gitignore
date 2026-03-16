@@ -4,6 +4,7 @@
 /dist
 /lib
 /tmp
+.sfdx
 node_modules
 /package-lock.json
 /yarn.lock
