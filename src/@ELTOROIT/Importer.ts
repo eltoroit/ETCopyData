@@ -540,7 +540,12 @@ export class Importer {
 						tmpIndex++;
 						const record = Object.assign({ Id: this.matchingIds.get(sObjectName).get(id) }, baseRecord);
 						mappings.forEach((mapping: ReferenceFieldMapping) => {
-							const destinationId = availableMatchingIds.get(mapping.fieldName).get(mapping.sourceId);
+							const idMapping = availableMatchingIds.get(mapping.fieldName);
+							if (!idMapping) {
+								Util.writeLog(`[${orgDestination.alias}] Skipping [${mapping.fieldName}]: referenced sObject not in migration set (#${tmpIndex})`, LogLevel.INFO);
+								return;
+							}
+							const destinationId = idMapping.get(mapping.sourceId);
 							if (destinationId !== undefined) {
 								record[mapping.fieldName] = destinationId;
 								Util.writeLog(`[${orgDestination.alias}] mapping field [${mapping.fieldName}] for (#${tmpIndex}) [${id}]:[ ${mapping.sourceId}] => [${destinationId}]`, LogLevel.TRACE);
