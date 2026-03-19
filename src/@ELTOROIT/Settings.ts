@@ -49,6 +49,8 @@ export interface ISettingsValues {
 	deleteDestination: boolean;
 	// LEARNING: Salesforce default is 10,000
 	bulkPollingTimeout: number;
+	/** Chunk size for REST API operations (Bulk API remains 10K) */
+	restChunkSize: number;
 	rootFolderRaw: string;
 	/** Command-line only: skip interactive confirmation for production */
 	forceProduction?: boolean;
@@ -93,6 +95,7 @@ export class Settings implements ISettingsValues {
 	public customObjectsToIgnore: string[];
 	public deleteDestination: boolean;
 	public bulkPollingTimeout: number;
+	public restChunkSize: number;
 	public rootFolderRaw: string;
 	public rootFolderFull: string;
 	public configfolder: string;
@@ -484,6 +487,18 @@ export class Settings implements ISettingsValues {
 						})
 					);
 
+					// restChunkSize
+					promises.push(
+						this.processStringValues(resValues, "restChunkSize", false).then((value: string) => {
+							this.restChunkSize = value ? parseInt(value, 10) : 200;
+							if (isNaN(this.restChunkSize) || this.restChunkSize < 1) {
+								this.restChunkSize = 200;
+							}
+							msg = `Configuration value for [restChunkSize]: ${this.restChunkSize}`;
+							Util.writeLog(msg, LogLevel.INFO);
+						})
+					);
+
 					Promise.all(promises)
 						.then(() => {
 							resolve(this);
@@ -640,6 +655,7 @@ export class Settings implements ISettingsValues {
 		output.deleteDestination = this.deleteDestination;
 		output.useBulkAPI = this.useBulkAPI;
 		output.bulkPollingTimeout = this.bulkPollingTimeout;
+		output.restChunkSize = this.restChunkSize;
 
 		return output;
 	}
@@ -717,6 +733,7 @@ export class Settings implements ISettingsValues {
 		this.twoPassReferenceFieldsRaw = null;
 		this.deleteDestination = false;
 		this.bulkPollingTimeout = 1800000;
+		this.restChunkSize = 200;
 		this.forceProduction = false;
 	}
 

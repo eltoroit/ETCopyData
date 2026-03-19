@@ -53,10 +53,9 @@ function progress(current, max): string {
 }
 
 export default class Data {
-	static CHUNK_SIZE = 10;
 	public static delete(org: OrgManager, sObjName: string): Promise<number> {
 		if (!org.settings.useBulkAPI) {
-			chunkSize = Data.CHUNK_SIZE;
+			chunkSize = org.settings.restChunkSize;
 		}
 		if (org.settings.useBulkAPI) {
 			return JsBulk.delete(org, sObjName);
@@ -66,7 +65,7 @@ export default class Data {
 	}
 	public static upsert(org: any, operation: string, sObjName: string, allRecords: any[], matchingIds: any, extIdField): Promise<any> {
 		if (!org.settings.useBulkAPI) {
-			chunkSize = Data.CHUNK_SIZE;
+			chunkSize = org.settings.restChunkSize;
 		}
 		if (org.settings.useBulkAPI) {
 			return JsBulk.upsert(org, operation, sObjName, allRecords, matchingIds, extIdField);
@@ -76,7 +75,7 @@ export default class Data {
 	}
 	public static update(org: any, sObjName: string, allRecords: any[]): Promise<any> {
 		if (!org.settings.useBulkAPI) {
-			chunkSize = Data.CHUNK_SIZE;
+			chunkSize = org.settings.restChunkSize;
 		}
 		if (org.settings.useBulkAPI) {
 			return JsBulk.update(org, sObjName, allRecords);
@@ -86,7 +85,7 @@ export default class Data {
 	}
 	public static export(org: any, sObjName: string, SOQL: string, mapRecordsFetched: any, fileName: any): Promise<void> {
 		if (!org.settings.useBulkAPI) {
-			chunkSize = Data.CHUNK_SIZE;
+			chunkSize = org.settings.restChunkSize;
 		}
 		if (org.settings.useBulkAPI) {
 			return JsBulk.export(org, sObjName, SOQL, mapRecordsFetched, fileName);
