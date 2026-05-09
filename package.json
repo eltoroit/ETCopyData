@@ -1,7 +1,7 @@
 {
 	"name": "etcopydatasf",
 	"description": "SF Plugin to populate your scratch org and/or developer sandbox with data for multiple related sObjects.",
-	"version": "3.0.0",
+	"version": "3.0.1",
 	"author": "Andres Perez @ElToroIT",
 	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
 	"type": "module",
@@ -9,9 +9,12 @@
 		"@oclif/core": "^4",
 		"@salesforce/core": "^8",
 		"@salesforce/sf-plugins-core": "^12",
+		"@salesforce/ts-types": "^2",
+		"fs-extra": "^11",
 		"tslib": "^2"
 	},
 	"devDependencies": {
+		"@types/fs-extra": "^11",
 		"@oclif/test": "^4",
 		"@salesforce/dev-scripts": "^10",
 		"@salesforce/ts-sinon": "^1",
@@ -65,7 +68,7 @@
 	"scripts": {
 		"TEST": "clear && npm run build && sf ETCopyDataSF import --configfolder ./@ELTOROIT/data --loglevel trace --json --force-production | tee ./etLogs/etCopyData.txt",
 		"build": "tsc -p .",
-		"lint": "eslint src/**/*.ts test/**/*.ts",
+		"link": "sf plugins:link .",
 		"postpack": "rm -f oclif.manifest.json",
 		"posttest": "eslint src/**/*.ts test/**/*.ts",
 		"prepack": "rm -rf lib && tsc -b && oclif manifest && oclif readme",
@@ -74,6 +77,7 @@
 		"exportData": "sf ETCopyDataSF export --configfolder ./@ELTOROIT/data --loglevel trace | tee ./etLogs/etCopyData.txt",
 		"importData": "sf ETCopyDataSF import --configfolder ./@ELTOROIT/data --loglevel trace | tee ./etLogs/etCopyData.txt",
 		"deleteDataPrompt": "sf ETCopyDataSF delete --configfolder ./@ELTOROIT/data --loglevel trace --json | tee ./etLogs/etCopyData.txt",
-		"deleteDataNoPrompt": "sf ETCopyDataSF delete --configfolder ./@ELTOROIT/data --loglevel trace --json --force-production | tee ./etLogs/etCopyData.txt"
+		"deleteDataNoPrompt": "sf ETCopyDataSF delete --configfolder ./@ELTOROIT/data --loglevel trace --json --force-production | tee ./etLogs/etCopyData.txt",
+		"lint": "eslint src/**/*.ts test/**/*.ts"
 	}
 }

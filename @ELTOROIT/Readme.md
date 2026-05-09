@@ -2,45 +2,48 @@
 
 ## Alternative Tool
 
-For more advanced data migration needs, consider [Salesforce Data Move Utility (SFDMU)](https://help.sfdmu.com/) - a feature-rich, actively maintained tool.
+For more advanced data migration needs, consider
+[Salesforce Data Move Utility (SFDMU)](https://help.sfdmu.com/) - a
+feature-rich, actively maintained tool.
 
 # How to Make Changes?
 
 1. **Clone the repo:**
-    ```bash
-    git clone https://github.com/eltoroit/ETCopyData.git
-    cd ETCopyData
-    ```
+   ```bash
+   git clone https://github.com/eltoroit/ETCopyData.git
+   cd ETCopyData
+   ```
 
 2. **Install dependencies:**
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
 3. **Build the plugin:**
-    ```bash
-    npm run build
-    ```
+   ```bash
+   npm run build
+   ```
 
 4. **Fix and review vulnerabilities:**
-    ```bash
-    npm audit fix
-    npm audit
-    ```
+   ```bash
+   npm audit fix
+   npm audit
+   ```
 
 5. **Create a valid test config file:**
-    - Create **@ELTOROIT/data/ETCopyDataSF.json** with your test configuration
+   - Create **@ELTOROIT/data/ETCopyDataSF.json** with your test configuration
 
 # Other useful node tools:
 
--   `npmvet` - Audit npm packages
--   `ncu` - Check for package updates
+- `npmvet` - Audit npm packages
+- `ncu` - Check for package updates
 
 # How to Test Changes
 
 ## How to Debug Your SF CLI Plug-In
 
-Documentation: [SF CLI Plugin Development](https://developer.salesforce.com/docs/platform/salesforce-cli/overview)
+Documentation:
+[SF CLI Plugin Development](https://developer.salesforce.com/docs/platform/salesforce-cli/overview)
 
 ### Testing an installed/linked plugin
 
@@ -52,6 +55,7 @@ sf ETCopyDataSF import -c "./@ELTOROIT/data" -d DestOrg
 ### Testing without installing (with debugging)
 
 **Available Commands:**
+
 - `ETCopyDataSF compare`
 - `ETCopyDataSF delete`
 - `ETCopyDataSF export`
@@ -92,21 +96,25 @@ sf plugins:uninstall etcopydatasf
 ## Install different versions
 
 **Link local code for development:**
+
 ```bash
 sf plugins:link --verbose
 ```
 
 **Install released version:**
+
 ```bash
 sf plugins:install etcopydatasf
 ```
 
 **Install beta version:**
+
 ```bash
 sf plugins:install etcopydatasf@beta
 ```
 
 **Install specific version:**
+
 ```bash
 sf plugins:install etcopydatasf@3.0.0
 ```
@@ -118,6 +126,7 @@ sf plugins
 ```
 
 You should see output like:
+
 - `etcopydatasf 3.0.0 (beta)`
 - `etcopydatasf 3.0.0 (link) /FULL_PATH/ETCopyData`
 - `etcopydatasf 3.0.0`
@@ -146,13 +155,20 @@ Plugin can be found here: https://www.npmjs.com/package/etcopydatasf/
 ```bash
 # Clean and rebuild
 rm -rf node_modules lib
-npm install
-npm run build
+pnpm install
+pnpm run build
 
 # Generate manifest and README
 npm run prepack
 
 # Link for local testing
+sf plugins:link --verbose
+```
+
+## New edits?
+
+```bash
+pnpm run build
 sf plugins:link --verbose
 ```
 
@@ -177,27 +193,33 @@ HTTP_PROXY=http://127.0.0.1:8888 NODE_TLS_REJECT_UNAUTHORIZED=0 \
   bin/dev ETCopyDataSF delete -c '/path/to/@ELTOROIT/data' -d DestOrg
 ```
 
-**Note:** `NODE_TLS_REJECT_UNAUTHORIZED=0` avoids "self signed certificate in certificate chain" errors.
+**Note:** `NODE_TLS_REJECT_UNAUTHORIZED=0` avoids "self signed certificate in
+certificate chain" errors.
 
 # Troubleshooting
 
 ## ESM Module Warning
 
 If you see warnings about ESM modules when linking:
+
 ```
 Warning: etcopydatasf is a linked ESM module and cannot be auto-transpiled
 ```
 
-This is expected and not an error. The plugin will use the compiled source from the `lib` directory.
+This is expected and not an error. The plugin will use the compiled source from
+the `lib` directory.
 
 ## Build Errors
 
 If you encounter build errors:
+
 1. Clean everything: `rm -rf node_modules lib`
 2. Reinstall: `npm install`
 3. Rebuild: `npm run build`
 
 ## TypeScript Errors
 
-- Make sure all `.js` extensions are included in relative imports (ESM requirement)
-- Check `tsconfig.json` has `"module": "node16"` and `"moduleResolution": "node16"`
+- Make sure all `.js` extensions are included in relative imports (ESM
+  requirement)
+- Check `tsconfig.json` has `"module": "node16"` and
+  `"moduleResolution": "node16"`

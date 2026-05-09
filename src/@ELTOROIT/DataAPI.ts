@@ -110,18 +110,22 @@ class JsBulk {
 
 					const job = org.conn.bulk.createJob(sObjName, operation, options);
 					const batch = job.createBatch();
+					let progressTimer: NodeJS.Timeout | null = null;
 					batch.execute(chunk);
 					batch.on("error", (batchError) => {
+						if (progressTimer) clearInterval(progressTimer);
 						msg = `[${org.alias}] Error deleting [${sObjName}] records  [${JSON.stringify(batchError)}]`;
 						Util.writeLog(msg, LogLevel.ERROR);
 						resolve(chunk);
 					});
 					batch.on("queue", (batchInfo) => {
-						// // Fired when batch request is queued in server.
-						// // Start polling - Do not poll until the batch has started
 						batch.poll(1000 /* interval(ms) */, org.settings.bulkPollingTimeout /* timeout(ms) */);
+						progressTimer = JsBulk.startProgressPoller(batch, (n) =>
+							`[${org.alias}] Deleting [${sObjName}]: [${n}/${total.totalSize}] records processed`
+						);
 					});
 					batch.on("response", (results) => {
+						if (progressTimer) clearInterval(progressTimer);
 						for (const result of results) {
 							total[result.success ? "good" : "bad"]++;
 						}
@@ -129,11 +133,6 @@ class JsBulk {
 						Util.writeLog(msg, LogLevel.INFO);
 						JsBulk.closeJob(job, org.alias, sObjName, "Deleting").catch((err) => reject(err));
 						resolve(chunk);
-					});
-					batch.on("progress", (batchInfo) => {
-						// debugger;
-						// Fired with temporary progress
-						// console.log(new Date().toJSON(), JSON.stringify(batchInfo, null, 2));
 					});
 				}
 			});
@@ -152,10 +151,12 @@ class JsBulk {
 						SOQLToDelete = `SELECT Id FROM ${sObjName} WHERE IsPersonAccount = false`;
 					}
 					org.conn.bulk.pollTimeout = org.settings.bulkPollingTimeout;
-					// TODO: SF CLI - bulk API may need updating for @salesforce/core v7+
-					// For now, cast to any to maintain existing stream-based behavior
-					const queryStream: any = org.conn.bulk.query(SOQLToDelete);
-					queryStream
+
+					// Use REST API query with streaming for Bulk delete operations
+					// Bulk API 1.0 streaming interface is deprecated in @salesforce/core v7+
+					const orgConn: any = org.conn;
+					orgConn
+						.query(SOQLToDelete)
 						.on("record", (record) => {
 							chunks.push(record);
 							if (chunks.length >= chunkSize) {
@@ -171,16 +172,12 @@ class JsBulk {
 							Util.writeLog(msg, LogLevel.INFO);
 							resolve(allChunks);
 						})
-						.on("progress", (batchInfo) => {
-							// debugger;
-							// Fired with temporary progress
-							// console.log(new Date().toJSON(), JSON.stringify(batchInfo, null, 2));
-						})
 						.on("error", (err) => {
 							msg = `[${org.alias}] Error querying [${sObjName}] records to be deleted [${JSON.stringify(err)}]`;
 							Util.writeLog(msg, LogLevel.ERROR);
 							reject(err);
-						});
+						})
+						.run({ autoFetch: true, maxFetch: totalSize });
 				}
 			});
 		};
@@ -192,9 +189,12 @@ class JsBulk {
 					return queryRecordsToDelete(totalSize);
 				})
 				.then(async (allChunks) => {
+					let count = 0;
 					for (const chunk of allChunks) {
 						// eslint-disable-next-line no-await-in-loop
 						await deleteChunk(chunk);
+						count += chunk.length;
+						Util.writeLog(`[${org.alias}] Deleted [${count}/${total.totalSize}] [${sObjName}] records`, LogLevel.INFO);
 					}
 					return Promise.resolve();
 				})
@@ -256,26 +256,25 @@ class JsBulk {
 				);
 				const job = org.conn.bulk.createJob(sObjName, operation, options);
 				const batch = job.createBatch();
+				let progressTimer: NodeJS.Timeout | null = null;
 				batch.execute(chunk);
 				batch.on("error", (err) => {
+					if (progressTimer) clearInterval(progressTimer);
 					processResults(err, total.good + total.bad, chunk, null);
 					reject(err);
 				});
 				batch.on("queue", (batchInfo) => {
-					// Fired when batch request is queued in server.
-					// Start polling - Do not poll until the batch has started
 					batch.poll(1000 /* interval(ms) */, org.settings.bulkPollingTimeout /* timeout(ms) */);
+					progressTimer = JsBulk.startProgressPoller(batch, (n) =>
+						`[${org.alias}] ${operation} [${sObjName}]: [${total.good + total.bad + n}/${allRecords.length}] records processed`
+					);
 				});
 				batch.on("response", (results) => {
+					if (progressTimer) clearInterval(progressTimer);
 					// Fired when batch finished and result retrieved
 					processResults(null, total.good + total.bad, chunk, results);
 					JsBulk.closeJob(job, org.alias, sObjName, operation).catch((err) => reject(err));
 					resolve(total);
-				});
-				batch.on("progress", (batchInfo) => {
-					// Fired with temporary progress
-					// console.log(JSON.stringify(batchInfo, null, 2));
-					// debugger;
 				});
 			});
 		};
@@ -331,26 +330,25 @@ class JsBulk {
 				Util.writeLog(`Updating [${chunk.length}] [${sObjName}] records`, LogLevel.TRACE);
 				const job = org.conn.bulk.createJob(sObjName, "update", options);
 				const batch = job.createBatch();
+				let progressTimer: NodeJS.Timeout | null = null;
 				batch.execute(chunk);
 				batch.on("error", (err) => {
+					if (progressTimer) clearInterval(progressTimer);
 					processResults(err, chunk, null);
 					reject(err);
 				});
 				batch.on("queue", (batchInfo) => {
-					// Fired when batch request is queued in server.
-					// Start polling - Do not poll until the batch has started
 					batch.poll(1000 /* interval(ms) */, org.settings.bulkPollingTimeout /* timeout(ms) */);
+					progressTimer = JsBulk.startProgressPoller(batch, (n) =>
+						`[${org.alias}] Updating [${sObjName}]: [${total.good + total.bad + n}/${allRecords.length}] records processed`
+					);
 				});
 				batch.on("response", (results) => {
+					if (progressTimer) clearInterval(progressTimer);
 					// Fired when batch finished and result retrieved
 					processResults(null, chunk, results);
 					JsBulk.closeJob(job, org.alias, sObjName, "Updating").catch((err) => reject(err));
 					resolve(total);
-				});
-				batch.on("progress", (batchInfo) => {
-					// Fired with temporary progress
-					// console.log(JSON.stringify(batchInfo, null, 2));
-					// debugger;
 				});
 			});
 		};
@@ -380,8 +378,9 @@ class JsBulk {
 			countRecords(org, sObjName, "Exporting", SOQL)
 				.then((maxFetch) => {
 					const records = [];
-					org.conn.bulk.pollTimeout = org.settings.bulkPollingTimeout;
-					org.conn.bulk
+					// Use REST API query with streaming for Bulk export operations
+					// Bulk API 1.0 streaming interface is deprecated in @salesforce/core v7+
+					const query: any = org.conn
 						.query(SOQL)
 						.on("record", (record) => {
 							records.push(record);
@@ -399,7 +398,7 @@ class JsBulk {
 							const data = {
 								fetched: records.length,
 								records,
-								total: records.length
+								total: query.totalSize || records.length
 							};
 							org.settings
 								.writeToFile(fileName.folder, fileName.file, data)
@@ -411,17 +410,22 @@ class JsBulk {
 									reject(err);
 								});
 						})
-						.on("progress", (batchInfo) => {
-							// debugger;
-							// Fired with temporary progress
-							// console.log(new Date().toJSON(), JSON.stringify(batchInfo, null, 2));
-						})
 						.on("error", (err) => {
 							reject(err);
-						});
+						})
+						.run({ autoFetch: true, maxFetch });
 				})
 				.catch((err) => reject(err));
 		});
+	}
+	private static startProgressPoller(batch: any, buildMsg: (n: number) => string): NodeJS.Timeout {
+		return setInterval(() => {
+			batch.check((err: any, info: any) => {
+				if (err || !info) return;
+				const n = parseInt(info.numberRecordsProcessed, 10) || 0;
+				Util.writeLog(buildMsg(n), LogLevel.INFO);
+			});
+		}, 5000);
 	}
 	private static closeJob(job: any, orgAlias: string, sObjName: string, operation: string): Promise<void> {
 		return new Promise((resolve, reject) => {
@@ -521,9 +525,12 @@ class JsRest {
 				.then((allChunks) => {
 					// SERIES
 					const processData = async (chunks): Promise<void> => {
+						let count = 0;
 						for (const chunk of chunks) {
 							// eslint-disable-next-line no-await-in-loop
 							await deleteChunk(chunk);
+							count += chunk.length;
+							Util.writeLog(`[${org.alias}] Deleted [${count}/${total.totalSize}] [${sObjName}] records`, LogLevel.INFO);
 						}
 					};
 					return processData(allChunks);
@@ -609,6 +616,7 @@ class JsRest {
 						for (const chunk of chunks) {
 							// eslint-disable-next-line no-await-in-loop
 							await upsertChunk(chunk);
+							Util.writeLog(`[${org.alias}] Imported [${total.good + total.bad}/${allRecords.length}] [${sObjName}] records`, LogLevel.INFO);
 						}
 					};
 					return processData(splitIntoChunks(allRecords));
@@ -676,13 +684,16 @@ class JsRest {
 		};
 
 		return new Promise((resolve, reject) => {
-			const chunks = splitIntoChunks(allRecords);
-			const promises = chunks.map((chunk) => {
-				return updateChunk(chunk);
-			});
-
-			Promise.allSettled(promises)
-				.then((promisesResult) => {
+			Promise.resolve()
+				.then(async () => {
+					const chunks = splitIntoChunks(allRecords);
+					for (const chunk of chunks) {
+						// eslint-disable-next-line no-await-in-loop
+						await updateChunk(chunk);
+						Util.writeLog(`[${org.alias}] Updated [${total.good + total.bad}/${allRecords.length}] [${sObjName}] records`, LogLevel.INFO);
+					}
+				})
+				.then(() => {
 					msg = "";
 					msg += `[${org.alias}] Updated [${sObjName}]. `;
 					msg += `Record count: [Good = ${total.good}, Bad = ${total.bad}]`;
