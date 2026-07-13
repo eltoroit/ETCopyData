@@ -6,9 +6,9 @@
 	"bugs": "https://github.com/eltoroit/ETCopyData/issues",
 	"type": "module",
 	"dependencies": {
-		"@oclif/core": "^4",
-		"@salesforce/core": "^8",
-		"@salesforce/sf-plugins-core": "^12",
+		"@oclif/core": "^4.11.11",
+		"@salesforce/core": "^8.31.4",
+		"@salesforce/sf-plugins-core": "^12.2.25",
 		"@salesforce/ts-types": "^2",
 		"fs-extra": "^11",
 		"tslib": "^2"
@@ -31,7 +31,7 @@
 		"eslint-plugin-prettier": "^5",
 		"mocha": "^10",
 		"nyc": "^17",
-		"oclif": "^4",
+		"oclif": "^4.22.52",
 		"prettier": "^3",
 		"sinon": "^18",
 		"ts-node": "^10",
