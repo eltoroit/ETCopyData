@@ -1,60 +1,76 @@
 {
-  "orgSource": "soDemo",
-  "orgDestination": "sbRocketFDE",
-  "sObjectsData": [
-    {
-      "name": "Account",
-      "ignoreFields": "OwnerId",
-      "externalIdField": null,
-      "twoPassReferenceFields": "Bank__c,Branch_Manager__c,CCS_Contact__c,MasterRecordId,ParentId,PrimaryContact__c,Principal_Officer__c,Purchase_CCS_Contact__c,Sole_Prop_SRG_Agent_Id__c",
-      "where": null,
-      "orderBy": null,
-      "maxRecords": -1
-    },
-    {
-      "name": "Case",
-      "ignoreFields": "OwnerId",
-      "externalIdField": null,
-      "twoPassReferenceFields": "MasterRecordId,ParentId",
-      "where": null,
-      "orderBy": null,
-      "maxRecords": -1
-    },
-    {
-      "name": "Contact",
-      "ignoreFields": "OwnerId",
-      "externalIdField": null,
-      "twoPassReferenceFields": "AccountId,Account__c,Branch__c,Employer__c,MasterRecordId,ReportsToId",
-      "where": null,
-      "orderBy": null,
-      "maxRecords": -1
-    },
-    {
-      "name": "Entitlement",
-      "ignoreFields": "",
-      "externalIdField": null,
-      "twoPassReferenceFields": "",
-      "where": null,
-      "orderBy": null
-    },
-    {
-      "name": "Loan__c",
-      "ignoreFields": "",
-      "externalIdField": null,
-      "twoPassReferenceFields": "",
-      "where": null,
-      "orderBy": null
-    }
-  ],
-  "sObjectsMetadata": [],
-  "rootFolder": "ETCopyData",
-  "includeAllCustom": false,
-  "customObjectsToIgnore": null,
-  "stopOnErrors": true,
-  "ignoreFields": null,
-  "copyToProduction": false,
-  "twoPassReferenceFields": null,
-  "deleteDestination": true,
-  "useBulkAPI": false,
-  "bulkPollingTimeout": null
+	"orgSource": "soEPWealth",
+	"orgDestination": "soEPWealth",
+	"sObjectsData": [
+		{
+			"name": "Opportunity",
+			"ignoreFields": "OwnerId",
+			"externalIdField": null,
+			"twoPassReferenceFields": "",
+			"where": null,
+			"orderBy": null,
+			"maxRecords": -1
+		},
+		{
+			"name": "Case",
+			"ignoreFields": "OwnerId",
+			"externalIdField": null,
+			"twoPassReferenceFields": "",
+			"where": null,
+			"orderBy": null,
+			"maxRecords": -1
+		},
+		{
+			"name": "Contact",
+			"ignoreFields": "OwnerId",
+			"externalIdField": null,
+			"twoPassReferenceFields": "",
+			"where": null,
+			"orderBy": null,
+			"maxRecords": -1
+		},
+		{
+			"name": "Account",
+			"ignoreFields": "OwnerId",
+			"externalIdField": null,
+			"twoPassReferenceFields": "",
+			"where": null,
+			"orderBy": null,
+			"maxRecords": -1
+		},
+		{
+			"name": "Entitlement",
+			"ignoreFields": "",
+			"externalIdField": null,
+			"twoPassReferenceFields": "",
+			"where": null,
+			"orderBy": null
+		}
+	],
+	"sObjectsMetadata": [
+		{
+			"name": "RecordType",
+			"matchBy": "SobjectType,DeveloperName",
+			"fieldsToExport": "Id,SobjectType,NamespacePrefix,DeveloperName",
+			"where": null,
+			"orderBy": "DeveloperName"
+		},
+		{
+			"name": "User",
+			"matchBy": "Email",
+			"fieldsToExport": "FirstName,LastName,Email,Id",
+			"where": null,
+			"orderBy": null
+		}
+	],
+	"rootFolder": "ETCopyData",
+	"includeAllCustom": false,
+	"customObjectsToIgnore": null,
+	"stopOnErrors": true,
+	"ignoreFields": null,
+	"copyToProduction": false,
+	"twoPassReferenceFields": null,
+	"deleteDestination": true,
+	"useBulkAPI": false,
+	"bulkPollingTimeout": null
 }
